@@ -1,68 +1,65 @@
 import { data } from "react-router";
+import { getDBClient } from "~/db";
+import { posts, users, postTags, tags } from "~/db/schema";
+import { eq, desc } from "drizzle-orm";
 
-export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
+export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
   
   try {
-    // For now, return mock data. In a real app, this would query the D1 database
-    const posts = [
-      {
-        id: 1,
-        title: "Getting Started with React Router v7",
-        slug: "getting-started-react-router-v7",
-        excerpt: "Learn how to build modern web applications with React Router v7...",
-        content: "React Router v7 is a powerful framework for building modern web applications...",
-        coverImage: "https://via.placeholder.com/800x400/0066cc/ffffff?text=React+Router+v7",
-        date: "2024-01-15",
-        author: {
-          name: "John Doe",
-          avatar: "https://via.placeholder.com/100x100/cccccc/666666?text=JD",
-          bio: "Full-stack developer passionate about React and modern web technologies."
-        },
-        tags: ["React", "Router", "JavaScript"],
-        published: true,
-        views: 1250,
-        readingTime: "5 min read"
-      },
-      {
-        id: 2,
-        title: "Building with Cloudflare Workers",
-        slug: "building-with-cloudflare-workers",
-        excerpt: "Discover the power of edge computing with Cloudflare Workers...",
-        content: "Cloudflare Workers allow you to run JavaScript at the edge...",
-        coverImage: "https://via.placeholder.com/800x400/ff6600/ffffff?text=Cloudflare+Workers",
-        date: "2024-01-10",
-        author: {
-          name: "Jane Smith",
-          avatar: "https://via.placeholder.com/100x100/cccccc/666666?text=JS",
-          bio: "Cloud engineer specializing in edge computing and serverless architectures."
-        },
-        tags: ["Cloudflare", "Workers", "Edge Computing"],
-        published: true,
-        views: 890,
-        readingTime: "8 min read"
-      },
-      {
-        id: 3,
-        title: "Modern CSS with Tailwind",
-        slug: "modern-css-with-tailwind",
-        excerpt: "Master utility-first CSS development with Tailwind CSS...",
-        content: "Tailwind CSS is a utility-first CSS framework that helps you build modern designs...",
-        coverImage: "https://via.placeholder.com/800x400/38bdf8/ffffff?text=Tailwind+CSS",
-        date: "2024-01-05",
-        author: {
-          name: "Mike Johnson",
-          avatar: "https://via.placeholder.com/100x100/cccccc/666666?text=MJ",
-          bio: "Frontend developer and UI/UX enthusiast."
-        },
-        tags: ["CSS", "Tailwind", "Design"],
-        published: false,
-        views: 0,
-        readingTime: "6 min read"
-      }
-    ];
+    const db = getDBClient(env.D1);
+    
+    // Initialize database client
+    
+    // Fetch posts with authors and tags from database
+    const postsWithRelations = await db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        slug: posts.slug,
+        excerpt: posts.excerpt,
+        content: posts.content,
+        coverImage: posts.coverImage,
+        createdAt: posts.createdAt,
+        published: posts.published,
+        authorId: posts.authorId,
+        authorName: users.name,
+        authorImage: users.image
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .orderBy(desc(posts.createdAt));
 
-    return data({ posts });
+    // Fetch tags for each post
+    const postsWithTags = await Promise.all(
+      postsWithRelations.map(async (post) => {
+        const postTagsData = await db
+          .select({
+            tagName: tags.name
+          })
+          .from(postTags)
+          .innerJoin(tags, eq(postTags.tagId, tags.id))
+          .where(eq(postTags.postId, post.id));
+
+        return {
+          id: post.id,
+          title: post.title,
+          slug: post.slug,
+          excerpt: post.excerpt,
+          content: post.content,
+          coverImage: post.coverImage,
+          createdAt: post.createdAt,
+          published: post.published,
+          author: {
+            name: post.authorName,
+            image: post.authorImage
+          },
+          tags: postTagsData.map(pt => pt.tagName)
+        };
+      })
+    );
+
+    return data({ posts: postsWithTags });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return data({ error: "Failed to fetch posts" }, { status: 500 });
@@ -75,26 +72,62 @@ export async function action({ request, context }: { request: Request; context: 
   const intent = formData.get("intent");
 
   try {
+    const db = getDBClient(env.D1);
+
     switch (intent) {
       case "create":
         // Handle post creation
-        const title = formData.get("title");
-        const content = formData.get("content");
-        const excerpt = formData.get("excerpt");
-        const tags = formData.get("tags");
+        const title = formData.get("title") as string;
+        const content = formData.get("content") as string;
+        const excerpt = formData.get("excerpt") as string;
         const published = formData.get("published") === "true";
         
-        // In a real app, this would insert into D1 database
-        return data({ success: true, message: "Post created successfully" });
+        // Generate slug from title
+        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        
+        // Generate IDs for new records
+        const postId = crypto.randomUUID();
+        const authorId = "user_1"; // Default author ID for now
+        
+        // Insert post into database
+        const result = await db.insert(posts).values({
+          id: postId,
+          title,
+          slug,
+          content,
+          excerpt,
+          authorId,
+          published
+        }).returning();
+        
+        return data({ success: true, message: "Post created successfully", post: result[0] });
         
       case "update":
         // Handle post update
-        const id = formData.get("id");
-        return data({ success: true, message: "Post updated successfully" });
+        const updateId = formData.get("id") as string;
+        const updateTitle = formData.get("title") as string;
+        const updateContent = formData.get("content") as string;
+        const updateExcerpt = formData.get("excerpt") as string;
+        const updatePublished = formData.get("published") === "true";
+        
+        const updateResult = await db.update(posts)
+          .set({
+            title: updateTitle,
+            content: updateContent,
+            excerpt: updateExcerpt,
+            published: updatePublished
+          })
+          .where(eq(posts.id, updateId))
+          .returning();
+          
+        return data({ success: true, message: "Post updated successfully", post: updateResult[0] });
         
       case "delete":
         // Handle post deletion
-        const deleteId = formData.get("id");
+        const deleteId = formData.get("id") as string;
+        
+        await db.delete(posts).where(eq(posts.id, deleteId));
+        
         return data({ success: true, message: "Post deleted successfully" });
         
       default:
