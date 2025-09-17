@@ -9,5 +9,5 @@ export default [
   route("contact", "routes/contact.tsx"),
   route("admin", "routes/admin.tsx"),
   route("api/posts", "routes/api.posts.ts"),
-  route("api/posts/create", "routes/api.posts.create.tsx"),
+
 ] satisfies RouteConfig;

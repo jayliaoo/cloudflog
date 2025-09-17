@@ -35,7 +35,7 @@ export default function NewPost() {
         published: true
       };
 
-      const response = await fetch("/api/posts/create", {
+      const response = await fetch("/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

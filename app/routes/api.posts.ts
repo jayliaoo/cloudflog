@@ -1,6 +1,6 @@
 import { data } from "react-router";
 import { getDBClient } from "~/db";
-import { posts, users, postTags, tags } from "~/db/schema";
+import { posts, postTags, tags } from "~/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -61,22 +61,26 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
 
 export async function action({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
-  const formData = await request.formData();
-  const intent = formData.get("intent");
-
+  
   try {
     const db = getDBClient(env.D1);
+    
+    // Parse JSON body
+    const body = await request.json() as {
+      title?: string;
+      content?: string;
+      excerpt?: string;
+      slug?: string;
+      categories?: string;
+      tags?: string;
+      published?: boolean;
+      id?: string;
+    };
 
-    switch (intent) {
-      case "create":
+    switch (request.method) {
+      case "POST":
         // Handle post creation
-        const title = formData.get("title") as string;
-        const content = formData.get("content") as string;
-        const excerpt = formData.get("excerpt") as string;
-        const slug = formData.get("slug") as string;
-        const categories = formData.get("categories") as string;
-        const tags = formData.get("tags") as string;
-        const published = formData.get("published") === "true";
+        const { title, content, excerpt, slug, categories, tags, published = true } = body;
         
         // Validate required fields
         if (!title || !content || !excerpt || !slug) {
@@ -104,13 +108,13 @@ export async function action({ request, context }: { request: Request; context: 
         
         return data({ success: true, message: "Post created successfully", post: result[0] });
         
-      case "update":
+      case "PUT":
         // Handle post update
-        const updateId = formData.get("id") as string;
-        const updateTitle = formData.get("title") as string;
-        const updateContent = formData.get("content") as string;
-        const updateExcerpt = formData.get("excerpt") as string;
-        const updatePublished = formData.get("published") === "true";
+        const { id: updateId, title: updateTitle, content: updateContent, excerpt: updateExcerpt, published: updatePublished } = body;
+        
+        if (!updateId) {
+          return data({ error: "Missing post ID" }, { status: 400 });
+        }
         
         const updateResult = await db.update(posts)
           .set({
@@ -124,19 +128,29 @@ export async function action({ request, context }: { request: Request; context: 
           
         return data({ success: true, message: "Post updated successfully", post: updateResult[0] });
         
-      case "delete":
+      case "DELETE":
         // Handle post deletion
-        const deleteId = formData.get("id") as string;
+        const { id: deleteId } = body;
+        
+        if (!deleteId) {
+          return data({ error: "Missing post ID" }, { status: 400 });
+        }
         
         await db.delete(posts).where(eq(posts.id, deleteId));
         
         return data({ success: true, message: "Post deleted successfully" });
         
       default:
-        return data({ error: "Invalid intent" }, { status: 400 });
+        return data({ error: "Method not allowed" }, { status: 405 });
     }
   } catch (error) {
     console.error("Error handling post action:", error);
+    
+    // Handle JSON parsing errors
+    if (error instanceof SyntaxError) {
+      return data({ error: "Invalid JSON format" }, { status: 400 });
+    }
+    
     return data({ error: "Failed to process request" }, { status: 500 });
   }
 }
