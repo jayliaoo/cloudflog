@@ -10,7 +10,7 @@ import { eq, desc, count, sql } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
-  const db = getDBClient(env.DB);
+  const db = getDBClient(env.D1);
 
   try {
     // Fetch all posts with author info for admin dashboard
@@ -83,9 +83,11 @@ export default function Admin() {
           <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage your blog posts and content</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Post
+        <Button asChild>
+          <Link to="/posts/new">
+            <Plus className="mr-2 h-4 w-4" />
+            New Post
+          </Link>
         </Button>
       </div>
 

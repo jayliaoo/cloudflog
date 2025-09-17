@@ -21,13 +21,10 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         content: posts.content,
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
-        published: posts.published,
-        authorId: posts.authorId,
-        authorName: users.name,
-        authorImage: users.image
+        published: posts.published
       })
       .from(posts)
-      .innerJoin(users, eq(posts.authorId, users.id))
+      // Single user blog - no author join needed
       .orderBy(desc(posts.createdAt));
 
     // Fetch tags for each post
@@ -50,10 +47,6 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
           coverImage: post.coverImage,
           createdAt: post.createdAt,
           published: post.published,
-          author: {
-            name: post.authorName,
-            image: post.authorImage
-          },
           tags: postTagsData.map(pt => pt.tagName)
         };
       })
@@ -80,14 +73,24 @@ export async function action({ request, context }: { request: Request; context: 
         const title = formData.get("title") as string;
         const content = formData.get("content") as string;
         const excerpt = formData.get("excerpt") as string;
+        const slug = formData.get("slug") as string;
+        const categories = formData.get("categories") as string;
+        const tags = formData.get("tags") as string;
         const published = formData.get("published") === "true";
         
-        // Generate slug from title
-        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        // Validate required fields
+        if (!title || !content || !excerpt || !slug) {
+          return data({ error: "Missing required fields" }, { status: 400 });
+        }
         
-        // Generate IDs for new records
+        // Check if slug already exists
+        const existingPost = await db.select().from(posts).where(eq(posts.slug, slug)).limit(1);
+        if (existingPost.length > 0) {
+          return data({ error: "Slug already exists" }, { status: 400 });
+        }
+        
+        // Generate ID for new post
         const postId = crypto.randomUUID();
-        const authorId = "user_1"; // Default author ID for now
         
         // Insert post into database
         const result = await db.insert(posts).values({
@@ -96,7 +99,6 @@ export async function action({ request, context }: { request: Request; context: 
           slug,
           content,
           excerpt,
-          authorId,
           published
         }).returning();
         

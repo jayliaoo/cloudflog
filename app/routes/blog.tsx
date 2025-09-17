@@ -4,15 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Button } from "~/components/ui/button";
 import { CalendarDays, User, Clock, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, users, tags, postTags } from "~/db/schema";
+import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc, and, count, sql } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
-  const db = getDBClient(env.DB);
+  const db = getDBClient(env.D1);
 
   try {
-    // Fetch all published posts with author and tags
+    // Fetch all published posts
     const postsData = await db
       .select({
         id: posts.id,
@@ -21,19 +21,14 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         excerpt: posts.excerpt,
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
-        author: {
-          name: users.name,
-          image: users.image
-        },
         tags: []
       })
       .from(posts)
-      .innerJoin(users, eq(posts.authorId, users.id))
       .where(eq(posts.published, true))
       .orderBy(desc(posts.createdAt));
 
     // Fetch tags for each post
-    const posts = await Promise.all(
+    const postsWithTags = await Promise.all(
       postsData.map(async (post) => {
         const postTagsData = await db
           .select({
@@ -64,9 +59,9 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
       .leftJoin(postTags, eq(tags.id, postTags.tagId))
       .leftJoin(posts, and(eq(postTags.postId, posts.id), eq(posts.published, true)))
       .groupBy(tags.id)
-      .orderBy(desc(count(posts.id)));
+      .orderBy(desc(sql`count(${posts.id})`));
 
-    return data({ posts, tags: tagsWithCount });
+    return data({ posts: postsWithTags, tags: tagsWithCount });
   } catch (error) {
     console.error("Error fetching blog data from database:", error);
     
@@ -137,10 +132,6 @@ export default function BlogPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">{post.author.name}</span>
-                  </div>
                   <Button variant="outline" size="sm" asChild>
                     <Link to={`/blog/${post.slug}`}>
                       Read More

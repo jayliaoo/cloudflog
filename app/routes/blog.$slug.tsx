@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { CalendarDays, User, ArrowLeft, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, users, tags, postTags } from "~/db/schema";
+import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function loader({ params, context }: { params: { slug: string }, context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
-  const db = getDBClient(env.DB);
+  const db = getDBClient(env.D1);
 
   try {
     // Fetch post by slug
@@ -23,15 +23,9 @@ export async function loader({ params, context }: { params: { slug: string }, co
         coverImage: posts.coverImage,
         published: posts.published,
         createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          name: users.name,
-          image: users.image,
-          bio: users.bio
-        }
+        updatedAt: posts.updatedAt
       })
       .from(posts)
-      .innerJoin(users, eq(posts.authorId, users.id))
       .where(eq(posts.slug, params.slug))
       .limit(1);
 
@@ -115,29 +109,15 @@ export default function BlogPostPage() {
           
           <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
           
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
-            <div className="flex items-center gap-2">
-              {post.author.image && (
-                <img
-                  src={post.author.image}
-                  alt={post.author.name}
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              )}
-              <User className="h-4 w-4" />
-              <span>{post.author.name}</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <time dateTime={post.createdAt.toISOString()}>
-                {post.createdAt.toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </time>
-            </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+            <CalendarDays className="h-4 w-4" />
+            <time dateTime={post.createdAt.toISOString()}>
+              {post.createdAt.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </time>
           </div>
 
           {/* Tags */}
@@ -165,26 +145,7 @@ export default function BlogPostPage() {
           <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
-        {/* Author Bio */}
-        {post.author.bio && (
-          <Card className="mt-12">
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                {post.author.image && (
-                  <img
-                    src={post.author.image}
-                    alt={post.author.name}
-                    className="h-16 w-16 rounded-full object-cover"
-                  />
-                )}
-                <div>
-                  <h3 className="font-semibold">{post.author.name}</h3>
-                  <p className="text-sm text-muted-foreground">{post.author.bio}</p>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-        )}
+
       </article>
 
       {/* Navigation */}
