@@ -5,7 +5,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "blog3",
-	"compatibility_date": "2025-04-04",
+	"compatibility_date": "2025-09-13",
 	"main": "./workers/app.ts",
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
@@ -15,16 +15,16 @@
 	},
 	"d1_databases": [
 		{
-			"binding": "DB",
-			"database_name": "blog-db",
-			"database_id": "blog-db-id"
+			"binding": "D1",
+			"database_name": "blog",
+			"database_id": "1069839c-e143-46b3-a267-6795d0395b14",
+			"migrations_dir": "./drizzle"
 		}
 	],
 	"r2_buckets": [
 		{
-			"binding": "BLOG_IMAGES",
+			"binding": "R2",
 			"bucket_name": "blog-images",
-			"preview_bucket_name": "blog-images-preview"
 		}
 	],
 	"assets": {
