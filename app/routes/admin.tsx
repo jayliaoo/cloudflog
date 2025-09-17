@@ -5,15 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, users } from "~/db/schema";
-import { eq, desc, count, sql } from "drizzle-orm";
+import { posts } from "~/db/schema";
+import { desc } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
   const db = getDBClient(env.D1);
 
   try {
-    // Fetch all posts with author info for admin dashboard
+    // Fetch all posts for admin dashboard (without author info)
     const postsData = await db
       .select({
         id: posts.id,
@@ -21,13 +21,9 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         slug: posts.slug,
         excerpt: posts.excerpt,
         createdAt: posts.createdAt,
-        published: posts.published,
-        author: {
-          name: users.name
-        }
+        published: posts.published
       })
       .from(posts)
-      .innerJoin(users, eq(posts.authorId, users.id))
       .orderBy(desc(posts.createdAt));
 
     // Get post counts for stats
@@ -138,7 +134,6 @@ export default function Admin() {
                     <p className="text-sm text-muted-foreground mb-1">{post.excerpt}</p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>{new Date(post.createdAt).toLocaleDateString('en-US')}</span>
-                      <span>by {post.author.name}</span>
                     </div>
                   </div>
                   <div className="flex gap-2">

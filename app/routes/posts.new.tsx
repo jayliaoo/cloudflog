@@ -12,7 +12,6 @@ export default function NewPost() {
     slug: "",
     excerpt: "",
     content: "",
-    author_name: "",
     categories: "",
     tags: ""
   });
@@ -29,7 +28,6 @@ export default function NewPost() {
         slug: formData.slug,
         excerpt: formData.excerpt,
         content: formData.content,
-        authorName: formData.author_name,
         categories: formData.categories,
         tags: formData.tags,
         published: true
@@ -149,22 +147,6 @@ export default function NewPost() {
               <p className="text-muted-foreground mt-1 text-xs">
                 You can use HTML tags for formatting
               </p>
-            </div>
-
-            <div>
-              <label htmlFor="author_name" className="block text-sm font-medium mb-2">
-                Author Name *
-              </label>
-              <input
-                type="text"
-                id="author_name"
-                name="author_name"
-                required
-                value={formData.author_name}
-                onChange={handleChange}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Your name"
-              />
             </div>
 
             <div>
