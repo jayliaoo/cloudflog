@@ -1,15 +1,26 @@
 import { data, redirect } from "react-router";
 import { useLoaderData } from "react-router";
-import { Link } from "react-router";
+import { Link, Form } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, LogOut } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts } from "~/db/schema";
 import { desc } from "drizzle-orm";
+import { getSession } from "~/auth.server";
+import { getEnv } from "~/env.server";
 
-export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
-  const { env } = context.cloudflare;
+export async function loader({ request }: { request: Request }) {
+  const env = getEnv();
+  
+  // Check if user is authenticated
+  const session = await getSession(request, env);
+  
+  if (!session?.user) {
+    // Redirect to sign in page if not authenticated
+    return redirect("/auth/signin");
+  }
+  
   const db = getDBClient(env.D1);
 
   try {
@@ -37,7 +48,8 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         total: totalPosts,
         published: publishedPosts,
         drafts: draftPosts
-      }
+      },
+      user: session.user
     });
   } catch (error) {
     console.error("Error fetching admin data from database:", error);
@@ -70,7 +82,7 @@ export default function Admin() {
     );
   }
 
-  const { posts, stats } = loaderData;
+  const { posts, stats, user } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -79,12 +91,23 @@ export default function Admin() {
           <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage your blog posts and content</p>
         </div>
-        <Button asChild>
-          <Link to="/posts/new">
-            <Plus className="mr-2 h-4 w-4" />
-            New Post
-          </Link>
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-muted-foreground">
+            Welcome, {user.name || user.email}
+          </div>
+          <Form action="/auth/signout" method="post">
+            <Button variant="outline" type="submit">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </Form>
+          <Button asChild>
+            <Link to="/posts/new">
+              <Plus className="mr-2 h-4 w-4" />
+              New Post
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6">

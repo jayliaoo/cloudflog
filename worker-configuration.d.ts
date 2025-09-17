@@ -4,6 +4,8 @@
 declare namespace Cloudflare {
 	interface Env {
 		VALUE_FROM_CLOUDFLARE: "Hello from Cloudflare";
+		GITHUB_CLIENT_ID: string;
+		GITHUB_CLIENT_SECRET: string;
 		R2: R2Bucket;
 		D1: D1Database;
 		ASSETS: Fetcher;
