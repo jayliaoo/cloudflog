@@ -70,37 +70,32 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
   } catch (error) {
     console.error("Error fetching blog data from database:", error);
     
-    // Fallback to static data if database is not available
-    const posts = [
-      {
-        id: "1",
-        title: "Getting Started with React Router 7",
-        slug: "getting-started-react-router-7",
-        excerpt: "Learn how to build modern web applications with React Router 7's new features and improvements.",
-        coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop",
-        createdAt: new Date("2024-01-15"),
-        author: {
-          name: "John Doe",
-          image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-        },
-        tags: [
-          { id: "1", name: "React", slug: "react" },
-          { id: "2", name: "JavaScript", slug: "javascript" }
-        ]
-      }
-    ];
-
-    const tags = [
-      { id: "1", name: "React", slug: "react", count: 5 },
-      { id: "2", name: "JavaScript", slug: "javascript", count: 4 }
-    ];
-
-    return data({ posts, tags });
+    // Return error response instead of fallback data
+    return data({ error: "Failed to fetch blog data" }, { status: 500 });
   }
 }
 
 export default function BlogPage() {
-  const { posts, tags } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+
+  // Handle error case
+  if ('error' in loaderData) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Blog</h1>
+          <p className="text-lg text-muted-foreground mb-4">
+            Unable to load blog posts at this time.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please try refreshing the page or check back later.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { posts, tags } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8">

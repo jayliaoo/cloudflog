@@ -98,49 +98,35 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
   } catch (error) {
     console.error("Error fetching posts from database:", error);
     
-    // Fallback to static data if database is not available
-    const featuredPosts = [
-      {
-        id: "1",
-        title: "Getting Started with React Router 7",
-        slug: "getting-started-react-router-7",
-        excerpt: "Learn how to build modern web applications with React Router 7's new features and improvements.",
-        coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop",
-        createdAt: new Date("2024-01-15"),
-        author: {
-          name: "John Doe",
-          image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-        },
-        tags: [
-          { id: "1", name: "React", slug: "react" },
-          { id: "2", name: "JavaScript", slug: "javascript" }
-        ]
-      }
-    ];
-
-    const recentPosts = [
-      {
-        id: "3",
-        title: "Modern CSS with Tailwind",
-        slug: "modern-css-tailwind",
-        excerpt: "Explore modern CSS development using Tailwind CSS utility-first approach.",
-        createdAt: new Date("2024-01-05"),
-        author: {
-          name: "Mike Johnson"
-        },
-        tags: [
-          { id: "5", name: "CSS", slug: "css" },
-          { id: "6", name: "Tailwind", slug: "tailwind" }
-        ]
-      }
-    ];
-
-    return data({ featuredPosts, recentPosts });
+    // Return error response instead of fallback data
+    return data({ error: "Failed to fetch posts" }, { status: 500 });
   }
 }
 
 export default function HomePage() {
-  const { featuredPosts, recentPosts } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+
+  // Handle error case
+  if ('error' in loaderData) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold tracking-tight mb-6">
+            Welcome to My{" "}
+            <span className="text-primary">Tech Blog</span>
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            Unable to load content at this time. Please try refreshing the page.
+          </p>
+          <Button variant="outline" size="lg" asChild>
+            <Link to="/about">About Me</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const { featuredPosts, recentPosts } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8">

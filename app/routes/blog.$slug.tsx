@@ -61,56 +61,32 @@ export async function loader({ params, context }: { params: { slug: string }, co
   } catch (error) {
     console.error("Error fetching post from database:", error);
     
-    // Fallback to static data if database is not available
-    const post = {
-      id: "1",
-      title: "Getting Started with React Router 7",
-      slug: params.slug,
-      content: `
-        <p>React Router 7 brings exciting new features and improvements that make building modern web applications easier than ever. In this comprehensive guide, we'll explore the key enhancements and how to leverage them in your projects.</p>
-        
-        <h2>What's New in React Router 7</h2>
-        <p>React Router 7 introduces several groundbreaking features:</p>
-        <ul>
-          <li>Enhanced data loading capabilities</li>
-          <li>Improved TypeScript support</li>
-          <li>Better error handling</li>
-          <li>Optimized bundle size</li>
-        </ul>
-        
-        <h2>Getting Started</h2>
-        <p>To get started with React Router 7, you'll need to install the latest version:</p>
-        <pre><code>npm install react-router@latest</code></pre>
-        
-        <h2>Data Loading</h2>
-        <p>One of the most exciting features is the enhanced data loading system. You can now define loaders for your routes that automatically fetch data before rendering:</p>
-        
-        <h2>Conclusion</h2>
-        <p>React Router 7 represents a significant step forward in client-side routing. With its improved performance, better developer experience, and powerful new features, it's an excellent choice for building modern web applications.</p>
-      `,
-      excerpt: "Learn how to build modern web applications with React Router 7's new features and improvements.",
-      coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&h=600&fit=crop",
-      published: true,
-      createdAt: new Date("2024-01-15"),
-      updatedAt: new Date("2024-01-15"),
-      author: {
-        name: "John Doe",
-        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-        bio: "Full-stack developer passionate about React and modern web technologies."
-      },
-      tags: [
-        { id: "1", name: "React", slug: "react" },
-        { id: "2", name: "JavaScript", slug: "javascript" },
-        { id: "7", name: "Tutorial", slug: "tutorial" }
-      ]
-    };
-
-    return data({ post });
+    // Return error response instead of fallback data
+    return data({ error: "Failed to fetch post" }, { status: 500 });
   }
 }
 
 export default function BlogPostPage() {
-  const { post } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+
+  // Handle error case
+  if ('error' in loaderData) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Post Not Found</h1>
+          <p className="text-lg text-muted-foreground mb-4">
+            Unable to load the requested blog post at this time.
+          </p>
+          <Button variant="outline" size="lg" asChild>
+            <Link to="/blog">Back to Blog</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const { post } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

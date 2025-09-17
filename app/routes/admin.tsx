@@ -1,5 +1,6 @@
 import { data, redirect } from "react-router";
 import { useLoaderData } from "react-router";
+import { Link } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
@@ -45,34 +46,35 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
   } catch (error) {
     console.error("Error fetching admin data from database:", error);
     
-    // Fallback to static data if database is not available
-    const posts = [
-      {
-        id: 1,
-        title: "Getting Started with React Router v7",
-        slug: "getting-started-react-router-v7",
-        excerpt: "Learn how to build modern web applications with React Router v7...",
-        createdAt: new Date("2024-01-15"),
-        published: true,
-        author: {
-          name: "John Doe"
-        }
-      }
-    ];
-
-    return data({ 
-      posts,
-      stats: {
-        total: 1,
-        published: 1,
-        drafts: 0
-      }
-    });
+    // Return error response instead of fallback data
+    return data({ error: "Failed to fetch admin data" }, { status: 500 });
   }
 }
 
 export default function Admin() {
-  const { posts, stats } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+
+  // Handle error case
+  if ('error' in loaderData) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Admin Dashboard Error</h1>
+          <p className="text-lg text-muted-foreground mb-4">
+            Unable to load admin dashboard data at this time.
+          </p>
+          <p className="text-sm text-muted-foreground mb-6">
+            Please check your database connection and try again.
+          </p>
+          <Button variant="outline" size="lg" asChild>
+            <Link to="/">Back to Home</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const { posts, stats } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8">
