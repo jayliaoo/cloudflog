@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Bold,
@@ -16,6 +17,7 @@ import {
   CheckSquare,
   Minus,
 } from "lucide-react";
+import ImageDialog from "./image-dialog";
 
 interface MarkdownToolbarProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
@@ -24,6 +26,8 @@ interface MarkdownToolbarProps {
 }
 
 export default function MarkdownToolbar({ textareaRef, content, setContent }: MarkdownToolbarProps) {
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+
   const insertText = (before: string, after: string = "") => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -58,9 +62,10 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
     insertText(codeMarkdown);
   };
 
-  const insertImage = () => {
-    const imageMarkdown = "![Alt text](image-url)";
-    insertText(imageMarkdown, "");
+
+
+  const handleImageInsert = (url: string, altText: string) => {
+    insertText(`![${altText}](${url})`);
   };
 
   const insertLink = () => {
@@ -70,14 +75,14 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
 
   return (
     <div className="flex flex-wrap gap-1 p-2 bg-muted border-b border-input rounded-t-md">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => insertText("**", "**")}
-        title="Bold"
-        className="h-8 w-8 p-0"
-      >
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => insertText("**", "**")}
+          title="Bold"
+          className="h-8 w-8 p-0"
+        >
         <Bold className="h-4 w-4" />
       </Button>
       
@@ -155,12 +160,18 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
         type="button"
         variant="ghost"
         size="sm"
-        onClick={insertImage}
+        onClick={() => setImageDialogOpen(true)}
         title="Image"
         className="h-8 w-8 p-0"
       >
         <Image className="h-4 w-4" />
       </Button>
+      
+      <ImageDialog
+        open={imageDialogOpen}
+        onOpenChange={setImageDialogOpen}
+        onImageInsert={handleImageInsert}
+      />
       
       <div className="w-px bg-border mx-1" />
       

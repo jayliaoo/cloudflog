@@ -250,6 +250,7 @@ export default function NewPost() {
                 <div className="p-4">
                   {activeTab === 'edit' ? (
                     <>
+
                       <MarkdownToolbar
                         textareaRef={contentTextareaRef}
                         content={formData.content}

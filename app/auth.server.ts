@@ -60,7 +60,6 @@ export async function getSession(sessionToken: string, env: Env): Promise<Sessio
     .innerJoin(users, eq(sessions.userId, users.id))
     .where(eq(sessions.sessionToken, sessionToken))
     .limit(1);
-  console.log('Session data:', sessionData);
   if (sessionData.length === 0) {
     return null;
   }

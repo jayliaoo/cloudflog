@@ -9,6 +9,7 @@ export default [
   route("contact", "routes/contact.tsx"),
   route("admin", "routes/admin.tsx"),
   route("api/posts", "routes/api.posts.ts"),
+  route("api/images/:objectKey?", "routes/api.images.ts"),
   route("auth/signin", "routes/auth/signin.tsx"),
   route("auth/signin/:provider", "routes/auth/signin.$provider.ts"),
   route("auth/signout", "routes/auth/signout.ts"),

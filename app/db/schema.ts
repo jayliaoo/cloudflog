@@ -44,6 +44,15 @@ export const comments = sqliteTable('comment', {
   updatedAt: timestampField(),
 });
 
+export const images = sqliteTable('image', {
+  objectKey: text().primaryKey(), // UUID as primary key
+  originalName: text().notNull(),
+  mimeType: text().notNull(),
+  size: integer().notNull(),
+  uploadedBy: integer().references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestampField(),
+});
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -56,3 +65,6 @@ export type NewPost = typeof posts.$inferInsert;
 
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
+
+export type Image = typeof images.$inferSelect;
+export type NewImage = typeof images.$inferInsert;
