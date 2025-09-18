@@ -5,9 +5,9 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import MarkdownPreview from "~/components/blog/markdown-preview";
 import MarkdownToolbar from "~/components/blog/markdown-toolbar";
-import CategoryDropdown from "~/components/blog/category-dropdown";
+import TagInput from "~/components/blog/tag-input";
 import { getDBClient } from "~/db";
-import { posts, categories } from "~/db/schema";
+import { posts } from "~/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
@@ -16,26 +16,15 @@ export async function loader({ request, context }: { request: Request; context: 
   const editId = url.searchParams.get('edit');
   
   try {
-    const db = getDBClient(env.D1);
-    
-    // Fetch all categories for the dropdown
-    const allCategories = await db
-      .select({
-        id: categories.id,
-        name: categories.name,
-        slug: categories.slug,
-      })
-      .from(categories)
-      .orderBy(desc(categories.createdAt));
-    
     if (!editId) {
-      return data({ post: null, categories: allCategories });
+      return data({ post: null });
     }
     
+    const db = getDBClient(env.D1);
     const postId = parseInt(editId, 10);
     
     if (isNaN(postId)) {
-      return data({ error: "Invalid post ID", categories: allCategories }, { status: 400 });
+      return data({ error: "Invalid post ID" }, { status: 400 });
     }
     
     const postData = await db
@@ -48,26 +37,20 @@ export async function loader({ request, context }: { request: Request; context: 
         coverImage: posts.coverImage,
         authorId: posts.authorId,
         published: posts.published,
-        categoryId: posts.categoryId
+
       })
       .from(posts)
       .where(eq(posts.id, postId))
       .limit(1);
     
     if (postData.length === 0) {
-      return data({ error: "Post not found", categories: allCategories }, { status: 404 });
+      return data({ error: "Post not found" }, { status: 404 });
     }
     
-    // Fetch post category (single category)
-    const postWithCategory = {
-      ...postData[0],
-      categoryId: postData[0].categoryId
-    };
-    
-    return data({ post: postWithCategory, categories: allCategories });
+    return data({ post: postData[0] });
   } catch (error) {
     console.error("Error loading post for editing:", error);
-    return data({ error: "Failed to load post", categories: [] }, { status: 500 });
+    return data({ error: "Failed to load post" }, { status: 500 });
   }
 }
 
@@ -93,10 +76,9 @@ export default function NewPost() {
     title: "",
     slug: "",
     content: "",
-    categories: "",
-    tags: "",
+    tags: [],
   });
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load existing post data when editing
@@ -106,13 +88,13 @@ export default function NewPost() {
         title: loaderData.post.title || "",
         slug: loaderData.post.slug || "",
         content: loaderData.post.content || "",
-        categories: "",
-        tags: "",
+        tags: [],
       });
-      // Set the selected category if the post has one
-      if (loaderData.post.categoryId) {
-        setSelectedCategoryId(loaderData.post.categoryId);
-      }
+      // Set the tags if the post has any
+        if (loaderData.post.tags) {
+          const postTags = loaderData.post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+          setFormData(prev => ({ ...prev, tags: postTags }));
+        }
     }
   }, [isEditing, loaderData.post]);
 
@@ -132,7 +114,7 @@ export default function NewPost() {
         excerpt: excerpt,
         content: formData.content,
         published: true,
-        categoryId: selectedCategoryId, // Include selected category
+        tags: formData.tags.join(", "),
         ...(isEditing && { id: editId }) // Include ID when editing
       };
 
@@ -309,30 +291,14 @@ export default function NewPost() {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                Category
-              </label>
-              <CategoryDropdown
-                categories={loaderData.categories || []}
-                selectedCategoryId={selectedCategoryId}
-                onCategoryChange={setSelectedCategoryId}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium mb-2">
                 Tags
               </label>
-              <input
-                type="text"
-                id="tags"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="React, JavaScript, Web Development"
+              <TagInput
+                selectedTags={formData.tags}
+                onTagsChange={(tags) => setFormData(prev => ({ ...prev, tags }))}
               />
               <p className="text-muted-foreground mt-1 text-xs">
-                Separate multiple tags with commas
+                Type to search existing tags or create new ones
               </p>
             </div>
 

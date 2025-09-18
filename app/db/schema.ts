@@ -28,7 +28,7 @@ export const posts = sqliteTable('post', {
   excerpt: text(),
   coverImage: text(),
   authorId: integer().notNull().references(() => users.id, { onDelete: 'cascade' }),
-  categoryId: integer().references(() => categories.id, { onDelete: 'set null' }),
+  tags: text(),
   published: integer({ mode: 'boolean' }).notNull().default(false),
   createdAt: timestampField(),
   updatedAt: timestampField(),
@@ -54,11 +54,10 @@ export const images = sqliteTable('image', {
   createdAt: timestampField(),
 });
 
-export const categories = sqliteTable('categories', {
+export const tags = sqliteTable('tags', {
   id: integer().primaryKey({ autoIncrement: true }),
   name: text().notNull().unique(),
   slug: text().notNull().unique(),
-  description: text(),
   createdAt: timestampField(),
   updatedAt: timestampField(),
 });
@@ -81,5 +80,5 @@ export type NewComment = typeof comments.$inferInsert;
 export type Image = typeof images.$inferSelect;
 export type NewImage = typeof images.$inferInsert;
 
-export type Category = typeof categories.$inferSelect;
-export type NewCategory = typeof categories.$inferInsert;
+export type Tag = typeof tags.$inferSelect;
+export type NewTag = typeof tags.$inferInsert;

@@ -2,9 +2,10 @@ import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 import { CalendarDays, User, Clock, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, categories } from "~/db/schema";
+import { posts } from "~/db/schema";
 import { eq, desc, and, count, sql } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -12,7 +13,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
   const db = getDBClient(env.D1);
 
   try {
-    // Fetch all published posts with their categories
+    // Fetch all published posts
     const postsData = await db
       .select({
         id: posts.id,
@@ -21,12 +22,9 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         excerpt: posts.excerpt,
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
-        categoryId: posts.categoryId,
-        categoryName: categories.name,
-        categorySlug: categories.slug
+        tags: posts.tags
       })
       .from(posts)
-      .leftJoin(categories, eq(posts.categoryId, categories.id))
       .where(eq(posts.published, true))
       .orderBy(desc(posts.createdAt));
 
@@ -108,15 +106,13 @@ export default function BlogPage() {
                     </Link>
                   </Button>
                 </div>
-                {post.categoryId && (
+                {post.tags && (
                   <div className="mt-4">
-                    <Link 
-                      to={`/blog/category/${post.categorySlug}`}
-                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      <Tag className="mr-1 h-3 w-3" />
-                      {post.categoryName}
-                    </Link>
+                    {post.tags.split(',').map((tag) => tag.trim()).filter((tag) => tag).map((tag) => (
+                      <Badge key={tag} variant="secondary" className="mr-2 text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
                   </div>
                 )}
               </CardContent>
@@ -139,37 +135,28 @@ export default function BlogPage() {
             </CardContent>
           </Card>
 
-          {/* Categories */}
+          {/* Popular Tags */}
           <Card>
             <CardHeader>
-              <CardTitle>Categories</CardTitle>
+              <CardTitle>Popular Tags</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                  <Link to="/blog/category/technology">
-                    <Tag className="mr-2 h-4 w-4" />
-                    Technology
-                  </Link>
-                </Button>
-                <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                  <Link to="/blog/category/tutorial">
-                    <Tag className="mr-2 h-4 w-4" />
-                    Tutorial
-                  </Link>
-                </Button>
-                <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                  <Link to="/blog/category/news">
-                    <Tag className="mr-2 h-4 w-4" />
-                    News
-                  </Link>
-                </Button>
-                <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                  <Link to="/blog/category/backend">
-                    <Tag className="mr-2 h-4 w-4" />
-                    Backend
-                  </Link>
-                </Button>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                  React
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                  JavaScript
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                  Web Development
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                  Cloud
+                </Badge>
+                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+                  Tutorial
+                </Badge>
               </div>
             </CardContent>
           </Card>
