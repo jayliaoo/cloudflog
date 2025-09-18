@@ -11,7 +11,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   
   // Check if user is authenticated
   const user = await getCurrentUser(request, env);
-  
   if (!user) {
     // Redirect to sign in page if not authenticated
     return redirect("/auth/signin");

@@ -13,7 +13,7 @@ export default [
   route("auth/signin/:provider", "routes/auth/signin.$provider.ts"),
   route("auth/signout", "routes/auth/signout.ts"),
   route("auth/error", "routes/auth.error.tsx"),
-  route("auth/*", "routes/auth.ts"),
+  route("auth/callback", "routes/auth/callback.tsx"),
   route("api/auth/*", "routes/api.auth.tsx"),
 
 ] satisfies RouteConfig;

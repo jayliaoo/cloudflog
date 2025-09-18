@@ -3,7 +3,6 @@ import { users, sessions } from "~/db/schema";
 import { eq } from "drizzle-orm";
 
 // Simple session-based authentication for single-user blog
-const SESSION_SECRET = "your-secret-key-here";
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 export interface User {
@@ -40,8 +39,14 @@ export async function createSession(userId: string, env: Env): Promise<string> {
 
 // Get session from token
 export async function getSession(sessionToken: string, env: Env): Promise<Session | null> {
-  const db = getDBClient(env.D1);
-  
+  console.log('getSession:', sessionToken);
+  let db
+  try{
+    db = getDBClient(env.D1);
+  } catch (error) {
+    console.error('Error getting D1 client:', error);
+    return null;
+  }
   const sessionData = await db
     .select({
       sessionToken: sessions.sessionToken,
@@ -55,7 +60,7 @@ export async function getSession(sessionToken: string, env: Env): Promise<Sessio
     .innerJoin(users, eq(sessions.userId, users.id))
     .where(eq(sessions.sessionToken, sessionToken))
     .limit(1);
-  
+  console.log('Session data:', sessionData);
   if (sessionData.length === 0) {
     return null;
   }
@@ -85,30 +90,117 @@ export async function deleteSession(sessionToken: string, env: Env): Promise<voi
   await db.delete(sessions).where(eq(sessions.sessionToken, sessionToken));
 }
 
-// GitHub OAuth simulation for single-user blog
+// Real GitHub OAuth implementation
 export async function authenticateWithGitHub(code: string, env: Env): Promise<string | null> {
-  const db = getDBClient(env.D1);
-  
-  // For single-user blog, we simulate GitHub authentication
-  // In a real app, you'd exchange the code with GitHub for user info
-  const existingUser = await db.select().from(users).limit(1);
-  
-  let userId: string;
-  
-  if (existingUser.length === 0) {
-    // Create default user if none exists
-    userId = crypto.randomUUID();
-    await db.insert(users).values({
-      id: userId,
-      name: 'Admin',
-      email: 'admin@example.com',
-      emailVerified: new Date()
+  try {
+    // Exchange code for access token
+    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: env.GITHUB_CLIENT_ID,
+        client_secret: env.GITHUB_CLIENT_SECRET,
+        code: code,
+        redirect_uri: `${env.NEXTAUTH_URL}/auth/callback`,
+      }),
     });
-  } else {
-    userId = existingUser[0].id;
+
+    const tokenData = await tokenResponse.json() as { access_token?: string; error?: string };
+    if (tokenData.error) {
+      console.error('GitHub token exchange error:', tokenData.error);
+      return null;
+    }
+
+    const accessToken = tokenData.access_token;
+    
+    // Get user information from GitHub
+    const userResponse = await fetch('https://api.github.com/user', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'node',
+      },
+    });
+    if (!userResponse.ok) {
+      console.error('GitHub user info fetch failed:', userResponse.status);
+      console.error('GitHub user info response:', await userResponse.text());
+      return null;
+    }
+
+    const githubUser = await userResponse.json() as { 
+      id: number; 
+      login: string; 
+      name?: string; 
+      email?: string; 
+      avatar_url: string; 
+    };
+    // Get user email if not public
+    let email = githubUser.email;
+    if (!email) {
+      const emailsResponse = await fetch('https://api.github.com/user/emails', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
+          'User-Agent': 'node',
+        },
+      });
+
+      if (emailsResponse.ok) {
+        const emails = await emailsResponse.json() as Array<{ email: string; primary: boolean }>;
+        console.log('GitHub user emails:', emails);
+        const primaryEmail = emails.find((e) => e.primary);
+        email = primaryEmail?.email || emails[0]?.email;
+      }
+    }
+
+    if (!email) {
+      console.error('No email found for GitHub user');
+      return null;
+    }
+
+    const db = getDBClient(env.D1);
+    
+    // Check if user already exists
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    let userId: string;
+
+    if (existingUser.length > 0) {
+      // Update existing user with latest GitHub info
+      userId = existingUser[0].id;
+      await db
+        .update(users)
+        .set({
+          name: githubUser.name || githubUser.login,
+          image: githubUser.avatar_url,
+          emailVerified: new Date()
+        })
+        .where(eq(users.id, userId));
+    } else {
+      // Create new user
+      userId = crypto.randomUUID();
+      await db.insert(users).values({
+        id: userId,
+        name: githubUser.name || githubUser.login,
+        email: email,
+        image: githubUser.avatar_url,
+        emailVerified: new Date()
+      });
+    }
+
+    return createSession(userId, env);
+  } catch (error) {
+    console.error('GitHub OAuth error:', error);
+    return null;
   }
-  
-  return createSession(userId, env);
 }
 
 // Get current user from request
@@ -117,9 +209,7 @@ export async function getCurrentUser(request: Request, env: Env): Promise<User |
   if (!cookieHeader) return null;
   
   const cookies = parseCookies(cookieHeader);
-  const sessionToken = cookies['next-auth.session-token'];
-  
-  if (!sessionToken) return null;
+  const sessionToken = cookies['session'];
   
   const session = await getSession(sessionToken, env);
   return session?.user || null;
