@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 export interface User {
-  id: string;
+  id: number;
   name: string | null;
   email: string;
   image: string | null;
@@ -23,7 +23,7 @@ function generateSessionToken(): string {
 }
 
 // Create a new session
-export async function createSession(userId: string, env: Env): Promise<string> {
+export async function createSession(userId: number, env: Env): Promise<string> {
   const db = getDBClient(env.D1);
   const sessionToken = generateSessionToken();
   const expires = new Date(Date.now() + SESSION_DURATION);
@@ -171,7 +171,7 @@ export async function authenticateWithGitHub(code: string, env: Env): Promise<st
       .where(eq(users.email, email))
       .limit(1);
 
-    let userId: string;
+    let userId: number;
 
     if (existingUser.length > 0) {
       // Update existing user with latest GitHub info
@@ -185,15 +185,14 @@ export async function authenticateWithGitHub(code: string, env: Env): Promise<st
         })
         .where(eq(users.id, userId));
     } else {
-      // Create new user
-      userId = crypto.randomUUID();
-      await db.insert(users).values({
-        id: userId,
+      // Create new user - let auto-increment handle the ID
+      const result = await db.insert(users).values({
         name: githubUser.name || githubUser.login,
         email: email,
         image: githubUser.avatar_url,
         emailVerified: new Date()
-      });
+      }).returning();
+      userId = result[0].id;
     }
 
     return createSession(userId, env);

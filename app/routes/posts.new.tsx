@@ -1,20 +1,24 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import MarkdownPreview from "~/components/blog/markdown-preview";
+import MarkdownToolbar from "~/components/blog/markdown-toolbar";
 
 export default function NewPost() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
     excerpt: "",
     content: "",
     categories: "",
-    tags: ""
+    tags: "",
   });
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +68,7 @@ export default function NewPost() {
   return (
     <div className="min-h-screen bg-background">
       <main className="container py-8">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-4xl">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Create New Blog Post</h1>
             <p className="text-muted-foreground">
@@ -131,21 +135,63 @@ export default function NewPost() {
             </div>
 
             <div>
-              <label htmlFor="content" className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2">
                 Content *
               </label>
-              <textarea
-                id="content"
-                name="content"
-                required
-                rows={10}
-                value={formData.content}
-                onChange={handleChange}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Write your blog content here..."
-              />
+              <div className="border border-input rounded-md overflow-hidden">
+                <div className="flex border-b border-input">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('edit')}
+                    className={`px-4 py-2 text-sm font-medium ${
+                      activeTab === 'edit'
+                        ? 'bg-background text-foreground border-b-2 border-primary'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('preview')}
+                    className={`px-4 py-2 text-sm font-medium ${
+                      activeTab === 'preview'
+                        ? 'bg-background text-foreground border-b-2 border-primary'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    Preview
+                  </button>
+                </div>
+                <div className="p-4">
+                  {activeTab === 'edit' ? (
+                    <>
+                      <MarkdownToolbar
+                        textareaRef={contentTextareaRef}
+                        content={formData.content}
+                        setContent={(content) => setFormData(prev => ({ ...prev, content }))}
+                      />
+                      <textarea
+                        ref={contentTextareaRef}
+                        id="content"
+                        name="content"
+                        required
+                        rows={15}
+                        value={formData.content}
+                        onChange={handleChange}
+                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+                        placeholder="Write your blog content here..."
+                      />
+                    </>
+                  ) : (
+                    <div className="min-h-[360px] max-h-[360px] overflow-y-auto">
+                      <MarkdownPreview content={formData.content} />
+                    </div>
+                  )}
+                </div>
+              </div>
               <p className="text-muted-foreground mt-1 text-xs">
-                You can use HTML tags for formatting
+                You can use Markdown for formatting (headers, links, code blocks, etc.)
               </p>
             </div>
 

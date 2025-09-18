@@ -16,7 +16,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   
   // Clear session cookie and redirect to home
   const headers = new Headers();
-  headers.append('Set-Cookie', 'next-auth.session-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
+  headers.append('Set-Cookie', 'session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
   headers.append('Location', '/');
   
   return new Response(null, { 

@@ -1,9 +1,21 @@
-import { Link, Outlet } from "react-router";
+import { Link, Outlet, Form } from "react-router";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink } from "~/components/ui/navigation-menu";
 import { Button } from "~/components/ui/button";
 import { useState } from "react";
 
-export default function BlogLayout({ children }: { children: React.ReactNode }) {
+interface User {
+  id: number;
+  name: string | null;
+  email: string;
+  image: string | null;
+}
+
+interface BlogLayoutProps {
+  children: React.ReactNode;
+  user?: User | null;
+}
+
+export default function BlogLayout({ children, user }: BlogLayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -38,12 +50,34 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
                 </NavigationMenuItem>
               </NavigationMenu>
             </div>
-            <div className="flex items-center space-x-2">
-              <Link to="/admin">
-                <Button variant="outline" size="sm">
-                  Admin
-                </Button>
-              </Link>
+            <div className="flex items-center space-x-4">
+              {user && (
+                <span className="text-sm text-gray-500 hidden md:block">
+                  Welcome, {user.name || user.email}
+                </span>
+              )}
+              <div className="flex items-center space-x-2">
+                {user ? (
+                  <>
+                    <Link to="/admin">
+                      <Button variant="outline" size="sm">
+                        Admin
+                      </Button>
+                    </Link>
+                    <Form action="/auth/signout" method="post">
+                      <Button type="submit" variant="outline" size="sm">
+                        Sign Out
+                      </Button>
+                    </Form>
+                  </>
+                ) : (
+                  <Link to="/auth/signin">
+                    <Button variant="outline" size="sm">
+                      Sign In
+                    </Button>
+                  </Link>
+                )}
+              </div>
               <button
                 className="md:hidden p-2"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -72,6 +106,26 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
                 <Link to="/contact" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Contact
                 </Link>
+                {user ? (
+                  <>
+                    <Link to="/admin" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
+                      Admin
+                    </Link>
+                    <Form action="/auth/signout" method="post">
+                      <button
+                        type="submit"
+                        className="px-3 py-2 text-sm font-medium hover:text-primary text-left w-full"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Sign Out
+                      </button>
+                    </Form>
+                  </>
+                ) : (
+                  <Link to="/auth/signin" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
+                    Sign In
+                  </Link>
+                )}
               </nav>
             </div>
           )}

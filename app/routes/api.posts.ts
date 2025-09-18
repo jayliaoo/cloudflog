@@ -80,16 +80,12 @@ export async function action({ request, context }: { request: Request; context: 
           return data({ error: "Slug already exists" }, { status: 400 });
         }
         
-        // Generate ID for new post
-        const postId = crypto.randomUUID();
-        
         // For now, use a default user ID since this is a single-user blog
-        // In a real application, you'd get this from the authenticated user
-        const defaultUserId = 'default-user-id';
+    // In a real application, you'd get this from the authenticated user
+    const defaultUserId = 1;
         
         // Insert post into database
         const result = await db.insert(posts).values({
-          id: postId,
           title,
           slug,
           content,
@@ -108,6 +104,12 @@ export async function action({ request, context }: { request: Request; context: 
           return data({ error: "Missing post ID" }, { status: 400 });
         }
         
+        // Convert string ID to number for integer comparison
+        const updateIdNum = parseInt(updateId, 10);
+        if (isNaN(updateIdNum)) {
+          return data({ error: "Invalid post ID format" }, { status: 400 });
+        }
+        
         const updateResult = await db.update(posts)
           .set({
             title: updateTitle,
@@ -115,7 +117,7 @@ export async function action({ request, context }: { request: Request; context: 
             excerpt: updateExcerpt,
             published: updatePublished
           })
-          .where(eq(posts.id, updateId))
+          .where(eq(posts.id, updateIdNum))
           .returning();
           
         return data({ success: true, message: "Post updated successfully", post: updateResult[0] });
@@ -128,7 +130,13 @@ export async function action({ request, context }: { request: Request; context: 
           return data({ error: "Missing post ID" }, { status: 400 });
         }
         
-        await db.delete(posts).where(eq(posts.id, deleteId));
+        // Convert string ID to number for integer comparison
+        const deleteIdNum = parseInt(deleteId, 10);
+        if (isNaN(deleteIdNum)) {
+          return data({ error: "Invalid post ID format" }, { status: 400 });
+        }
+        
+        await db.delete(posts).where(eq(posts.id, deleteIdNum));
         
         return data({ success: true, message: "Post deleted successfully" });
         

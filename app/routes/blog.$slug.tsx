@@ -6,6 +6,7 @@ import { CalendarDays, User, ArrowLeft } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts } from "~/db/schema";
 import { eq } from "drizzle-orm";
+import { marked } from 'marked';
 
 export async function loader({ params, context }: { params: { slug: string }, context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
@@ -111,7 +112,7 @@ export default function BlogPostPage() {
 
         {/* Post Content */}
         <div className="prose prose-lg max-w-none dark:prose-invert">
-          <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }} />
         </div>
 
 

@@ -68,3 +68,273 @@ body {
 @media (prefers-color-scheme: dark) {
   color-scheme: dark;
 }
+
+/* Markdown preview styles */
+.max-w-none {
+  line-height: 1.6;
+  color: hsl(var(--foreground));
+}
+
+/* Headers */
+.max-w-none h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 2rem 0 1rem 0;
+  line-height: 1.2;
+  color: hsl(var(--foreground));
+}
+
+.max-w-none h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem 0;
+  line-height: 1.3;
+  color: hsl(var(--foreground));
+}
+
+.max-w-none h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem 0;
+  line-height: 1.4;
+  color: hsl(var(--foreground));
+}
+
+.max-w-none h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem 0;
+  line-height: 1.4;
+  color: hsl(var(--foreground));
+}
+
+.max-w-none h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.25rem 0;
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+}
+
+.max-w-none h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0.5rem 0 0.25rem 0;
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+}
+
+/* Paragraphs */
+.max-w-none p {
+  margin: 1rem 0;
+  line-height: 1.7;
+}
+
+/* Links */
+.max-w-none a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.max-w-none a:hover {
+  color: hsl(var(--primary-foreground));
+  background-color: hsl(var(--primary));
+  text-decoration: none;
+  border-radius: 0.125rem;
+  padding: 0 0.125rem;
+}
+
+/* Lists */
+.max-w-none ul,
+.max-w-none ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.max-w-none ul {
+  list-style-type: disc;
+}
+
+.max-w-none ul ul {
+  list-style-type: circle;
+}
+
+.max-w-none ul ul ul {
+  list-style-type: square;
+}
+
+.max-w-none ol {
+  list-style-type: decimal;
+}
+
+.max-w-none ol ol {
+  list-style-type: lower-alpha;
+}
+
+.max-w-none ol ol ol {
+  list-style-type: lower-roman;
+}
+
+.max-w-none li {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.max-w-none li > p {
+  margin: 0.25rem 0;
+}
+
+/* Blockquotes */
+.max-w-none blockquote {
+  margin: 1.5rem 0;
+  padding: 1rem 1.5rem;
+  border-left: 4px solid hsl(var(--primary));
+  background-color: hsl(var(--muted));
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+}
+
+.max-w-none blockquote p {
+  margin: 0.5rem 0;
+}
+
+/* Code */
+.max-w-none code {
+  background-color: hsl(var(--muted));
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+}
+
+.max-w-none pre {
+  background-color: hsl(var(--muted));
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid hsl(var(--border));
+}
+
+.max-w-none pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Tables */
+.max-w-none table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.max-w-none th,
+.max-w-none td {
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  text-align: left;
+}
+
+.max-w-none th {
+  background-color: hsl(var(--muted));
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.max-w-none tr:nth-child(even) {
+  background-color: hsl(var(--accent) / 0.1);
+}
+
+/* Horizontal rules */
+.max-w-none hr {
+  border: none;
+  border-top: 2px solid hsl(var(--border));
+  margin: 2rem 0;
+}
+
+/* Images */
+.max-w-none img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* Strong and emphasis */
+.max-w-none strong {
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.max-w-none em {
+  font-style: italic;
+  color: hsl(var(--foreground));
+}
+
+/* Strikethrough */
+.max-w-none del {
+  text-decoration: line-through;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Task lists */
+.max-w-none input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: hsl(var(--primary));
+}
+
+/* Definition lists */
+.max-w-none dl {
+  margin: 1rem 0;
+}
+
+.max-w-none dt {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-top: 1rem;
+}
+
+.max-w-none dd {
+  margin-left: 2rem;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Superscript and subscript */
+.max-w-none sup,
+.max-w-none sub {
+  font-size: 0.75rem;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+.max-w-none sup {
+  top: -0.5em;
+}
+
+.max-w-none sub {
+  bottom: -0.25em;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .max-w-none blockquote {
+    background-color: hsl(var(--muted) / 0.5);
+  }
+  
+  .max-w-none code,
+  .max-w-none pre {
+    background-color: hsl(var(--muted) / 0.5);
+  }
+  
+  .max-w-none tr:nth-child(even) {
+    background-color: hsl(var(--accent) / 0.05);
+  }
+}

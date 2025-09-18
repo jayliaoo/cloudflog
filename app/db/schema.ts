@@ -1,44 +1,47 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+
+// Helper function for timestamp fields
+const timestampField = () => integer({ mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch('subsec') * 1000)`);
 
 // Single user blog - simplified schema
 
 export const users = sqliteTable('user', {
-  id: text('id').notNull().primaryKey(),
-  name: text('name'),
-  email: text('email').notNull(),
-  emailVerified: integer('emailVerified', { mode: 'timestamp_ms' }),
-  image: text('image'),
+  id: integer().primaryKey({ autoIncrement: true }),
+  name: text(),
+  email: text().notNull(),
+  emailVerified: integer({ mode: 'timestamp_ms' }),
+  image: text(),
 });
 
 export const sessions = sqliteTable('session', {
-  sessionToken: text('sessionToken').notNull().primaryKey(),
-  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  expires: integer('expires', { mode: 'timestamp_ms' }).notNull(),
+  sessionToken: text().notNull().primaryKey(),
+  userId: integer().notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expires: integer({ mode: 'timestamp_ms' }).notNull(),
 });
 
 export const posts = sqliteTable('post', {
-  id: text('id').notNull().primaryKey(),
-  title: text('title').notNull(),
-  slug: text('slug').notNull().unique(),
-  content: text('content').notNull(),
-  excerpt: text('excerpt'),
-  coverImage: text('coverImage'),
-  authorId: text('authorId').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  published: integer('published', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('createdAt', { mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch() * 1000)`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch() * 1000)`),
+  id: integer().primaryKey({ autoIncrement: true }),
+  title: text().notNull(),
+  slug: text().notNull().unique(),
+  content: text().notNull(),
+  excerpt: text(),
+  coverImage: text(),
+  authorId: integer().notNull().references(() => users.id, { onDelete: 'cascade' }),
+  published: integer({ mode: 'boolean' }).notNull().default(false),
+  createdAt: timestampField(),
+  updatedAt: timestampField(),
 });
 
 export const comments = sqliteTable('comment', {
-  id: text('id').notNull().primaryKey(),
-  content: text('content').notNull(),
-  authorName: text('authorName').notNull(),
-  authorEmail: text('authorEmail').notNull(),
-  postId: text('postId').notNull().references(() => posts.id, { onDelete: 'cascade' }),
-  approved: integer('approved', { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer('createdAt', { mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch() * 1000)`),
-  updatedAt: integer('updatedAt', { mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch() * 1000)`),
+  id: integer().primaryKey({ autoIncrement: true }),
+  content: text().notNull(),
+  authorName: text().notNull(),
+  authorEmail: text().notNull(),
+  postId: integer().notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  approved: integer({ mode: 'boolean' }).notNull().default(false),
+  createdAt: timestampField(),
+  updatedAt: timestampField(),
 });
 
 // Type exports

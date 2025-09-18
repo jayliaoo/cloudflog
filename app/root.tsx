@@ -5,11 +5,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
 import BlogLayout from "~/components/layouts/blog-layout";
+import { getCurrentUser } from "~/auth.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -23,6 +25,12 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
 ];
+
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const env = context.cloudflare.env as Env;
+  const user = await getCurrentUser(request, env);
+  return { user };
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -43,8 +51,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { user } = useLoaderData<typeof loader>();
+  
   return (
-    <BlogLayout>
+    <BlogLayout user={user}>
       <Outlet />
     </BlogLayout>
   );

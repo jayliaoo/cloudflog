@@ -1,8 +1,15 @@
-import { drizzle } from 'drizzle-orm/d1';
-import * as schema from './schema';
+import { drizzle } from "drizzle-orm/d1";
+import * as schema from "./schema";
 
 export function getDBClient(d1: D1Database) {
-  return drizzle(d1, { schema });
+  return drizzle(d1, { schema: schema, casing: "snake_case", logger: true });
 }
 
-export type { User, NewUser, Post, NewPost, Comment, NewComment } from './schema';
+export type {
+  User,
+  NewUser,
+  Post,
+  NewPost,
+  Comment,
+  NewComment,
+} from "./schema";

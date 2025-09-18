@@ -1,127 +1,18 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9d6d632b-a188-47c1-994d-37f1afdeb407",
+  "id": "7f5dd046-36d1-4aac-a2cb-13003c517b40",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "account": {
-      "name": "account",
-      "columns": {
-        "userId": {
-          "name": "userId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "providerAccountId": {
-          "name": "providerAccountId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "refresh_token": {
-          "name": "refresh_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "access_token": {
-          "name": "access_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "token_type": {
-          "name": "token_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "scope": {
-          "name": "scope",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "id_token": {
-          "name": "id_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "session_state": {
-          "name": "session_state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "account_userId_user_id_fk": {
-          "name": "account_userId_user_id_fk",
-          "tableFrom": "account",
-          "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "account_provider_providerAccountId_pk": {
-          "columns": [
-            "provider",
-            "providerAccountId"
-          ],
-          "name": "account_provider_providerAccountId_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "comment": {
       "name": "comment",
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": true
         },
         "content": {
           "name": "content",
@@ -130,25 +21,25 @@
           "notNull": true,
           "autoincrement": false
         },
-        "postId": {
-          "name": "postId",
+        "author_name": {
+          "name": "author_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "authorId": {
-          "name": "authorId",
+        "author_email": {
+          "name": "author_email",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "parentId": {
-          "name": "parentId",
-          "type": "text",
+        "post_id": {
+          "name": "post_id",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "approved": {
@@ -159,57 +50,31 @@
           "autoincrement": false,
           "default": false
         },
-        "createdAt": {
-          "name": "createdAt",
+        "created_at": {
+          "name": "created_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(unixepoch())"
+          "default": "(unixepoch() * 1000)"
         },
-        "updatedAt": {
-          "name": "updatedAt",
+        "updated_at": {
+          "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(unixepoch())"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "comment_postId_post_id_fk": {
-          "name": "comment_postId_post_id_fk",
+        "comment_post_id_post_id_fk": {
+          "name": "comment_post_id_post_id_fk",
           "tableFrom": "comment",
           "tableTo": "post",
           "columnsFrom": [
-            "postId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "comment_authorId_user_id_fk": {
-          "name": "comment_authorId_user_id_fk",
-          "tableFrom": "comment",
-          "tableTo": "user",
-          "columnsFrom": [
-            "authorId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "comment_parentId_comment_id_fk": {
-          "name": "comment_parentId_comment_id_fk",
-          "tableFrom": "comment",
-          "tableTo": "comment",
-          "columnsFrom": [
-            "parentId"
+            "post_id"
           ],
           "columnsTo": [
             "id"
@@ -222,74 +87,15 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "post_tag": {
-      "name": "post_tag",
-      "columns": {
-        "postId": {
-          "name": "postId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "tagId": {
-          "name": "tagId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "post_tag_postId_post_id_fk": {
-          "name": "post_tag_postId_post_id_fk",
-          "tableFrom": "post_tag",
-          "tableTo": "post",
-          "columnsFrom": [
-            "postId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "post_tag_tagId_tag_id_fk": {
-          "name": "post_tag_tagId_tag_id_fk",
-          "tableFrom": "post_tag",
-          "tableTo": "tag",
-          "columnsFrom": [
-            "tagId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "post_tag_postId_tagId_pk": {
-          "columns": [
-            "postId",
-            "tagId"
-          ],
-          "name": "post_tag_postId_tagId_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "post": {
       "name": "post",
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": true
         },
         "title": {
           "name": "title",
@@ -319,11 +125,18 @@
           "notNull": false,
           "autoincrement": false
         },
-        "coverImage": {
-          "name": "coverImage",
+        "cover_image": {
+          "name": "cover_image",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
+          "autoincrement": false
+        },
+        "author_id": {
+          "name": "author_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         },
         "published": {
@@ -334,28 +147,21 @@
           "autoincrement": false,
           "default": false
         },
-        "authorId": {
-          "name": "authorId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
+        "created_at": {
+          "name": "created_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(unixepoch())"
+          "default": "(unixepoch() * 1000)"
         },
-        "updatedAt": {
-          "name": "updatedAt",
+        "updated_at": {
+          "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(unixepoch())"
+          "default": "(unixepoch() * 1000)"
         }
       },
       "indexes": {
@@ -368,12 +174,12 @@
         }
       },
       "foreignKeys": {
-        "post_authorId_user_id_fk": {
-          "name": "post_authorId_user_id_fk",
+        "post_author_id_user_id_fk": {
+          "name": "post_author_id_user_id_fk",
           "tableFrom": "post",
           "tableTo": "user",
           "columnsFrom": [
-            "authorId"
+            "author_id"
           ],
           "columnsTo": [
             "id"
@@ -389,16 +195,16 @@
     "session": {
       "name": "session",
       "columns": {
-        "sessionToken": {
-          "name": "sessionToken",
+        "session_token": {
+          "name": "session_token",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
-        "userId": {
-          "name": "userId",
-          "type": "text",
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -413,12 +219,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "session_userId_user_id_fk": {
-          "name": "session_userId_user_id_fk",
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
           "columnsFrom": [
-            "userId"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -431,69 +237,15 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "tag": {
-      "name": "tag",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch())"
-        }
-      },
-      "indexes": {
-        "tag_name_unique": {
-          "name": "tag_name_unique",
-          "columns": [
-            "name"
-          ],
-          "isUnique": true
-        },
-        "tag_slug_unique": {
-          "name": "tag_slug_unique",
-          "columns": [
-            "slug"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "user": {
       "name": "user",
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": true
         },
         "name": {
           "name": "name",
@@ -509,8 +261,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "emailVerified": {
-          "name": "emailVerified",
+        "email_verified": {
+          "name": "email_verified",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -522,66 +274,11 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch())"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch())"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "verificationToken": {
-      "name": "verificationToken",
-      "columns": {
-        "identifier": {
-          "name": "identifier",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "token": {
-          "name": "token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "expires": {
-          "name": "expires",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "verificationToken_identifier_token_pk": {
-          "columns": [
-            "identifier",
-            "token"
-          ],
-          "name": "verificationToken_identifier_token_pk"
-        }
-      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     }
