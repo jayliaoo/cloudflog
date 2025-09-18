@@ -1,14 +1,72 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, useSearchParams, useLoaderData } from "react-router";
+import { data } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import MarkdownPreview from "~/components/blog/markdown-preview";
 import MarkdownToolbar from "~/components/blog/markdown-toolbar";
+import { getDBClient } from "~/db";
+import { posts } from "~/db/schema";
+import { eq } from "drizzle-orm";
+
+export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
+  const { env } = context.cloudflare;
+  const url = new URL(request.url);
+  const editId = url.searchParams.get('edit');
+  
+  if (!editId) {
+    return data({ post: null });
+  }
+  
+  try {
+    const db = getDBClient(env.D1);
+    const postId = parseInt(editId, 10);
+    
+    if (isNaN(postId)) {
+      return data({ error: "Invalid post ID" }, { status: 400 });
+    }
+    
+    const postData = await db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        slug: posts.slug,
+        content: posts.content,
+        excerpt: posts.excerpt,
+        published: posts.published
+      })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+    
+    if (postData.length === 0) {
+      return data({ error: "Post not found" }, { status: 404 });
+    }
+    
+    return data({ post: postData[0] });
+  } catch (error) {
+    console.error("Error loading post for editing:", error);
+    return data({ error: "Failed to load post" }, { status: 500 });
+  }
+}
 
 export default function NewPost() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const loaderData = useLoaderData<typeof loader>();
+  const editId = searchParams.get('edit');
+  const isEditing = !!editId;
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Handle loader errors
+  useEffect(() => {
+    if (loaderData.error) {
+      setError(loaderData.error);
+    }
+  }, [loaderData.error]);
+  
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [formData, setFormData] = useState({
     title: "",
@@ -19,6 +77,19 @@ export default function NewPost() {
   });
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Load existing post data when editing
+  useEffect(() => {
+    if (isEditing && loaderData.post) {
+      setFormData({
+        title: loaderData.post.title || "",
+        slug: loaderData.post.slug || "",
+        content: loaderData.post.content || "",
+        categories: "",
+        tags: "",
+      });
+    }
+  }, [isEditing, loaderData.post]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -28,19 +99,18 @@ export default function NewPost() {
       // Generate excerpt from content
       const excerpt = generateExcerpt(formData.content);
       
-      // Create JSON payload for the new API endpoint
+      // Create JSON payload
       const jsonData = {
         title: formData.title,
         slug: formData.slug,
         excerpt: excerpt,
         content: formData.content,
-        categories: formData.categories,
-        tags: formData.tags,
-        published: true
+        published: true,
+        ...(isEditing && { id: editId }) // Include ID when editing
       };
 
       const response = await fetch("/api/posts", {
-        method: "POST",
+        method: isEditing ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -49,7 +119,7 @@ export default function NewPost() {
 
       if (!response.ok) {
         const errorData = await response.json() as { error?: string };
-        throw new Error(errorData.error || "Failed to create post");
+        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} post`);
       }
 
       navigate("/admin");
@@ -96,9 +166,11 @@ export default function NewPost() {
       <main className="container py-8">
         <div className="mx-auto max-w-4xl">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Create New Blog Post</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              {isEditing ? 'Edit Blog Post' : 'Create New Blog Post'}
+            </h1>
             <p className="text-muted-foreground">
-              Share your thoughts, tutorials, and insights with the world
+              {isEditing ? 'Update your existing blog post' : 'Share your thoughts, tutorials, and insights with the world'}
             </p>
           </div>
 
@@ -245,7 +317,7 @@ export default function NewPost() {
 
             <div className="flex gap-4">
               <Button type="submit" disabled={loading}>
-                {loading ? "Creating..." : "Create Post"}
+                {loading ? (isEditing ? "Updating..." : "Creating...") : (isEditing ? "Update Post" : "Create Post")}
               </Button>
               <Button
                 type="button"
