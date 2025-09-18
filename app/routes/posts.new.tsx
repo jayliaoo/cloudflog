@@ -13,7 +13,6 @@ export default function NewPost() {
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
-    excerpt: "",
     content: "",
     categories: "",
     tags: "",
@@ -26,11 +25,14 @@ export default function NewPost() {
     setError(null);
 
     try {
+      // Generate excerpt from content
+      const excerpt = generateExcerpt(formData.content);
+      
       // Create JSON payload for the new API endpoint
       const jsonData = {
         title: formData.title,
         slug: formData.slug,
-        excerpt: formData.excerpt,
+        excerpt: excerpt,
         content: formData.content,
         categories: formData.categories,
         tags: formData.tags,
@@ -63,6 +65,30 @@ export default function NewPost() {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const generateExcerpt = (content: string): string => {
+    // Remove markdown formatting
+    const plainText = content
+      .replace(/#{1,6}\s+/g, '') // Remove headers
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic
+      .replace(/`(.*?)`/g, '$1') // Remove inline code
+      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
+      .replace(/\[.*?\]\(.*?\)/g, '$1') // Replace links with text
+      .replace(/^\s*[\-\*]\s+/gm, '') // Remove list markers
+      .replace(/^\s*\d+\.\s+/gm, '') // Remove numbered list markers
+      .replace(/^\s*>\s+/gm, '') // Remove blockquote markers
+      .replace(/\n\s*\n/g, ' ') // Replace multiple newlines with space
+      .replace(/\n/g, ' ') // Replace single newlines with space
+      .trim();
+
+    // Take first 150 characters and add ellipsis if longer
+    if (plainText.length <= 150) {
+      return plainText;
+    }
+    return plainText.substring(0, 150) + '...';
   };
 
   return (
@@ -118,21 +144,7 @@ export default function NewPost() {
               </p>
             </div>
 
-            <div>
-              <label htmlFor="excerpt" className="block text-sm font-medium mb-2">
-                Excerpt *
-              </label>
-              <textarea
-                id="excerpt"
-                name="excerpt"
-                required
-                rows={3}
-                value={formData.excerpt}
-                onChange={handleChange}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="A brief summary of your blog post"
-              />
-            </div>
+
 
             <div>
               <label className="block text-sm font-medium mb-2">
