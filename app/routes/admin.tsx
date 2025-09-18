@@ -1,180 +1,165 @@
+import type { LoaderFunctionArgs } from "react-router";
 import { data, redirect } from "react-router";
-import { useLoaderData } from "react-router";
-import { Link, Form } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Plus, Edit, Trash2, Eye, LogOut } from "lucide-react";
+import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { posts } from "~/db/schema";
 import { desc } from "drizzle-orm";
-import { getSession } from "~/auth.server";
-import { getEnv } from "~/env.server";
+import { Form, Link } from "react-router";
 
-export async function loader({ request }: { request: Request }) {
-  const env = getEnv();
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const env = context.cloudflare.env as Env;
   
   // Check if user is authenticated
-  const session = await getSession(request, env);
+  const user = await getCurrentUser(request, env);
   
-  if (!session?.user) {
+  if (!user) {
     // Redirect to sign in page if not authenticated
     return redirect("/auth/signin");
   }
   
+  // Fetch all posts for admin dashboard (without author info)
   const db = getDBClient(env.D1);
-
-  try {
-    // Fetch all posts for admin dashboard (without author info)
-    const postsData = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        slug: posts.slug,
-        excerpt: posts.excerpt,
-        createdAt: posts.createdAt,
-        published: posts.published
-      })
-      .from(posts)
-      .orderBy(desc(posts.createdAt));
-
-    // Get post counts for stats
-    const totalPosts = postsData.length;
-    const publishedPosts = postsData.filter(p => p.published).length;
-    const draftPosts = postsData.filter(p => !p.published).length;
-
-    return data({ 
-      posts: postsData,
-      stats: {
-        total: totalPosts,
-        published: publishedPosts,
-        drafts: draftPosts
-      },
-      user: session.user
-    });
-  } catch (error) {
-    console.error("Error fetching admin data from database:", error);
-    
-    // Return error response instead of fallback data
-    return data({ error: "Failed to fetch admin data" }, { status: 500 });
-  }
+  const allPosts = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      slug: posts.slug,
+      excerpt: posts.excerpt,
+      published: posts.published,
+      createdAt: posts.createdAt,
+      updatedAt: posts.updatedAt,
+    })
+    .from(posts)
+    .orderBy(desc(posts.createdAt));
+  
+  return data({ posts: allPosts, user });
 }
 
-export default function Admin() {
-  const loaderData = useLoaderData<typeof loader>();
-
-  // Handle error case
-  if ('error' in loaderData) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Admin Dashboard Error</h1>
-          <p className="text-lg text-muted-foreground mb-4">
-            Unable to load admin dashboard data at this time.
-          </p>
-          <p className="text-sm text-muted-foreground mb-6">
-            Please check your database connection and try again.
-          </p>
-          <Button variant="outline" size="lg" asChild>
-            <Link to="/">Back to Home</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const { posts, stats, user } = loaderData;
-
+export default function Admin({ loaderData }: { loaderData: any }) {
+  const { posts, user } = loaderData as { posts: any[], user: any };
+  
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your blog posts and content</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-muted-foreground">
-            Welcome, {user.name || user.email}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-500">Welcome, {user.name || user.email}</span>
+              <Form action="/auth/signout" method="post">
+                <button
+                  type="submit"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Sign Out
+                </button>
+              </Form>
+            </div>
           </div>
-          <Form action="/auth/signout" method="post">
-            <Button variant="outline" type="submit">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </Form>
-          <Button asChild>
-            <Link to="/posts/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Post
-            </Link>
-          </Button>
         </div>
       </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-sm text-muted-foreground">Total Posts</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{stats.published}</div>
-                <div className="text-sm text-muted-foreground">Published</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{stats.drafts}</div>
-                <div className="text-sm text-muted-foreground">Drafts</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">-</div>
-                <div className="text-sm text-muted-foreground">Total Views</div>
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <dt className="text-sm font-medium text-gray-500 truncate">Total Posts</dt>
+              <dd className="mt-1 text-3xl font-semibold text-gray-900">{posts.length}</dd>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <dt className="text-sm font-medium text-gray-500 truncate">Published Posts</dt>
+              <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                {posts.filter(post => post.published).length}
+              </dd>
+            </div>
+          </div>
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <dt className="text-sm font-medium text-gray-500 truncate">Draft Posts</dt>
+              <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                {posts.filter(post => !post.published).length}
+              </dd>
+            </div>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Posts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {posts.map((post) => (
-                <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{post.title}</h3>
-                      {post.published ? (
-                        <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Published</span>
-                      ) : (
-                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Draft</span>
+        {/* Actions */}
+        <div className="mb-8">
+          <Link
+            to="/admin/posts/new"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Create New Post
+          </Link>
+        </div>
+
+        {/* Posts List */}
+        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          <ul className="divide-y divide-gray-200">
+            {posts.map((post) => (
+              <li key={post.id}>
+                <div className="px-4 py-4 sm:px-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center">
+                        <h3 className="text-lg font-medium text-gray-900 truncate">
+                          {post.title}
+                        </h3>
+                        <span
+                          className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            post.published
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
+                          {post.published ? 'Published' : 'Draft'}
+                        </span>
+                      </div>
+                      {post.excerpt && (
+                        <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                          {post.excerpt}
+                        </p>
                       )}
+                      <p className="mt-2 text-sm text-gray-400">
+                        Created: {new Date(post.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-1">{post.excerpt}</p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>{new Date(post.createdAt).toLocaleDateString('en-US')}</span>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <Link
+                        to={`/admin/posts/${post.id}/edit`}
+                        className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Edit
+                      </Link>
+                      <Link
+                        to={`/blog/${post.slug}`}
+                        className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        View
+                      </Link>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {posts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No posts yet. Create your first post!</p>
+            <Link
+              to="/admin/posts/new"
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create New Post
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

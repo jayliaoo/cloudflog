@@ -1,18 +1,38 @@
-import { ActionFunctionArgs, redirect } from "react-router";
-import { getAuth, getSession } from "~/auth.server";
-import { getEnv } from "~/env.server";
+import type { ActionFunctionArgs } from "react-router";
+import { deleteSession } from "~/auth.server";
 
-export async function action({ request }: ActionFunctionArgs) {
-  const env = getEnv();
-  const auth = getAuth(env);
+export async function action({ request, context }: ActionFunctionArgs) {
+  const env = context.cloudflare.env as Env;
+  const cookieHeader = request.headers.get('Cookie');
   
-  // Check if there's an existing session
-  const session = await getSession(request, env);
-  
-  if (session) {
-    // Sign out the user
-    await auth.signOut();
+  if (cookieHeader) {
+    const cookies = parseCookies(cookieHeader);
+    const sessionToken = cookies['next-auth.session-token'];
+    
+    if (sessionToken) {
+      await deleteSession(sessionToken, env);
+    }
   }
   
-  return redirect("/");
+  // Clear session cookie and redirect to home
+  const headers = new Headers();
+  headers.append('Set-Cookie', 'next-auth.session-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
+  headers.append('Location', '/');
+  
+  return new Response(null, { 
+    status: 302, 
+    headers 
+  });
+}
+
+// Simple cookie parser
+function parseCookies(cookieHeader: string): Record<string, string> {
+  const cookies: Record<string, string> = {};
+  cookieHeader.split(';').forEach(cookie => {
+    const [name, ...rest] = cookie.trim().split('=');
+    if (name && rest.length > 0) {
+      cookies[name] = decodeURIComponent(rest.join('='));
+    }
+  });
+  return cookies;
 }

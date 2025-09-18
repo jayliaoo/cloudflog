@@ -16,32 +16,29 @@
 		"shadcn:add": "npx shadcn@latest add"
 	},
 	"dependencies": {
-		"@auth/core": "^0.40.0",
-		"@auth/drizzle-adapter": "^1.10.0",
 		"@radix-ui/react-slot": "^1.2.3",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"drizzle-orm": "^0.39.3",
+		"drizzle-orm": "^0.44.5",
 		"isbot": "^5.1.27",
-		"lucide-react": "^0.474.0",
-		"next-auth": "^4.24.11",
+		"lucide-react": "^0.544.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"react-router": "^7.7.1",
-		"tailwind-merge": "^2.6.0",
+		"tailwind-merge": "^3.3.1",
 		"tailwindcss-animate": "^1.0.7"
 	},
 	"devDependencies": {
 		"@cloudflare/vite-plugin": "^1.0.12",
 		"@react-router/dev": "^7.7.1",
 		"@tailwindcss/vite": "^4.1.4",
-		"@types/node": "^20",
+		"@types/node": "^22.18.6",
 		"@types/react": "^19.1.2",
 		"@types/react-dom": "^19.1.2",
-		"drizzle-kit": "^0.30.4",
+		"drizzle-kit": "^0.31.4",
 		"tailwindcss": "^4.1.4",
 		"typescript": "^5.8.3",
-		"vite": "^6.3.3",
+		"vite": "^7.1.5",
 		"vite-tsconfig-paths": "^5.1.4",
 		"wrangler": "^4.37.1"
 	}

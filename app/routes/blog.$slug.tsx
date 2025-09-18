@@ -2,10 +2,10 @@ import { data, useLoaderData } from "react-router";
 import { Link, useParams } from "react-router";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { CalendarDays, User, ArrowLeft, Tag } from "lucide-react";
+import { CalendarDays, User, ArrowLeft } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, tags, postTags } from "~/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { posts } from "~/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function loader({ params, context }: { params: { slug: string }, context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
@@ -35,22 +35,8 @@ export async function loader({ params, context }: { params: { slug: string }, co
 
     const post = postData[0];
 
-    // Fetch tags for the post
-    const postTagsData = await db
-      .select({
-        id: tags.id,
-        name: tags.name,
-        slug: tags.slug
-      })
-      .from(postTags)
-      .innerJoin(tags, eq(postTags.tagId, tags.id))
-      .where(eq(postTags.postId, post.id));
-
     return data({
-      post: {
-        ...post,
-        tags: postTagsData
-      }
+      post
     });
   } catch (error) {
     console.error("Error fetching post from database:", error);
@@ -120,24 +106,7 @@ export default function BlogPostPage() {
             </time>
           </div>
 
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
-                <Button
-                  key={tag.id}
-                  variant="outline"
-                  size="sm"
-                  asChild
-                >
-                  <Link to={`/blog/tag/${tag.slug}`}>
-                    <Tag className="mr-1 h-3 w-3" />
-                    {tag.name}
-                  </Link>
-                </Button>
-              ))}
-            </div>
-          )}
+
         </header>
 
         {/* Post Content */}

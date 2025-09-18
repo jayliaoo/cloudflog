@@ -5,4 +5,4 @@ export function getDBClient(d1: D1Database) {
   return drizzle(d1, { schema });
 }
 
-export type { User, NewUser, Post, NewPost, Tag, NewTag, Comment, NewComment } from './schema';
+export type { User, NewUser, Post, NewPost, Comment, NewComment } from './schema';

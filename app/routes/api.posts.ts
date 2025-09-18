@@ -1,6 +1,6 @@
 import { data } from "react-router";
 import { getDBClient } from "~/db";
-import { posts, postTags, tags } from "~/db/schema";
+import { posts } from "~/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -27,30 +27,17 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
       // Single user blog - no author join needed
       .orderBy(desc(posts.createdAt));
 
-    // Fetch tags for each post
-    const postsWithTags = await Promise.all(
-      postsWithRelations.map(async (post) => {
-        const postTagsData = await db
-          .select({
-            tagName: tags.name
-          })
-          .from(postTags)
-          .innerJoin(tags, eq(postTags.tagId, tags.id))
-          .where(eq(postTags.postId, post.id));
-
-        return {
-          id: post.id,
-          title: post.title,
-          slug: post.slug,
-          excerpt: post.excerpt,
-          content: post.content,
-          coverImage: post.coverImage,
-          createdAt: post.createdAt,
-          published: post.published,
-          tags: postTagsData.map(pt => pt.tagName)
-        };
-      })
-    );
+    const postsWithTags = postsWithRelations.map(post => ({
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      coverImage: post.coverImage,
+      createdAt: post.createdAt,
+      published: post.published,
+      tags: [] // No tags in simplified schema
+    }));
 
     return data({ posts: postsWithTags });
   } catch (error) {
@@ -96,6 +83,10 @@ export async function action({ request, context }: { request: Request; context: 
         // Generate ID for new post
         const postId = crypto.randomUUID();
         
+        // For now, use a default user ID since this is a single-user blog
+        // In a real application, you'd get this from the authenticated user
+        const defaultUserId = 'default-user-id';
+        
         // Insert post into database
         const result = await db.insert(posts).values({
           id: postId,
@@ -103,6 +94,7 @@ export async function action({ request, context }: { request: Request; context: 
           slug,
           content,
           excerpt,
+          authorId: defaultUserId,
           published
         }).returning();
         

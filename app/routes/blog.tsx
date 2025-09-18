@@ -2,9 +2,9 @@ import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { CalendarDays, User, Clock, Tag } from "lucide-react";
+import { CalendarDays, User, Clock } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, tags, postTags } from "~/db/schema";
+import { posts } from "~/db/schema";
 import { eq, desc, and, count, sql } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -20,48 +20,13 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         slug: posts.slug,
         excerpt: posts.excerpt,
         coverImage: posts.coverImage,
-        createdAt: posts.createdAt,
-        tags: []
+        createdAt: posts.createdAt
       })
       .from(posts)
       .where(eq(posts.published, true))
       .orderBy(desc(posts.createdAt));
 
-    // Fetch tags for each post
-    const postsWithTags = await Promise.all(
-      postsData.map(async (post) => {
-        const postTagsData = await db
-          .select({
-            id: tags.id,
-            name: tags.name,
-            slug: tags.slug
-          })
-          .from(postTags)
-          .innerJoin(tags, eq(postTags.tagId, tags.id))
-          .where(eq(postTags.postId, post.id));
-
-        return {
-          ...post,
-          tags: postTagsData
-        };
-      })
-    );
-
-    // Fetch tags with post counts
-    const tagsWithCount = await db
-      .select({
-        id: tags.id,
-        name: tags.name,
-        slug: tags.slug,
-        count: count(posts.id)
-      })
-      .from(tags)
-      .leftJoin(postTags, eq(tags.id, postTags.tagId))
-      .leftJoin(posts, and(eq(postTags.postId, posts.id), eq(posts.published, true)))
-      .groupBy(tags.id)
-      .orderBy(desc(sql`count(${posts.id})`));
-
-    return data({ posts: postsWithTags, tags: tagsWithCount });
+    return data({ posts: postsData });
   } catch (error) {
     console.error("Error fetching blog data from database:", error);
     
@@ -90,7 +55,7 @@ export default function BlogPage() {
     );
   }
 
-  const { posts, tags } = loaderData;
+  const { posts } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -139,18 +104,7 @@ export default function BlogPage() {
                     </Link>
                   </Button>
                 </div>
-                {post.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {post.tags.map((tag) => (
-                      <span
-                        key={tag.id}
-                        className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground"
-                      >
-                        {tag.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
+
               </CardContent>
             </Card>
           ))}
@@ -158,32 +112,6 @@ export default function BlogPage() {
 
         {/* Sidebar */}
         <div className="space-y-8">
-          {/* Tags */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Tag className="h-5 w-5" />
-                Tags
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <Button
-                    key={tag.id}
-                    variant="outline"
-                    size="sm"
-                    asChild
-                  >
-                    <Link to={`/blog/tag/${tag.slug}`}>
-                      {tag.name} ({tag.count})
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* About */}
           <Card>
             <CardHeader>

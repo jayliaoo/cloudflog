@@ -4,7 +4,7 @@ import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
 import { ArrowRight, CalendarDays, User } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, users, postTags, tags } from "~/db/schema";
+import { posts, users } from "~/db/schema";
 import { eq, desc, and, isNotNull } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -12,7 +12,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
   const db = getDBClient(env.D1);
 
   try {
-    // Fetch featured posts (published posts with cover images)
+    // Fetch featured posts (with cover images)
     const featuredPostsData = await db
       .select({
         id: posts.id,
@@ -24,8 +24,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         author: {
           name: users.name,
           image: users.image
-        },
-        tags: []
+        }
       })
       .from(posts)
       .innerJoin(users, eq(posts.authorId, users.id))
@@ -46,8 +45,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         createdAt: posts.createdAt,
         author: {
           name: users.name
-        },
-        tags: []
+        }
       })
       .from(posts)
       .innerJoin(users, eq(posts.authorId, users.id))
@@ -55,44 +53,8 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
       .orderBy(desc(posts.createdAt))
       .limit(6);
 
-    // Fetch tags for each post
-    const featuredPosts = await Promise.all(
-      featuredPostsData.map(async (post) => {
-        const postTagsData = await db
-          .select({
-            id: tags.id,
-            name: tags.name,
-            slug: tags.slug
-          })
-          .from(postTags)
-          .innerJoin(tags, eq(postTags.tagId, tags.id))
-          .where(eq(postTags.postId, post.id));
-
-        return {
-          ...post,
-          tags: postTagsData
-        };
-      })
-    );
-
-    const recentPosts = await Promise.all(
-      recentPostsData.map(async (post) => {
-        const postTagsData = await db
-          .select({
-            id: tags.id,
-            name: tags.name,
-            slug: tags.slug
-          })
-          .from(postTags)
-          .innerJoin(tags, eq(postTags.tagId, tags.id))
-          .where(eq(postTags.postId, post.id));
-
-        return {
-          ...post,
-          tags: postTagsData
-        };
-      })
-    );
+    const featuredPosts = featuredPostsData;
+    const recentPosts = recentPostsData;
 
     return data({ featuredPosts, recentPosts });
   } catch (error) {
