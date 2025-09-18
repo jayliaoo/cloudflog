@@ -31,7 +31,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
   const insertText = (before: string, after: string = "") => {
     const textarea = textareaRef.current;
     if (!textarea) return;
-
+    
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);

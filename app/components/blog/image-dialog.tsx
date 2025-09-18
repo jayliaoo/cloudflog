@@ -18,8 +18,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
-  const handleUrlSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUrlSubmit = () => {
     if (imageUrl.trim()) {
       onImageInsert(imageUrl.trim(), altText.trim() || "Image");
       resetForm();
@@ -27,8 +26,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
     }
   };
 
-  const handleFileUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFileUpload = async () => {
     if (!file) return;
 
     setUploading(true);
@@ -101,7 +99,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
           </TabsList>
           
           <TabsContent value="url" className="space-y-4 mt-4">
-            <form onSubmit={handleUrlSubmit} className="space-y-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="image-url">Image URL</Label>
                 <Input
@@ -110,7 +108,6 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                   placeholder="https://example.com/image.jpg"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  required
                 />
               </div>
               <div className="space-y-2">
@@ -131,15 +128,19 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={!imageUrl.trim()}>
+                <Button 
+                  type="button" 
+                  onClick={handleUrlSubmit}
+                  disabled={!imageUrl.trim()}
+                >
                   Insert Image
                 </Button>
               </div>
-            </form>
+            </div>
           </TabsContent>
           
           <TabsContent value="upload" className="space-y-4 mt-4">
-            <form onSubmit={handleFileUpload} className="space-y-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="image-file">Select Image</Label>
                 <Input
@@ -147,7 +148,6 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
-                  required
                 />
                 <p className="text-sm text-muted-foreground">
                   Supported formats: JPEG, PNG, GIF, WebP. Max size: 5MB.
@@ -187,11 +187,15 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={!file || uploading}>
+                <Button 
+                  type="button" 
+                  onClick={handleFileUpload}
+                  disabled={!file || uploading}
+                >
                   {uploading ? "Uploading..." : "Upload & Insert"}
                 </Button>
               </div>
-            </form>
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>
