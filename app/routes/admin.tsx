@@ -76,12 +76,18 @@ export default function Admin({ loaderData }: { loaderData: any }) {
         </div>
 
         {/* Actions */}
-        <div className="mb-8">
+        <div className="mb-8 flex space-x-4">
           <Link
             to="/posts/new"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Create New Post
+          </Link>
+          <Link
+            to="/admin/categories"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Manage Categories
           </Link>
         </div>
 

@@ -5,25 +5,37 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import MarkdownPreview from "~/components/blog/markdown-preview";
 import MarkdownToolbar from "~/components/blog/markdown-toolbar";
+import CategoryDropdown from "~/components/blog/category-dropdown";
 import { getDBClient } from "~/db";
-import { posts } from "~/db/schema";
-import { eq } from "drizzle-orm";
+import { posts, categories } from "~/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
   const url = new URL(request.url);
   const editId = url.searchParams.get('edit');
   
-  if (!editId) {
-    return data({ post: null });
-  }
-  
   try {
     const db = getDBClient(env.D1);
+    
+    // Fetch all categories for the dropdown
+    const allCategories = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        slug: categories.slug,
+      })
+      .from(categories)
+      .orderBy(desc(categories.createdAt));
+    
+    if (!editId) {
+      return data({ post: null, categories: allCategories });
+    }
+    
     const postId = parseInt(editId, 10);
     
     if (isNaN(postId)) {
-      return data({ error: "Invalid post ID" }, { status: 400 });
+      return data({ error: "Invalid post ID", categories: allCategories }, { status: 400 });
     }
     
     const postData = await db
@@ -33,20 +45,29 @@ export async function loader({ request, context }: { request: Request; context: 
         slug: posts.slug,
         content: posts.content,
         excerpt: posts.excerpt,
-        published: posts.published
+        coverImage: posts.coverImage,
+        authorId: posts.authorId,
+        published: posts.published,
+        categoryId: posts.categoryId
       })
       .from(posts)
       .where(eq(posts.id, postId))
       .limit(1);
     
     if (postData.length === 0) {
-      return data({ error: "Post not found" }, { status: 404 });
+      return data({ error: "Post not found", categories: allCategories }, { status: 404 });
     }
     
-    return data({ post: postData[0] });
+    // Fetch post category (single category)
+    const postWithCategory = {
+      ...postData[0],
+      categoryId: postData[0].categoryId
+    };
+    
+    return data({ post: postWithCategory, categories: allCategories });
   } catch (error) {
     console.error("Error loading post for editing:", error);
-    return data({ error: "Failed to load post" }, { status: 500 });
+    return data({ error: "Failed to load post", categories: [] }, { status: 500 });
   }
 }
 
@@ -75,6 +96,7 @@ export default function NewPost() {
     categories: "",
     tags: "",
   });
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load existing post data when editing
@@ -87,6 +109,10 @@ export default function NewPost() {
         categories: "",
         tags: "",
       });
+      // Set the selected category if the post has one
+      if (loaderData.post.categoryId) {
+        setSelectedCategoryId(loaderData.post.categoryId);
+      }
     }
   }, [isEditing, loaderData.post]);
 
@@ -106,6 +132,7 @@ export default function NewPost() {
         excerpt: excerpt,
         content: formData.content,
         published: true,
+        categoryId: selectedCategoryId, // Include selected category
         ...(isEditing && { id: editId }) // Include ID when editing
       };
 
@@ -281,21 +308,14 @@ export default function NewPost() {
             </div>
 
             <div>
-              <label htmlFor="categories" className="block text-sm font-medium mb-2">
-                Categories
+              <label className="block text-sm font-medium mb-2">
+                Category
               </label>
-              <input
-                type="text"
-                id="categories"
-                name="categories"
-                value={formData.categories}
-                onChange={handleChange}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Tutorial, Guide, Review"
+              <CategoryDropdown
+                categories={loaderData.categories || []}
+                selectedCategoryId={selectedCategoryId}
+                onCategoryChange={setSelectedCategoryId}
               />
-              <p className="text-muted-foreground mt-1 text-xs">
-                Separate multiple categories with commas
-              </p>
             </div>
 
             <div>

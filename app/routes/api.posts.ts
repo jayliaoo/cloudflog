@@ -1,6 +1,6 @@
 import { data } from "react-router";
 import { getDBClient } from "~/db";
-import { posts } from "~/db/schema";
+import { posts, categories } from "~/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -11,8 +11,8 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
     
     // Initialize database client
     
-    // Fetch posts with authors and tags from database
-    const postsWithRelations = await db
+    // Fetch posts with their single category from database
+    const postsWithCategories = await db
       .select({
         id: posts.id,
         title: posts.title,
@@ -21,13 +21,17 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         content: posts.content,
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
-        published: posts.published
+        published: posts.published,
+        categoryId: posts.categoryId,
+        categoryName: categories.name,
+        categorySlug: categories.slug,
       })
       .from(posts)
-      // Single user blog - no author join needed
+      .leftJoin(categories, eq(posts.categoryId, categories.id))
       .orderBy(desc(posts.createdAt));
 
-    const postsWithTags = postsWithRelations.map(post => ({
+    // Transform the data to maintain the expected format
+    const postsWithCategoriesTransformed = postsWithCategories.map(post => ({
       id: post.id,
       title: post.title,
       slug: post.slug,
@@ -36,10 +40,15 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
       coverImage: post.coverImage,
       createdAt: post.createdAt,
       published: post.published,
+      category: post.categoryId ? {
+        id: post.categoryId,
+        name: post.categoryName,
+        slug: post.categorySlug,
+      } : null,
       tags: [] // No tags in simplified schema
     }));
 
-    return data({ posts: postsWithTags });
+    return data({ posts: postsWithCategoriesTransformed });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return data({ error: "Failed to fetch posts" }, { status: 500 });
@@ -61,13 +70,14 @@ export async function action({ request, context }: { request: Request; context: 
       categories?: string;
       tags?: string;
       published?: boolean;
+      categoryId?: number;
       id?: string;
     };
 
     switch (request.method) {
       case "POST":
         // Handle post creation
-        const { title, content, excerpt, slug, categories, tags, published = true } = body;
+        const { title, content, excerpt, slug, categoryId, published = true } = body;
         
         // Validate required fields
         if (!title || !content || !excerpt || !slug) {
@@ -84,21 +94,24 @@ export async function action({ request, context }: { request: Request; context: 
     // In a real application, you'd get this from the authenticated user
     const defaultUserId = 1;
         
-        // Insert post into database
+        // Insert post into database with category
         const result = await db.insert(posts).values({
           title,
           slug,
           content,
           excerpt,
           authorId: defaultUserId,
+          categoryId: categoryId || null,
           published
         }).returning();
         
-        return data({ success: true, message: "Post created successfully", post: result[0] });
+        const newPost = result[0];
+        
+        return data({ success: true, message: "Post created successfully", post: newPost });
         
       case "PUT":
         // Handle post update
-        const { id: updateId, title: updateTitle, content: updateContent, excerpt: updateExcerpt, published: updatePublished } = body;
+        const { id: updateId, title: updateTitle, content: updateContent, excerpt: updateExcerpt, published: updatePublished, categoryId: updateCategoryId } = body;
         
         if (!updateId) {
           return data({ error: "Missing post ID" }, { status: 400 });
@@ -110,17 +123,21 @@ export async function action({ request, context }: { request: Request; context: 
           return data({ error: "Invalid post ID format" }, { status: 400 });
         }
         
+        // Update post with category
         const updateResult = await db.update(posts)
           .set({
             title: updateTitle,
             content: updateContent,
             excerpt: updateExcerpt,
-            published: updatePublished
+            published: updatePublished,
+            categoryId: updateCategoryId !== undefined ? updateCategoryId : undefined
           })
           .where(eq(posts.id, updateIdNum))
           .returning();
+        
+        const updatedPost = updateResult[0];
           
-        return data({ success: true, message: "Post updated successfully", post: updateResult[0] });
+        return data({ success: true, message: "Post updated successfully", post: updatedPost });
         
       case "DELETE":
         // Handle post deletion

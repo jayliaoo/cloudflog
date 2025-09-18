@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core';
 
 // Helper function for timestamp fields
 const timestampField = () => integer({ mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch('subsec') * 1000)`);
@@ -28,6 +28,7 @@ export const posts = sqliteTable('post', {
   excerpt: text(),
   coverImage: text(),
   authorId: integer().notNull().references(() => users.id, { onDelete: 'cascade' }),
+  categoryId: integer().references(() => categories.id, { onDelete: 'set null' }),
   published: integer({ mode: 'boolean' }).notNull().default(false),
   createdAt: timestampField(),
   updatedAt: timestampField(),
@@ -53,6 +54,17 @@ export const images = sqliteTable('image', {
   createdAt: timestampField(),
 });
 
+export const categories = sqliteTable('categories', {
+  id: integer().primaryKey({ autoIncrement: true }),
+  name: text().notNull().unique(),
+  slug: text().notNull().unique(),
+  description: text(),
+  createdAt: timestampField(),
+  updatedAt: timestampField(),
+});
+
+
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -68,3 +80,6 @@ export type NewComment = typeof comments.$inferInsert;
 
 export type Image = typeof images.$inferSelect;
 export type NewImage = typeof images.$inferInsert;
+
+export type Category = typeof categories.$inferSelect;
+export type NewCategory = typeof categories.$inferInsert;
