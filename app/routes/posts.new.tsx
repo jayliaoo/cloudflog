@@ -2,13 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, useLoaderData } from "react-router";
 import { data } from "react-router";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import MarkdownPreview from "~/components/blog/markdown-preview";
 import MarkdownToolbar from "~/components/blog/markdown-toolbar";
 import TagInput from "~/components/blog/tag-input";
 import { getDBClient } from "~/db";
-import { posts } from "~/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { posts, tags, postTags } from "~/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
@@ -37,17 +36,30 @@ export async function loader({ request, context }: { request: Request; context: 
         coverImage: posts.coverImage,
         authorId: posts.authorId,
         published: posts.published,
-
       })
       .from(posts)
       .where(eq(posts.id, postId))
       .limit(1);
     
+    // Fetch tags for the post
+    const postTagsData = await db
+      .select({
+        tagName: tags.name,
+      })
+      .from(postTags)
+      .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
+      .where(eq(postTags.postId, postId));
+    
     if (postData.length === 0) {
       return data({ error: "Post not found" }, { status: 404 });
     }
     
-    return data({ post: postData[0] });
+    return data({ 
+      post: {
+        ...postData[0],
+        tags: postTagsData.map(pt => pt.tagName)
+      }
+    });
   } catch (error) {
     console.error("Error loading post for editing:", error);
     return data({ error: "Failed to load post" }, { status: 500 });
@@ -88,13 +100,8 @@ export default function NewPost() {
         title: loaderData.post.title || "",
         slug: loaderData.post.slug || "",
         content: loaderData.post.content || "",
-        tags: [],
+        tags: loaderData.post.tags || [],
       });
-      // Set the tags if the post has any
-        if (loaderData.post.tags) {
-          const postTags = loaderData.post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-          setFormData(prev => ({ ...prev, tags: postTags }));
-        }
     }
   }, [isEditing, loaderData.post]);
 
@@ -114,7 +121,7 @@ export default function NewPost() {
         excerpt: excerpt,
         content: formData.content,
         published: true,
-        tags: formData.tags.join(", "),
+        tags: formData.tags,
         ...(isEditing && { id: editId }) // Include ID when editing
       };
 

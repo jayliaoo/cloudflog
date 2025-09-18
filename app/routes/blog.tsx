@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { CalendarDays, User, Clock, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts } from "~/db/schema";
+import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc, and, count, sql } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -22,13 +22,31 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         excerpt: posts.excerpt,
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
-        tags: posts.tags
       })
       .from(posts)
       .where(eq(posts.published, true))
       .orderBy(desc(posts.createdAt));
 
-    return data({ posts: postsData });
+    // Fetch tags for each post
+    const postsWithTags = await Promise.all(
+      postsData.map(async (post) => {
+        const postTagsData = await db
+          .select({
+            tagName: tags.name,
+            tagSlug: tags.slug,
+          })
+          .from(postTags)
+          .innerJoin(tags, eq(postTags.tagId, tags.id))
+          .where(eq(postTags.postId, post.id));
+
+        return {
+          ...post,
+          tags: postTagsData.map(pt => pt.tagName),
+        };
+      })
+    );
+
+    return data({ posts: postsWithTags });
   } catch (error) {
     console.error("Error fetching blog data from database:", error);
     
@@ -106,9 +124,9 @@ export default function BlogPage() {
                     </Link>
                   </Button>
                 </div>
-                {post.tags && (
+                {post.tags && post.tags.length > 0 && (
                   <div className="mt-4">
-                    {post.tags.split(',').map((tag) => tag.trim()).filter((tag) => tag).map((tag) => (
+                    {post.tags.map((tag) => (
                       <Badge key={tag} variant="secondary" className="mr-2 text-xs">
                         {tag}
                       </Badge>

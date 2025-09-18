@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { CalendarDays, User, ArrowLeft, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts } from "~/db/schema";
+import { posts, tags, postTags } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { marked } from 'marked';
 
@@ -24,7 +24,6 @@ export async function loader({ params, context }: { params: { slug: string }, co
         excerpt: posts.excerpt,
         coverImage: posts.coverImage,
         published: posts.published,
-        tags: posts.tags,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt
       })
@@ -38,8 +37,23 @@ export async function loader({ params, context }: { params: { slug: string }, co
 
     const post = postData[0];
 
+    // Fetch tags for the post
+    const postTagsData = await db
+      .select({
+        tagName: tags.name,
+        tagSlug: tags.slug,
+      })
+      .from(postTags)
+      .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
+      .where(eq(postTags.postId, post.id));
+
+    const postWithTags = {
+      ...post,
+      tags: postTagsData.map(pt => pt.tagName),
+    };
+
     return data({
-      post
+      post: postWithTags
     });
   } catch (error) {
     console.error("Error fetching post from database:", error);
@@ -109,9 +123,9 @@ export default function BlogPostPage() {
             </time>
           </div>
           
-          {post.tags && (
+          {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {post.tags.split(',').map((tag) => tag.trim()).filter((tag) => tag).map((tag) => (
+              {post.tags.map((tag) => (
                 <Badge key={tag} variant="secondary" className="text-sm">
                   <Tag className="mr-1 h-3 w-3" />
                   {tag}

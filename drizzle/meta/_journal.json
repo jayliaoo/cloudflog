@@ -15,6 +15,20 @@
       "when": 1758206941417,
       "tag": "0001_whole_dormammu",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1758208084708,
+      "tag": "0002_useful_gunslinger",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1758210444268,
+      "tag": "0003_wonderful_nehzno",
+      "breakpoints": true
     }
   ]
 }

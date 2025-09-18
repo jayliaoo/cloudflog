@@ -1,7 +1,7 @@
 import { data } from "react-router";
 import { getDBClient } from "~/db";
-import { posts } from "~/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { posts, tags, postTags } from "~/db/schema";
+import { eq, desc, sql, inArray } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
@@ -9,7 +9,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
   try {
     const db = getDBClient(env.D1);
     
-    // Fetch posts from database
+    // Fetch posts with their tags using many-to-many relationship
     const postsData = await db
       .select({
         id: posts.id,
@@ -20,25 +20,31 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
         published: posts.published,
-        tags: posts.tags,
       })
       .from(posts)
+      .where(eq(posts.published, true))
       .orderBy(desc(posts.createdAt));
 
-    // Transform the data to maintain the expected format
-    const postsTransformed = postsData.map(post => ({
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      excerpt: post.excerpt,
-      content: post.content,
-      coverImage: post.coverImage,
-      createdAt: post.createdAt,
-      published: post.published,
-      tags: post.tags ? post.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
-    }));
+    // Fetch tags for each post
+    const postsWithTags = await Promise.all(
+      postsData.map(async (post) => {
+        const postTagsData = await db
+          .select({
+            tagName: tags.name,
+            tagSlug: tags.slug,
+          })
+          .from(postTags)
+          .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
+          .where(eq(postTags.postId, post.id));
 
-    return data({ posts: postsTransformed });
+        return {
+          ...post,
+          tags: postTagsData.map(pt => pt.tagName),
+        };
+      })
+    );
+
+    return data({ posts: postsWithTags });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return data({ error: "Failed to fetch posts" }, { status: 500 });
@@ -57,7 +63,7 @@ export async function action({ request, context }: { request: Request; context: 
       content?: string;
       excerpt?: string;
       slug?: string;
-      tags?: string;
+      tags?: string[];
       published?: boolean;
       id?: string;
     };
@@ -65,7 +71,7 @@ export async function action({ request, context }: { request: Request; context: 
     switch (request.method) {
       case "POST":
         // Handle post creation
-        const { title, content, excerpt, slug, tags, published = true } = body;
+        const { title, content, excerpt, slug, tags: tagNames, published = true } = body;
         
         // Validate required fields
         if (!title || !content || !excerpt || !slug) {
@@ -82,18 +88,54 @@ export async function action({ request, context }: { request: Request; context: 
     // In a real application, you'd get this from the authenticated user
     const defaultUserId = 1;
         
-        // Insert post into database
-        const result = await db.insert(posts).values({
+        // Insert post into database first
+        const postResult = await db.insert(posts).values({
           title,
           slug,
           content,
           excerpt,
           authorId: defaultUserId,
-          tags: tags || null,
           published
         }).returning();
         
-        const newPost = result[0];
+        const newPost = postResult[0];
+        
+        // Handle tag associations
+        if (tagNames && Array.isArray(tagNames) && tagNames.length > 0) {
+          // Filter out empty tags and trim
+          const cleanTags = tagNames.map(tag => tag.trim()).filter(tag => tag);
+          
+          if (cleanTags.length > 0) {
+            // Create all tags (existing ones will be ignored due to unique constraint)
+            // Create tags one by one (simpler approach)
+            for (const tagName of cleanTags) {
+              try {
+                await db.insert(tags).values({
+                  name: tagName,
+                  slug: tagName.toLowerCase().replace(/\s+/g, '-')
+                });
+              } catch (error) {
+                // Ignore unique constraint violations - tag already exists
+              }
+            }
+            
+            // Create post-tag associations using slugs
+            const tagSlugs = cleanTags.map(tagName => tagName.toLowerCase().replace(/\s+/g, '-'));
+            const postTagData = tagSlugs.map(tagSlug => ({
+              postId: newPost.id,
+              tagSlug
+            }));
+            
+            try {
+              await db.insert(postTags).values(postTagData);
+            } catch (error) {
+              // Ignore any constraint violations
+              console.log("Some tag associations may already exist");
+            }
+          
+            console.log("Post created with tags:", cleanTags);
+          }
+        }
         
         return data({ success: true, message: "Post created successfully", post: newPost });
         
@@ -111,21 +153,82 @@ export async function action({ request, context }: { request: Request; context: 
           return data({ error: "Invalid post ID format" }, { status: 400 });
         }
         
-        // Update post
+        // Update post and handle tag associations
         const updateResult = await db.update(posts)
           .set({
             title: updateTitle,
             content: updateContent,
             excerpt: updateExcerpt,
-            published: updatePublished,
-            tags: updateTags !== undefined ? updateTags : undefined
+            published: updatePublished
           })
           .where(eq(posts.id, updateIdNum))
           .returning();
         
-        const updatedPost = updateResult[0];
+        const post = updateResult[0];
+        
+        // Handle tag associations if tags are provided
+        if (updateTags !== undefined) {
+          // Remove existing tag associations
+          await db.delete(postTags).where(eq(postTags.postId, updateIdNum));
           
-        return data({ success: true, message: "Post updated successfully", post: updatedPost });
+          // Add new tag associations if tags are provided
+          if (Array.isArray(updateTags) && updateTags.length > 0) {
+            // Filter out empty tags and trim
+            const cleanTags = updateTags.map(tag => tag.trim()).filter(tag => tag);
+            
+            if (cleanTags.length > 0) {
+              // Create all tags (existing ones will be ignored due to unique constraint)
+              // Create tags one by one (simpler approach)
+              for (const tagName of cleanTags) {
+                try {
+                  await db.insert(tags).values({
+                    name: tagName,
+                    slug: tagName.toLowerCase().replace(/\s+/g, '-')
+                  });
+                } catch (error) {
+                  // Ignore unique constraint violations - tag already exists
+                }
+              }
+              
+              // Create post-tag associations using slugs
+              const tagSlugs = cleanTags.map(tagName => tagName.toLowerCase().replace(/\s+/g, '-'));
+              const postTagData = tagSlugs.map(tagSlug => ({
+                postId: updateIdNum,
+                tagSlug
+              }));
+              
+              try {
+                await db.insert(postTags).values(postTagData);
+              } catch (error) {
+                // Ignore any constraint violations
+                console.log("Some tag associations may already exist");
+              }
+            }
+          }
+        }
+        
+        const updatedPost = post;
+        
+        // Fetch updated tags for the post to include in response
+        const updatedPostTags = await db
+          .select({
+            tagName: tags.name,
+            tagSlug: tags.slug,
+          })
+          .from(postTags)
+          .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
+          .where(eq(postTags.postId, updateIdNum));
+        
+        console.log(`Fetched tags for post ${updateIdNum} response:`, updatedPostTags);
+        
+        const postWithTags = {
+          ...updatedPost,
+          tags: updatedPostTags.map(pt => pt.tagName),
+        };
+        
+        console.log(`Returning post with tags for ${updateIdNum}:`, postWithTags.tags);
+          
+        return data({ success: true, message: "Post updated successfully", post: postWithTags });
         
       case "DELETE":
         // Handle post deletion
