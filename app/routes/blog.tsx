@@ -2,9 +2,9 @@ import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { CalendarDays, User, Clock } from "lucide-react";
+import { CalendarDays, User, Clock, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts } from "~/db/schema";
+import { posts, categories } from "~/db/schema";
 import { eq, desc, and, count, sql } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -12,7 +12,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
   const db = getDBClient(env.D1);
 
   try {
-    // Fetch all published posts
+    // Fetch all published posts with their categories
     const postsData = await db
       .select({
         id: posts.id,
@@ -20,9 +20,13 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         slug: posts.slug,
         excerpt: posts.excerpt,
         coverImage: posts.coverImage,
-        createdAt: posts.createdAt
+        createdAt: posts.createdAt,
+        categoryId: posts.categoryId,
+        categoryName: categories.name,
+        categorySlug: categories.slug
       })
       .from(posts)
+      .leftJoin(categories, eq(posts.categoryId, categories.id))
       .where(eq(posts.published, true))
       .orderBy(desc(posts.createdAt));
 
@@ -104,7 +108,17 @@ export default function BlogPage() {
                     </Link>
                   </Button>
                 </div>
-
+                {post.categoryId && (
+                  <div className="mt-4">
+                    <Link 
+                      to={`/blog/category/${post.categorySlug}`}
+                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      <Tag className="mr-1 h-3 w-3" />
+                      {post.categoryName}
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -122,6 +136,41 @@ export default function BlogPage() {
                 Welcome to my tech blog where I share insights on modern web development,
                 cloud technologies, and programming best practices.
               </p>
+            </CardContent>
+          </Card>
+
+          {/* Categories */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+                  <Link to="/blog/category/technology">
+                    <Tag className="mr-2 h-4 w-4" />
+                    Technology
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+                  <Link to="/blog/category/tutorial">
+                    <Tag className="mr-2 h-4 w-4" />
+                    Tutorial
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+                  <Link to="/blog/category/news">
+                    <Tag className="mr-2 h-4 w-4" />
+                    News
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+                  <Link to="/blog/category/backend">
+                    <Tag className="mr-2 h-4 w-4" />
+                    Backend
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
