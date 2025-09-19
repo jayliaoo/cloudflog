@@ -1,6 +1,6 @@
 import { getDBClient } from "~/db";
 import { users, sessions } from "~/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 // Simple session-based authentication for single-user blog
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
@@ -10,6 +10,7 @@ export interface User {
   name: string | null;
   email: string;
   image: string | null;
+  role: string;
 }
 
 export interface Session {
@@ -54,7 +55,8 @@ export async function getSession(sessionToken: string, env: Env): Promise<Sessio
       expires: sessions.expires,
       userName: users.name,
       userEmail: users.email,
-      userImage: users.image
+      userImage: users.image,
+      userRole: users.role
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
@@ -77,7 +79,8 @@ export async function getSession(sessionToken: string, env: Env): Promise<Sessio
       id: session.userId,
       name: session.userName,
       email: session.userEmail,
-      image: session.userImage
+      image: session.userImage,
+      role: session.userRole
     },
     expires: new Date(session.expires)
   };
@@ -184,12 +187,17 @@ export async function authenticateWithGitHub(code: string, env: Env): Promise<st
         })
         .where(eq(users.id, userId));
     } else {
+      // Check if this is the first user (they will be the owner)
+      const userCount = await db.select({ count: sql<number>`count(*)` }).from(users);
+      const isFirstUser = userCount[0].count === 0;
+      
       // Create new user - let auto-increment handle the ID
       const result = await db.insert(users).values({
         name: githubUser.name || githubUser.login,
         email: email,
         image: githubUser.avatar_url,
-        emailVerified: new Date()
+        emailVerified: new Date(),
+        role: isFirstUser ? 'owner' : 'reader'
       }).returning();
       userId = result[0].id;
     }

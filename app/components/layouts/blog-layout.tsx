@@ -2,6 +2,7 @@ import { Link, Outlet, Form } from "react-router";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink } from "~/components/ui/navigation-menu";
 import { Button } from "~/components/ui/button";
 import { useState } from "react";
+import { Search } from "lucide-react";
 
 interface User {
   id: number;
@@ -55,6 +56,22 @@ export default function BlogLayout({ children, user }: BlogLayoutProps) {
                 </NavigationMenuItem>
               </NavigationMenu>
             </div>
+            
+            {/* Search Bar */}
+            <div className="hidden md:flex flex-1 max-w-md mx-8">
+              <Form method="get" action="/search" className="w-full">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <input
+                    type="text"
+                    name="q"
+                    placeholder="Search posts..."
+                    className="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </Form>
+            </div>
+            
             <div className="flex items-center space-x-4">
               {user && (
                 <span className="text-sm text-gray-500 hidden md:block">
@@ -98,6 +115,25 @@ export default function BlogLayout({ children, user }: BlogLayoutProps) {
           {/* Mobile menu */}
           {isMenuOpen && (
             <div className="md:hidden border-t py-4">
+              {/* Mobile Search */}
+              <div className="px-3 pb-4">
+                <Form method="get" action="/search">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <input
+                      type="text"
+                      name="q"
+                      placeholder="Search posts..."
+                      className="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setIsMenuOpen(false);
+                        }
+                      }}
+                    />
+                  </div>
+                </Form>
+              </div>
               <nav className="flex flex-col space-y-2">
                 <Link to="/" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Home

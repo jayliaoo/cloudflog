@@ -10,6 +10,7 @@ export default [
   route("admin", "routes/admin.tsx"),
   route("tags", "routes/tags.tsx"),
   route("tag/:tagSlug", "routes/tag.$tagSlug.tsx"),
+  route("search", "routes/search.tsx"),
   route("api/posts", "routes/api.posts.ts"),
   route("api/tags", "routes/api.tags.ts"),
   route("api/images/:objectKey?", "routes/api.images.ts"),
@@ -19,5 +20,7 @@ export default [
   route("auth/error", "routes/auth.error.tsx"),
   route("auth/callback", "routes/auth/callback.tsx"),
   route("api/auth/*", "routes/api.auth.tsx"),
+  route("api/comments", "routes/api.comments.ts"),
+  route("api/comments/:id", "routes/api.comments.$id.ts"),
 
 ] satisfies RouteConfig;

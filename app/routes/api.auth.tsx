@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { authenticateWithGitHub } from "~/auth.server";
+import { authenticateWithGitHub, getCurrentUser } from "~/auth.server";
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -40,12 +40,14 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
+  const env = context.cloudflare.env as Env;
   const url = new URL(request.url);
   const path = url.pathname.replace('/api/auth/', '');
   
   if (path === 'session') {
     // Return current session info
-    return new Response(JSON.stringify({ user: null }), {
+    const user = await getCurrentUser(request, env);
+    return new Response(JSON.stringify({ user }), {
       headers: { 'Content-Type': 'application/json' }
     });
   }

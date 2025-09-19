@@ -12,6 +12,7 @@ export const users = sqliteTable('user', {
   email: text().notNull(),
   emailVerified: integer({ mode: 'timestamp_ms' }),
   image: text(),
+  role: text().notNull().default('reader'), // 'owner' or 'reader'
 });
 
 export const sessions = sqliteTable('session', {
@@ -36,9 +37,14 @@ export const posts = sqliteTable('post', {
 export const comments = sqliteTable('comment', {
   id: integer().primaryKey({ autoIncrement: true }),
   content: text().notNull(),
-  authorName: text().notNull(),
-  authorEmail: text().notNull(),
+  authorName: text(), // Optional for signed-in users
+  authorEmail: text(), // Optional for signed-in users
+  authorId: integer('author_id').references(() => users.id, { onDelete: 'set null' }), // Reference to user if signed in
   postId: integer().notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  parentId: integer('parent_id').references(() => comments.id, { onDelete: 'cascade' }),
+  editToken: text('edit_token'),
+  editedAt: integer('edited_at', { mode: 'timestamp_ms' }),
+  deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
   approved: integer({ mode: 'boolean' }).notNull().default(false),
   createdAt: timestampField(),
   updatedAt: timestampField(),

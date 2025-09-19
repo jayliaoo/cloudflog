@@ -16,6 +16,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     return redirect("/auth/signin");
   }
   
+  // Check if user is owner (admin access required)
+  if (user.role !== 'owner') {
+    return redirect("/"); // Redirect to home if not owner
+  }
+  
   // Get filter parameters from URL
   const url = new URL(request.url);
   const tagFilter = url.searchParams.get('tag');
@@ -142,6 +147,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
   const user = await getCurrentUser(request, env);
   if (!user) {
     return data({ error: "Unauthorized" }, { status: 401 });
+  }
+  
+  // Check if user is owner (admin access required)
+  if (user.role !== 'owner') {
+    return data({ error: "Forbidden - Admin access required" }, { status: 403 });
   }
   
   const formData = await request.formData();

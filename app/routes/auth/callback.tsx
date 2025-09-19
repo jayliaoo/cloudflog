@@ -44,6 +44,21 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     
     headers.append('Set-Cookie', cookieOptions.join('; '));
     
+    // Also set the next-auth cookie for compatibility
+    const nextAuthCookieOptions = [
+      `next-auth.session-token=${sessionToken}`,
+      'Path=/',
+      'HttpOnly',
+      'Max-Age=2592000', // 30 days
+      'SameSite=Lax'
+    ];
+    
+    if (env.NEXTAUTH_URL.startsWith('https://')) {
+      nextAuthCookieOptions.push('Secure');
+    }
+    
+    headers.append('Set-Cookie', nextAuthCookieOptions.join('; '));
+    
     // Use HTML redirect with meta refresh as fallback for better reliability
     return new Response(
       `<!DOCTYPE html>

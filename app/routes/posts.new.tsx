@@ -8,15 +8,27 @@ import TagInput from "~/components/blog/tag-input";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { eq } from "drizzle-orm";
+import { getCurrentUser } from "~/auth.server";
 
 export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
+  
+  // Check authentication and role
+  const user = await getCurrentUser(request, env);
+  if (!user) {
+    return data({ error: "Authentication required" }, { status: 401 });
+  }
+  
+  if (user.role !== 'owner') {
+    return data({ error: "Admin access required" }, { status: 403 });
+  }
+  
   const url = new URL(request.url);
   const editId = url.searchParams.get('edit');
   
   try {
     if (!editId) {
-      return data({ post: null });
+      return data({ post: null, user });
     }
     
     const db = getDBClient(env.D1);
@@ -58,7 +70,8 @@ export async function loader({ request, context }: { request: Request; context: 
       post: {
         ...postData[0],
         tags: postTagsData.map(pt => pt.tagName)
-      }
+      },
+      user
     });
   } catch (error) {
     console.error("Error loading post for editing:", error);

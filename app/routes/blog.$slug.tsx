@@ -5,15 +5,21 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { CalendarDays, User, ArrowLeft, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, tags, postTags } from "~/db/schema";
+import { posts, tags, postTags, comments } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { marked } from 'marked';
+import { CommentsSection } from "~/components/blog/comments-section";
+import { getCurrentUser } from "~/auth.server";
+import type { Route } from "./+types/blog.$slug";
 
-export async function loader({ params, context }: { params: { slug: string }, context: { cloudflare: { env: Env } } }) {
+export async function loader({ params, context, request }: Route.LoaderArgs) {
   const { env } = context.cloudflare;
   const db = getDBClient(env.D1);
 
   try {
+    // Fetch current user
+    const user = await getCurrentUser(request, env);
+
     // Fetch post by slug
     const postData = await db
       .select({
@@ -47,13 +53,22 @@ export async function loader({ params, context }: { params: { slug: string }, co
       .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
       .where(eq(postTags.postId, post.id));
 
+    // Fetch comments for the post
+    const postComments = await db
+      .select()
+      .from(comments)
+      .where(eq(comments.postId, post.id))
+      .orderBy(comments.createdAt);
+
     const postWithTags = {
       ...post,
       tags: postTagsData.map(pt => pt.tagName),
     };
 
     return data({
-      post: postWithTags
+      post: postWithTags,
+      comments: postComments,
+      user
     });
   } catch (error) {
     console.error("Error fetching post from database:", error);
@@ -83,7 +98,7 @@ export default function BlogPostPage() {
     );
   }
 
-  const { post } = loaderData;
+  const { post, comments, user } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -162,6 +177,13 @@ export default function BlogPostPage() {
           </Link>
         </Button>
       </nav>
+
+      {/* Comments Section */}
+      <CommentsSection 
+        postId={post.id} 
+        comments={comments}
+        user={user}
+      />
     </div>
   );
 }

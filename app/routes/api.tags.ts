@@ -2,6 +2,7 @@ import { data } from "react-router";
 import { getDBClient } from "~/db";
 import { tags } from "~/db/schema";
 import { like, desc } from "drizzle-orm";
+import { getCurrentUser } from "~/auth.server";
 
 export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
@@ -28,6 +29,17 @@ export async function loader({ request, context }: { request: Request; context: 
 
 export async function action({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
+  
+  // Check authentication and role for tag creation
+  const user = await getCurrentUser(request, env);
+  if (!user) {
+    return data({ error: "Authentication required" }, { status: 401 });
+  }
+  
+  if (user.role !== 'owner') {
+    return data({ error: "Admin access required" }, { status: 403 });
+  }
+  
   const db = getDBClient(env.D1);
 
   try {

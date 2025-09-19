@@ -21,6 +21,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
     return data({ error: "Unauthorized" }, { status: 401 });
   }
   
+  // Check if user is owner (admin access required for image uploads)
+  if (session.user.role !== 'owner') {
+    return data({ error: "Admin access required" }, { status: 403 });
+  }
+  
   const db = getDBClient(env.D1);
 
   const formData = await request.formData();
