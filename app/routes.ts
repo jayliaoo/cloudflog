@@ -8,6 +8,8 @@ export default [
   route("about", "routes/about.tsx"),
   route("contact", "routes/contact.tsx"),
   route("admin", "routes/admin.tsx"),
+  route("tags", "routes/tags.tsx"),
+  route("tag/:tagSlug", "routes/tag.$tagSlug.tsx"),
   route("api/posts", "routes/api.posts.ts"),
   route("api/tags", "routes/api.tags.ts"),
   route("api/images/:objectKey?", "routes/api.images.ts"),

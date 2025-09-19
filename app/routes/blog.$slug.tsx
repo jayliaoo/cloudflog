@@ -126,10 +126,12 @@ export default function BlogPostPage() {
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {post.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-sm">
-                  <Tag className="mr-1 h-3 w-3" />
-                  {tag}
-                </Badge>
+                <Link key={tag} to={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <Badge variant="secondary" className="text-sm hover:bg-secondary/80 cursor-pointer">
+                    <Tag className="mr-1 h-3 w-3" />
+                    {tag}
+                  </Badge>
+                </Link>
               ))}
             </div>
           )}

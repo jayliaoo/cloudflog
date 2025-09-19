@@ -39,6 +39,11 @@ export default function BlogLayout({ children, user }: BlogLayoutProps) {
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
+                  <Link to="/tags" className="px-3 py-2 text-sm font-medium hover:text-primary">
+                    Tags
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
                   <Link to="/about" className="px-3 py-2 text-sm font-medium hover:text-primary">
                     About
                   </Link>
@@ -99,6 +104,9 @@ export default function BlogLayout({ children, user }: BlogLayoutProps) {
                 </Link>
                 <Link to="/blog" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Blog
+                </Link>
+                <Link to="/tags" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
+                  Tags
                 </Link>
                 <Link to="/about" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   About

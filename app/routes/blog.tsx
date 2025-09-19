@@ -155,9 +155,11 @@ export default function BlogPage() {
                 {post.tags && post.tags.length > 0 && (
                   <div className="mt-4">
                     {post.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="mr-2 text-xs">
-                        {tag}
-                      </Badge>
+                      <Link key={tag} to={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}>
+                        <Badge variant="secondary" className="mr-2 text-xs hover:bg-secondary/80 cursor-pointer">
+                          {tag}
+                        </Badge>
+                      </Link>
                     ))}
                   </div>
                 )}
