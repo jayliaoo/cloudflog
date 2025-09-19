@@ -89,6 +89,7 @@ export default function NewPost() {
     slug: "",
     content: "",
     tags: [],
+    published: false,
   });
 
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -101,11 +102,12 @@ export default function NewPost() {
         slug: loaderData.post.slug || "",
         content: loaderData.post.content || "",
         tags: loaderData.post.tags || [],
+        published: loaderData.post.published || false,
       });
     }
   }, [isEditing, loaderData.post]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -114,13 +116,13 @@ export default function NewPost() {
       // Generate excerpt from content
       const excerpt = generateExcerpt(formData.content);
       
-      // Create JSON payload
+      // Create JSON payload for draft
       const jsonData = {
         title: formData.title,
         slug: formData.slug,
         excerpt: excerpt,
         content: formData.content,
-        published: true,
+        published: false, // Save as draft
         tags: formData.tags,
         ...(isEditing && { id: editId }) // Include ID when editing
       };
@@ -135,7 +137,48 @@ export default function NewPost() {
 
       if (!response.ok) {
         const errorData = await response.json() as { error?: string };
-        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} post`);
+        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} draft`);
+      }
+
+      navigate("/admin");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePublish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Generate excerpt from content
+      const excerpt = generateExcerpt(formData.content);
+      
+      // Create JSON payload for published post
+      const jsonData = {
+        title: formData.title,
+        slug: formData.slug,
+        excerpt: excerpt,
+        content: formData.content,
+        published: true, // Publish the post
+        tags: formData.tags,
+        ...(isEditing && { id: editId }) // Include ID when editing
+      };
+
+      const response = await fetch("/api/posts", {
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jsonData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json() as { error?: string };
+        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'publish'} post`);
       }
 
       navigate("/admin");
@@ -196,7 +239,7 @@ export default function NewPost() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form className="space-y-6">
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-2">
                 Title *
@@ -310,13 +353,27 @@ export default function NewPost() {
             </div>
 
             <div className="flex gap-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? (isEditing ? "Updating..." : "Creating...") : (isEditing ? "Update Post" : "Create Post")}
+              <Button 
+                type="button" 
+                onClick={handlePublish} 
+                disabled={loading}
+                variant="default"
+              >
+                {loading ? (isEditing ? "Updating..." : "Publishing...") : (isEditing ? "Update Post" : "Publish Post")}
+              </Button>
+              <Button 
+                type="button" 
+                onClick={handleSaveDraft} 
+                disabled={loading}
+                variant="secondary"
+              >
+                {loading ? "Saving Draft..." : (isEditing ? "Save as Draft" : "Save Draft")}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate("/admin")}
+                disabled={loading}
               >
                 Cancel
               </Button>

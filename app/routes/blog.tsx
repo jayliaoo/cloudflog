@@ -8,12 +8,35 @@ import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc, and, count, sql } from "drizzle-orm";
 
-export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
+export async function loader({ 
+  context, 
+  request 
+}: { 
+  context: { cloudflare: { env: Env } },
+  request: Request
+}) {
   const { env } = context.cloudflare;
   const db = getDBClient(env.D1);
 
   try {
-    // Fetch all published posts
+    // Parse pagination parameters from URL
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const postsPerPage = 10;
+    const offset = (page - 1) * postsPerPage;
+
+    // Get total count of published posts
+    const totalCountResult = await db
+      .select({
+        count: count()
+      })
+      .from(posts)
+      .where(eq(posts.published, true));
+    
+    const totalCount = totalCountResult[0].count;
+    const totalPages = Math.ceil(totalCount / postsPerPage);
+
+    // Fetch paginated published posts
     const postsData = await db
       .select({
         id: posts.id,
@@ -25,7 +48,9 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
       })
       .from(posts)
       .where(eq(posts.published, true))
-      .orderBy(desc(posts.createdAt));
+      .orderBy(desc(posts.createdAt))
+      .limit(postsPerPage)
+      .offset(offset);
 
     // Fetch tags for each post
     const postsWithTags = await Promise.all(
@@ -36,7 +61,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
             tagSlug: tags.slug,
           })
           .from(postTags)
-          .innerJoin(tags, eq(postTags.tagId, tags.id))
+          .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
           .where(eq(postTags.postId, post.id));
 
         return {
@@ -46,7 +71,12 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
       })
     );
 
-    return data({ posts: postsWithTags });
+    return data({ 
+      posts: postsWithTags,
+      currentPage: page,
+      totalPages,
+      totalCount
+    });
   } catch (error) {
     console.error("Error fetching blog data from database:", error);
     
@@ -75,7 +105,7 @@ export default function BlogPage() {
     );
   }
 
-  const { posts } = loaderData;
+  const { posts, currentPage, totalPages, totalCount } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -98,9 +128,7 @@ export default function BlogPage() {
                   className="aspect-video object-cover"
                 />
               )}
-              {!post.coverImage && (
-                <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600" />
-              )}
+             
               <CardHeader>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                   <CalendarDays className="h-4 w-4" />
@@ -136,6 +164,66 @@ export default function BlogPage() {
               </CardContent>
             </Card>
           ))}
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t pt-6">
+              <div className="text-sm text-muted-foreground">
+                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalCount)} of {totalCount} posts
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  to={`?page=${Math.max(1, currentPage - 1)}`}
+                  className={`px-3 py-2 text-sm border rounded-md ${
+                    currentPage === 1 
+                      ? 'pointer-events-none opacity-50' 
+                      : 'hover:bg-accent'
+                  }`}
+                >
+                  Previous
+                </Link>
+                
+                {/* Page numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Link
+                      key={pageNum}
+                      to={`?page=${pageNum}`}
+                      className={`px-3 py-2 text-sm border rounded-md ${
+                        currentPage === pageNum
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-accent'
+                      }`}
+                    >
+                      {pageNum}
+                    </Link>
+                  );
+                })}
+                
+                <Link
+                  to={`?page=${Math.min(totalPages, currentPage + 1)}`}
+                  className={`px-3 py-2 text-sm border rounded-md ${
+                    currentPage === totalPages 
+                      ? 'pointer-events-none opacity-50' 
+                      : 'hover:bg-accent'
+                  }`}
+                >
+                  Next
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
