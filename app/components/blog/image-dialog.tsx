@@ -123,7 +123,6 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
               <div className="flex justify-end space-x-2 pt-2">
                 <Button
                   type="button"
-                  variant="outline"
                   onClick={() => onOpenChange(false)}
                 >
                   Cancel
@@ -182,7 +181,6 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
               <div className="flex justify-end space-x-2 pt-2">
                 <Button
                   type="button"
-                  variant="outline"
                   onClick={() => onOpenChange(false)}
                 >
                   Cancel

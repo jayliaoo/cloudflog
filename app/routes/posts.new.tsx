@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, useLoaderData } from "react-router";
 import { data } from "react-router";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 import MarkdownPreview from "~/components/blog/markdown-preview";
 import MarkdownToolbar from "~/components/blog/markdown-toolbar";
 import TagInput from "~/components/blog/tag-input";
@@ -257,14 +259,13 @@ export default function NewPost() {
               <label htmlFor="title" className="block text-sm font-medium mb-2">
                 Title *
               </label>
-              <input
+              <Input
                 type="text"
                 id="title"
                 name="title"
                 required
                 value={formData.title}
                 onChange={handleChange}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Enter your blog title"
               />
             </div>
@@ -273,14 +274,13 @@ export default function NewPost() {
               <label htmlFor="slug" className="block text-sm font-medium mb-2">
                 Slug *
               </label>
-              <input
+              <Input
                 type="text"
                 id="slug"
                 name="slug"
                 required
                 value={formData.slug}
                 onChange={handleChange}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="my-awesome-blog-post"
               />
               <p className="text-muted-foreground mt-1 text-xs">
@@ -296,28 +296,22 @@ export default function NewPost() {
               </label>
               <div className="border border-input rounded-md overflow-hidden">
                 <div className="flex border-b border-input">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setActiveTab('edit')}
-                    className={`px-4 py-2 text-sm font-medium ${
-                      activeTab === 'edit'
-                        ? 'bg-background text-foreground border-b-2 border-primary'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
+                    variant={activeTab === 'edit' ? 'default' : 'secondary'}
+                    size="sm"
                   >
                     Edit
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setActiveTab('preview')}
-                    className={`px-4 py-2 text-sm font-medium ${
-                      activeTab === 'preview'
-                        ? 'bg-background text-foreground border-b-2 border-primary'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
+                    variant={activeTab === 'preview' ? 'default' : 'secondary'}
+                    size="sm"
                   >
                     Preview
-                  </button>
+                  </Button>
                 </div>
                 <div className="p-4">
                   {activeTab === 'edit' ? (
@@ -328,7 +322,7 @@ export default function NewPost() {
                         content={formData.content}
                         setContent={(content) => setFormData(prev => ({ ...prev, content }))}
                       />
-                      <textarea
+                      <Textarea
                         ref={contentTextareaRef}
                         id="content"
                         name="content"
@@ -336,8 +330,8 @@ export default function NewPost() {
                         rows={15}
                         value={formData.content}
                         onChange={handleChange}
-                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-2"
                         placeholder="Write your blog content here..."
+                        className="mt-2"
                       />
                     </>
                   ) : (
@@ -384,7 +378,6 @@ export default function NewPost() {
               </Button>
               <Button
                 type="button"
-                variant="outline"
                 onClick={() => navigate("/admin")}
                 disabled={loading}
               >

@@ -11,7 +11,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import BlogLayout from "~/components/layouts/blog-layout";
-import { getCurrentUser } from "~/auth.server";
+import { getCurrentUser, getOwnerUser } from "~/auth.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -29,7 +29,8 @@ export const links: Route.LinksFunction = () => [
 export async function loader({ request, context }: Route.LoaderArgs) {
   const env = context.cloudflare.env as Env;
   const user = await getCurrentUser(request, env);
-  return { user };
+  const ownerUser = await getOwnerUser(env);
+  return { user, ownerUser };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -51,10 +52,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, ownerUser } = useLoaderData<typeof loader>();
   
   return (
-    <BlogLayout user={user}>
+    <BlogLayout user={user} ownerUser={ownerUser}>
       <Outlet />
     </BlogLayout>
   );

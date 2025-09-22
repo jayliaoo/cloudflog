@@ -86,7 +86,7 @@ app/
 - Search functionality
 - Post excerpts and metadata
 
-### Blog Post (`/blog/:slug`)
+### Blog Post (`/posts/:slug`)
 - Full post content with markdown support
 - Author information
 - Related posts

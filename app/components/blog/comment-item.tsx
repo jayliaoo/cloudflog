@@ -128,9 +128,9 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
 
   if (comment.deletedAt) {
     return (
-      <Card className={`mb-4 ${depth > 0 ? "ml-8 border-l-4 border-l-gray-300" : ""}`}>
+      <Card className={`mb-4 ${depth > 0 ? "ml-8 border-l-4 border-l-border" : ""}`}>
         <CardContent className="py-4">
-          <p className="text-gray-500 italic">This comment has been deleted.</p>
+          <p className="text-muted-foreground italic">This comment has been deleted.</p>
         </CardContent>
       </Card>
     );
@@ -138,16 +138,16 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
 
   return (
     <>
-      <Card className={`mb-4 ${depth > 0 ? `ml-${Math.min(depth * 8, 32)} border-l-4 border-l-blue-300` : ""}`}>
+      <Card className={`mb-4 ${depth > 0 ? `ml-${Math.min(depth * 8, 32)} border-l-4 border-l-primary/30` : ""}`}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <h4 className="font-semibold text-sm">{comment.authorName}</h4>
-              <span className="text-gray-500 text-xs">
+              <span className="text-muted-foreground text-xs">
                 {format(new Date(comment.createdAt), "MMM d, yyyy 'at' h:mm a")}
               </span>
               {comment.editedAt && (
-                <span className="text-gray-400 text-xs">(edited)</span>
+                <span className="text-muted-foreground/70 text-xs">(edited)</span>
               )}
             </div>
             
@@ -167,7 +167,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
                       variant="ghost"
                       size="sm"
                       onClick={handleDelete}
-                      className="text-xs text-red-600 hover:text-red-700"
+                      className="text-xs text-destructive hover:text-destructive/80"
                     >
                       Delete
                     </Button>
@@ -192,7 +192,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
           {isEditing ? (
             <div className="space-y-3">
               {editError && (
-                <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
+                <div className="text-destructive text-sm bg-destructive/10 p-2 rounded">
                   {editError}
                 </div>
               )}
@@ -231,7 +231,6 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </Button>
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={handleCancelEdit}
                   disabled={isSubmitting}
@@ -242,7 +241,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
             </div>
           ) : (
             <div className="prose prose-sm max-w-none">
-              <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+              <p className="text-foreground whitespace-pre-wrap">{comment.content}</p>
             </div>
           )}
         </CardContent>

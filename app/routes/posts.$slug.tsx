@@ -10,7 +10,7 @@ import { eq } from "drizzle-orm";
 import { marked } from 'marked';
 import { CommentsSection } from "~/components/blog/comments-section";
 import { getCurrentUser } from "~/auth.server";
-import type { Route } from "./+types/blog.$slug";
+import type { Route } from "./+types/posts.$slug";
 
 export async function loader({ params, context, request }: Route.LoaderArgs) {
   const { env } = context.cloudflare;
@@ -67,7 +67,7 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
 
     return data({
       post: postWithTags,
-      comments: postComments,
+      comments: postComments as Comment[],
       user
     });
   } catch (error) {
@@ -90,8 +90,8 @@ export default function BlogPostPage() {
           <p className="text-lg text-muted-foreground mb-4">
             Unable to load the requested blog post at this time.
           </p>
-          <Button variant="outline" size="lg" asChild>
-            <Link to="/blog">Back to Blog</Link>
+          <Button size="lg" asChild>
+            <Link to="/posts">Back to Posts</Link>
           </Button>
         </div>
       </div>
@@ -105,9 +105,9 @@ export default function BlogPostPage() {
       {/* Back Button */}
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/blog">
+          <Link to="/posts">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blog
+            Back to Posts
           </Link>
         </Button>
       </div>
@@ -164,14 +164,14 @@ export default function BlogPostPage() {
 
       {/* Navigation */}
       <nav className="mt-12 flex items-center justify-between">
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/blog">
+        <Button variant="secondary" size="sm" asChild>
+          <Link to="/posts">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Previous Post
           </Link>
         </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/blog">
+        <Button variant="secondary" size="sm" asChild>
+          <Link to="/posts">
             Next Post
             <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
           </Link>

@@ -1,5 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { redirect, useLoaderData } from "react-router";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -53,43 +55,42 @@ export default function SignIn() {
   const { error, errorMessage } = useLoaderData<typeof loader>();
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="max-w-md w-full">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl">
             Sign in to your blog
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          </CardTitle>
+          <CardDescription>
             Use your GitHub account to access the admin panel
-          </p>
-        </div>
-        
-        {error && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Authentication Error
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{errorMessage}</p>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="rounded-md bg-destructive/10 p-4 mb-6">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-destructive">
+                    Authentication Error
+                  </h3>
+                  <div className="mt-2 text-sm text-destructive/80">
+                    <p>{errorMessage}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-        
-        <div className="mt-8 space-y-6">
+          )}
+          
           <form method="post" action="/auth/signin">
-            <button
+            <Button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              className="w-full"
             >
               Sign in with GitHub
-            </button>
+            </Button>
           </form>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

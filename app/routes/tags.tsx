@@ -46,7 +46,7 @@ export default function TagsPage() {
           <p className="text-lg text-muted-foreground mb-4">
             Unable to load tags at this time.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Please try refreshing the page or check back later.
           </p>
         </div>

@@ -139,7 +139,7 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
         ) : (
           <Form onSubmit={handleSubmit} className="space-y-4">
             {errors.submit && (
-              <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md">
+              <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">
                 {errors.submit}
               </div>
             )}
@@ -149,12 +149,12 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
                 placeholder={isReply ? "Write your reply..." : "Write your comment..."}
                 value={formData.content}
                 onChange={(e) => handleInputChange("content", e.target.value)}
-                className={errors.content ? "border-red-500" : ""}
+                className={errors.content ? "border-destructive" : ""}
                 rows={4}
                 disabled={isSubmitting}
               />
               {errors.content && (
-                <p className="text-red-600 text-sm mt-1">{errors.content}</p>
+                <p className="text-destructive text-sm mt-1">{errors.content}</p>
               )}
             </div>
             
@@ -163,7 +163,7 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
                 {isSubmitting ? "Submitting..." : (isReply ? "Post Reply" : "Post Comment")}
               </Button>
               {onCancel && (
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                <Button type="button" onClick={onCancel} disabled={isSubmitting}>
                   Cancel
                 </Button>
               )}

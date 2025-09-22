@@ -173,7 +173,7 @@ export default function TagPage() {
                 <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
               </div>
               <CardTitle>
-                <Link to={`/blog/${post.slug}`} className="hover:text-primary">
+                <Link to={`/posts/${post.slug}`} className="hover:text-primary">
                   {post.title}
                 </Link>
               </CardTitle>
@@ -183,8 +183,8 @@ export default function TagPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <Button variant="outline" size="sm" asChild>
-                  <Link to={`/blog/${post.slug}`}>
+                <Button size="sm" asChild>
+                  <Link to={`/posts/${post.slug}`}>
                     Read More
                     <Clock className="ml-2 h-4 w-4" />
                   </Link>
@@ -272,7 +272,7 @@ export default function TagPage() {
             There are no posts tagged with "{currentTag.name}" yet.
           </p>
           <Button asChild>
-            <Link to="/blog">Browse All Posts</Link>
+            <Link to="/posts">Browse All Posts</Link>
           </Button>
         </div>
       )}

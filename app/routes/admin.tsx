@@ -5,6 +5,9 @@ import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { desc, eq, inArray } from "drizzle-orm";
 import { Form, Link } from "react-router";
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
+import { Card, CardContent } from "~/components/ui/card";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -200,29 +203,29 @@ export default function Admin({ loaderData }: { loaderData: any }) {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-card shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           </div>
         
         {/* Active Filters Display */}
         {(currentTag || currentStatus) && (
           <div className="mb-4 flex items-center space-x-2">
-            <span className="text-sm text-gray-500">Filtered by:</span>
+            <span className="text-sm text-muted-foreground">Filtered by:</span>
             {currentStatus && currentStatus !== 'all' && (
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground">
                 Status: {currentStatus === 'published' ? 'Published' : 'Draft'}
               </span>
             )}
             {currentTag && (
-              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-primary/10 text-primary">
                 Tag: {allTags.find(t => t.slug === currentTag)?.name || currentTag}
               </span>
             )}
-            <span className="text-sm text-gray-500">({posts.length} posts)</span>
+            <span className="text-sm text-muted-foreground">({posts.length} posts)</span>
           </div>
         )}
         </div>
@@ -231,38 +234,39 @@ export default function Admin({ loaderData }: { loaderData: any }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">Total Posts</dt>
-              <dd className="mt-1 text-3xl font-semibold text-gray-900">{posts.length}</dd>
-            </div>
-          </div>
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">Published Posts</dt>
-              <dd className="mt-1 text-3xl font-semibold text-gray-900">
+          <Card>
+            <CardContent className="px-4 py-5 sm:p-6">
+              <dt className="text-sm font-medium text-muted-foreground truncate">Total Posts</dt>
+              <dd className="mt-1 text-3xl font-semibold">{posts.length}</dd>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="px-4 py-5 sm:p-6">
+              <dt className="text-sm font-medium text-muted-foreground truncate">Published Posts</dt>
+              <dd className="mt-1 text-3xl font-semibold">
                 {posts.filter(post => post.published).length}
               </dd>
-            </div>
-          </div>
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-gray-500 truncate">Draft Posts</dt>
-              <dd className="mt-1 text-3xl font-semibold text-gray-900">
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="px-4 py-5 sm:p-6">
+              <dt className="text-sm font-medium text-muted-foreground truncate">Draft Posts</dt>
+              <dd className="mt-1 text-3xl font-semibold">
                 {posts.filter(post => !post.published).length}
               </dd>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Actions and Filters */}
         <div className="mb-8 flex flex-wrap items-center gap-4">
-          <Link
-            to="/posts/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          <Button
+            asChild
           >
-            Create New Post
-          </Link>
+            <Link to="/posts/new">
+              Create New Post
+            </Link>
+          </Button>
           
           {/* Filter Controls */}
           <div className="flex items-center space-x-4">
@@ -279,7 +283,7 @@ export default function Admin({ loaderData }: { loaderData: any }) {
                 }
                 window.location.href = url.toString();
               }}
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="all">All Posts</option>
               <option value="published">Published Only</option>
@@ -299,7 +303,7 @@ export default function Admin({ loaderData }: { loaderData: any }) {
                 }
                 window.location.href = url.toString();
               }}
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">All Tags</option>
               {allTags.map((tag) => (
@@ -311,57 +315,59 @@ export default function Admin({ loaderData }: { loaderData: any }) {
             
             {/* Clear Filters */}
             {(currentTag || currentStatus) && (
-              <Link
-                to="/admin"
-                className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              <Button
+                size="sm"
+                asChild
               >
-                Clear Filters
-              </Link>
+                <Link to="/admin">
+                  Clear Filters
+                </Link>
+              </Button>
             )}
           </div>
         </div>
 
         {/* Posts List */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
+        <Card>
+          <ul className="divide-y divide-border">
             {posts.map((post) => (
               <li key={post.id}>
                 <div className="px-4 py-4 sm:px-6">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center">
-                        <h3 className="text-lg font-medium text-gray-900 truncate">
+                        <h3 className="text-lg font-medium truncate">
                           {post.title}
                         </h3>
-                        <span
-                          className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            post.published
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}
+                        <Badge
+                          variant={post.published ? "default" : "secondary"}
+                          className="ml-2"
                         >
                           {post.published ? 'Published' : 'Draft'}
-                        </span>
+                        </Badge>
                       </div>
                       {post.excerpt && (
-                        <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
                           {post.excerpt}
                         </p>
                       )}
                       {post.tags && post.tags.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {post.tags.map((tag: string) => (
-                            <Link
+                            <Badge
                               key={tag}
-                              to={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}
-                              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer"
+                              variant="outline"
+                              className="cursor-pointer hover:bg-accent"
+                              asChild
                             >
-                              {tag}
-                            </Link>
+                              <Link to={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}>
+                                {tag}
+                              </Link>
+                            </Badge>
                           ))}
                         </div>
                       )}
-                      <p className="mt-2 text-sm text-gray-400">
+                      <p className="mt-2 text-sm text-muted-foreground">
                         Created: {new Date(post.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -370,43 +376,50 @@ export default function Admin({ loaderData }: { loaderData: any }) {
                         <Form method="post" className="inline">
                           <input type="hidden" name="intent" value="publish" />
                           <input type="hidden" name="postId" value={post.id} />
-                          <button
+                          <Button
                             type="submit"
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            size="sm"
+                            variant="default"
                           >
                             Publish
-                          </button>
+                          </Button>
                         </Form>
                       ) : (
                         <Form method="post" className="inline">
                           <input type="hidden" name="intent" value="unpublish" />
                           <input type="hidden" name="postId" value={post.id} />
-                          <button
+                          <Button
                             type="submit"
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                            size="sm"
+                            variant="secondary"
                           >
                             Unpublish
-                          </button>
+                          </Button>
                         </Form>
                       )}
-                      <Link
-                        to={`/posts/new?edit=${post.id}`}
-                        className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      <Button
+                        size="sm"
+                        asChild
                       >
-                        Edit
-                      </Link>
-                      <Link
-                        to={`/blog/${post.slug}`}
-                        className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        <Link to={`/posts/new?edit=${post.id}`}>
+                          Edit
+                        </Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        asChild
                       >
-                        View
-                      </Link>
+                        <Link to={`/posts/${post.slug}`}>
+                          View
+                        </Link>
+                      </Button>
                       <Form method="post" className="inline">
                         <input type="hidden" name="intent" value="delete" />
                         <input type="hidden" name="postId" value={post.id} />
-                        <button
+                        <Button
                           type="submit"
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          size="sm"
+                          variant="destructive"
                           onClick={(e) => {
                             if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
                               e.preventDefault();
@@ -414,7 +427,7 @@ export default function Admin({ loaderData }: { loaderData: any }) {
                           }}
                         >
                           Delete
-                        </button>
+                        </Button>
                       </Form>
                     </div>
                   </div>
@@ -422,29 +435,33 @@ export default function Admin({ loaderData }: { loaderData: any }) {
               </li>
             ))}
           </ul>
-        </div>
+        </Card>
 
         {posts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No posts yet. Create your first post!</p>
-          </div>
+          <Card>
+            <CardContent className="text-center py-12">
+              <p className="text-muted-foreground">No posts yet. Create your first post!</p>
+            </CardContent>
+          </Card>
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-8 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-muted-foreground">
               Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalPosts)} of {totalPosts} posts
             </div>
             <div className="flex items-center space-x-2">
               {/* Previous Page */}
               {currentPage > 1 && (
-                <Link
-                  to={`/admin?page=${currentPage - 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
+                <Button
+                size="sm"
+                asChild
+              >
+                <Link to={`/admin?page=${currentPage - 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
                   Previous
                 </Link>
+              </Button>
               )}
               
               {/* Page Numbers */}
@@ -462,29 +479,30 @@ export default function Admin({ loaderData }: { loaderData: any }) {
                   }
                   
                   return (
-                    <Link
+                    <Button
                       key={pageNum}
-                      to={`/admin?page=${pageNum}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}
-                      className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                        pageNum === currentPage
-                          ? 'bg-blue-600 text-white border border-blue-600'
-                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                      } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                      variant={pageNum === currentPage ? "default" : "outline"}
+                      size="sm"
+                      asChild
                     >
-                      {pageNum}
-                    </Link>
+                      <Link to={`/admin?page=${pageNum}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
+                        {pageNum}
+                      </Link>
+                    </Button>
                   );
                 })}
               </div>
               
               {/* Next Page */}
               {currentPage < totalPages && (
-                <Link
-                  to={`/admin?page=${currentPage + 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
+                <Button
+                size="sm"
+                asChild
+              >
+                <Link to={`/admin?page=${currentPage + 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
                   Next
                 </Link>
+              </Button>
               )}
             </div>
           </div>

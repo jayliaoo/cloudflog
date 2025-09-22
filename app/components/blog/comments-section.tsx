@@ -119,14 +119,14 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
           
           {isLoading && (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Loading comments...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-muted-foreground">Loading comments...</p>
             </div>
           )}
           
           {!isLoading && commentTree.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-600">No comments yet. Be the first to comment!</p>
+              <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
             </div>
           )}
           

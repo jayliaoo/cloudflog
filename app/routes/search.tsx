@@ -149,15 +149,15 @@ export default function SearchPage() {
         {/* Search Form */}
         <Form method="get" className="max-w-2xl">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
             <input
               type="text"
               name="q"
               defaultValue={query}
               placeholder="Search posts by title or content..."
-              className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10"
             />
-            <Button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2">
+            <Button type="submit" variant="default" className="absolute right-2 top-1/2 transform -translate-y-1/2">
               Search
             </Button>
           </div>
@@ -172,21 +172,21 @@ export default function SearchPage() {
       
       {/* Error State */}
       {error && (
-        <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">{error}</p>
+        <div className="mb-8 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-destructive">{error}</p>
         </div>
       )}
       
       {/* No Results */}
       {query && posts.length === 0 && !error && (
         <div className="text-center py-12">
-          <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No results found</h3>
-          <p className="text-gray-500 mb-4">
+          <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">No results found</h3>
+          <p className="text-muted-foreground mb-4">
             No posts match your search for "{query}". Try different keywords or browse all posts.
           </p>
-          <Button variant="outline" asChild>
-            <Link to="/blog">Browse All Posts</Link>
+          <Button asChild>
+            <Link to="/posts">Browse All Posts</Link>
           </Button>
         </div>
       )}
@@ -210,7 +210,7 @@ export default function SearchPage() {
                   <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 <CardTitle>
-                  <Link to={`/blog/${post.slug}`} className="hover:text-primary">
+                  <Link to={`/posts/${post.slug}`} className="hover:text-primary">
                     {post.title}
                   </Link>
                 </CardTitle>
@@ -221,8 +221,8 @@ export default function SearchPage() {
               
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/blog/${post.slug}`}>
+                  <Button size="sm" asChild>
+                    <Link to={`/posts/${post.slug}`}>
                       Read More
                       <Clock className="ml-2 h-4 w-4" />
                     </Link>

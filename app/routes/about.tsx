@@ -72,7 +72,7 @@ export default function AboutPage() {
                 Feel free to reach out if you have any questions or just want to chat about technology.
               </p>
               <div className="space-y-3">
-                <Button variant="outline" className="w-full justify-start" asChild>
+                <Button className="w-full justify-start" asChild>
                   <a href="mailto:hello@example.com">
                     <Mail className="mr-2 h-4 w-4" />
                     hello@example.com
@@ -88,25 +88,25 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" asChild>
+                <Button variant="secondary" asChild>
                   <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer">
                     <Github className="mr-2 h-4 w-4" />
                     GitHub
                   </a>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="secondary" asChild>
                   <a href="https://twitter.com/yourusername" target="_blank" rel="noopener noreferrer">
                     <Twitter className="mr-2 h-4 w-4" />
                     Twitter
                   </a>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="secondary" asChild>
                   <a href="https://linkedin.com/in/yourusername" target="_blank" rel="noopener noreferrer">
                     <Linkedin className="mr-2 h-4 w-4" />
                     LinkedIn
                   </a>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="secondary" asChild>
                   <a href="/rss.xml" target="_blank" rel="noopener noreferrer">
                     <Mail className="mr-2 h-4 w-4" />
                     RSS Feed

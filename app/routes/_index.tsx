@@ -80,7 +80,7 @@ export default function HomePage() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Unable to load content at this time. Please try refreshing the page.
           </p>
-          <Button variant="outline" size="lg" asChild>
+          <Button size="lg" asChild>
             <Link to="/about">About Me</Link>
           </Button>
         </div>
@@ -103,12 +103,12 @@ export default function HomePage() {
         </p>
         <div className="flex gap-4 justify-center">
           <Button size="lg" asChild>
-            <Link to="/blog">
-              Read Blog
+            <Link to="/posts">
+              Read Posts
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="lg" asChild>
+          <Button variant="secondary" size="lg" asChild>
             <Link to="/about">About Me</Link>
           </Button>
         </div>
@@ -118,8 +118,8 @@ export default function HomePage() {
       <section className="py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Featured Posts</h2>
-          <Button variant="outline" asChild>
-            <Link to="/blog">View All Posts</Link>
+          <Button variant="secondary" asChild>
+            <Link to="/posts">View All Posts</Link>
           </Button>
         </div>
         <div className="grid gap-8 md:grid-cols-2">
@@ -133,7 +133,7 @@ export default function HomePage() {
                 />
               )}
               {!post.coverImage && (
-                <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600" />
+                <div className="aspect-video bg-gradient-to-br from-yellow-400 to-orange-500" />
               )}
               <CardHeader>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -151,7 +151,7 @@ export default function HomePage() {
                   <span className="text-sm text-muted-foreground">{post.author.name}</span>
                 </div>
                 <Button asChild>
-                  <Link to={`/blog/${post.slug}`}>Read More</Link>
+                  <Link to={`/posts/${post.slug}`}>Read More</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -176,8 +176,8 @@ export default function HomePage() {
                   <span className="text-sm text-muted-foreground">
                     {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/blog/${post.slug}`}>Read</Link>
+                  <Button size="sm" asChild>
+                    <Link to={`/posts/${post.slug}`}>Read</Link>
                   </Button>
                 </div>
               </CardContent>

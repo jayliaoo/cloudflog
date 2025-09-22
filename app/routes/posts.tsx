@@ -93,11 +93,11 @@ export default function BlogPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Blog</h1>
+          <h1 className="text-4xl font-bold mb-4">Posts</h1>
           <p className="text-lg text-muted-foreground mb-4">
             Unable to load blog posts at this time.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Please try refreshing the page or check back later.
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function BlogPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Blog</h1>
+        <h1 className="text-4xl font-bold mb-4">Posts</h1>
         <p className="text-lg text-muted-foreground">
           Thoughts on web development, cloud computing, and modern technologies.
         </p>
@@ -135,7 +135,7 @@ export default function BlogPage() {
                   <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 <CardTitle>
-                  <Link to={`/blog/${post.slug}`} className="hover:text-primary">
+                  <Link to={`/posts/${post.slug}`} className="hover:text-primary">
                     {post.title}
                   </Link>
                 </CardTitle>
@@ -145,8 +145,8 @@ export default function BlogPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/blog/${post.slug}`}>
+                  <Button size="sm" asChild>
+                    <Link to={`/posts/${post.slug}`}>
                       Read More
                       <Clock className="ml-2 h-4 w-4" />
                     </Link>

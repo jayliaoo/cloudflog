@@ -221,6 +221,25 @@ export async function getCurrentUser(request: Request, env: Env): Promise<User |
   return session?.user || null;
 }
 
+// Get the owner user (for blog branding)
+export async function getOwnerUser(env: Env): Promise<User | null> {
+  const db = getDBClient(env.D1);
+  
+  const ownerUsers = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      image: users.image,
+      role: users.role
+    })
+    .from(users)
+    .where(eq(users.role, 'owner'))
+    .limit(1);
+  
+  return ownerUsers.length > 0 ? ownerUsers[0] : null;
+}
+
 // Simple cookie parser
 function parseCookies(cookieHeader: string): Record<string, string> {
   const cookies: Record<string, string> = {};

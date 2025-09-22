@@ -175,18 +175,18 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
         placeholder={selectedTags.length === 0 ? "Type to search or create tags..." : "Add more tags..."}
-        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       />
 
       {showSuggestions && (
         <div 
           ref={suggestionsRef}
-          className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 border border-input rounded-md shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-10 w-full mt-1 bg-background border border-input rounded-md shadow-lg max-h-60 overflow-y-auto"
         >
           {loading && (
-            <div className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
-              Loading suggestions...
-            </div>
+            <div className="px-3 py-2 text-sm text-muted-foreground">
+                Loading suggestions...
+              </div>
           )}
           
           {!loading && suggestions.length === 0 && inputValue.trim() && (
@@ -208,7 +208,7 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
             <button
               key={tag.id}
               type="button"
-              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 focus:outline-none"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-accent focus:bg-accent focus:outline-none"
               onClick={() => handleSuggestionClick(tag)}
             >
               {tag.name}

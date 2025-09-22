@@ -47,7 +47,7 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
           </time>
         </div>
         <CardTitle className="line-clamp-2">
-          <Link to={`/blog/${post.slug}`} className="hover:text-primary">
+          <Link to={`/posts/${post.slug}`} className="hover:text-primary">
             {post.title}
           </Link>
         </CardTitle>
@@ -70,8 +70,8 @@ export function BlogPostCard({ post }: BlogPostCardProps) {
               {post.author.name || 'Unknown Author'}
             </div>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/blog/${post.slug}`}>
+          <Button size="sm" asChild>
+            <Link to={`/posts/${post.slug}`}>
               Read More
               <Clock className="ml-2 h-4 w-4" />
             </Link>
