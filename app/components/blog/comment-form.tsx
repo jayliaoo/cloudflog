@@ -52,13 +52,13 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Only authenticated users can submit
-    if (!user) {
-      setErrors({ submit: "Please sign in to leave a comment." });
+    if (!validateForm()) {
       return;
     }
     
-    if (!validateForm()) {
+    // Only authenticated users can submit
+    if (!user) {
+      setErrors({ submit: "Please sign in to leave a comment." });
       return;
     }
     
@@ -98,10 +98,10 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
         setErrors({});
         onSubmit?.();
       } else {
-        const error = await response.json();
+        const error = await response.json<{ message: string }>();
         setErrors({ submit: error.message || "Failed to submit comment" });
       }
-    } catch {
+    } catch (error) {
       setErrors({ submit: "Failed to submit comment. Please try again." });
     } finally {
       setIsSubmitting(false);

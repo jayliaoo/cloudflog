@@ -12,6 +12,7 @@ interface CommentItemProps {
     content: string;
     authorName: string;
     authorEmail: string;
+    authorId: number;
     createdAt: number;
     editedAt?: number;
     deletedAt?: number;
@@ -39,16 +40,18 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
   const maxDepth = 4; // Limit nesting depth to prevent excessive indentation
   const canReply = depth < maxDepth;
   
-  // Check if user can edit (within 15 minutes of posting)
+  // Check if user can edit (within 15 minutes of posting and is the author)
   const canEdit = () => {
     const fifteenMinutes = 15 * 60 * 1000;
     const timeSincePosted = Date.now() - comment.createdAt;
-    return timeSincePosted < fifteenMinutes;
+    const isWithinTimeLimit = timeSincePosted < fifteenMinutes;
+    const isAuthor = user && comment.authorId === user.id;
+    return isWithinTimeLimit && isAuthor;
   };
 
   const handleReply = () => {
     setShowReplyForm(true);
-    onReply?.();
+    // onReply?.();
   };
 
   const handleCancelReply = () => {
@@ -89,7 +92,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
         setIsEditing(false);
         onEdit?.(comment.id, editContent);
       } else {
-        const error = await response.json();
+        const error = await response.json<{ message: string }>();
         setEditError(error.message || "Failed to update comment");
       }
     } catch (error) {
@@ -250,7 +253,10 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
           <CommentForm
             postId={comment.postId}
             parentId={comment.id}
-            onSubmit={() => setShowReplyForm(false)}
+            onSubmit={() => {
+              onReply?.();
+              setShowReplyForm(false);
+            }}
             onCancel={handleCancelReply}
             isReply={true}
             user={user}

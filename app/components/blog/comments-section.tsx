@@ -8,6 +8,7 @@ interface Comment {
   content: string;
   authorName: string;
   authorEmail: string;
+  authorId: number;
   createdAt: number;
   editedAt?: number;
   deletedAt?: number;
@@ -56,9 +57,9 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
     return rootComments;
   };
 
-  const handleCommentSubmit = () => {
+  const handleCommentSubmit = async () => {
     // Refresh comments after submission
-    fetchComments();
+    await fetchComments();
     onCommentUpdate?.();
   };
 
@@ -81,8 +82,15 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
     try {
       const response = await fetch(`/api/comments?postId=${postId}`);
       if (response.ok) {
-        const data = await response.json();
-        setComments(data.comments);
+        const data = await response.json<{ comments: Comment[] }>();
+        // Convert ISO date strings to Unix timestamps
+        const processedComments = data.comments.map((comment: Comment) => ({
+          ...comment,
+          createdAt: new Date(comment.createdAt).getTime(),
+          editedAt: comment.editedAt ? new Date(comment.editedAt).getTime() : undefined,
+          deletedAt: comment.deletedAt ? new Date(comment.deletedAt).getTime() : undefined,
+        }));
+        setComments(processedComments);
       }
     } catch (error) {
       console.error("Failed to fetch comments:", error);
