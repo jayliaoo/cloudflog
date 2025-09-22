@@ -6,7 +6,6 @@ export default [
   route("blog/:slug", "routes/blog.$slug.tsx"),
   route("posts/new", "routes/posts.new.tsx"),
   route("about", "routes/about.tsx"),
-  route("contact", "routes/contact.tsx"),
   route("admin", "routes/admin.tsx"),
   route("tags", "routes/tags.tsx"),
   route("tag/:tagSlug", "routes/tag.$tagSlug.tsx"),
