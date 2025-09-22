@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { CommentForm } from "./comment-form";
 import { Textarea } from "~/components/ui/textarea";
 import { Input } from "~/components/ui/input";
@@ -128,18 +127,16 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
 
   if (comment.deletedAt) {
     return (
-      <Card className={`mb-4 ${depth > 0 ? "ml-8 border-l-4 border-l-border" : ""}`}>
-        <CardContent className="py-4">
-          <p className="text-muted-foreground italic">This comment has been deleted.</p>
-        </CardContent>
-      </Card>
+      <div className={`mb-4 ${depth > 0 ? "ml-8 pl-4 border-l-2 border-l-border" : ""}`}>
+        <p className="text-muted-foreground italic">This comment has been deleted.</p>
+      </div>
     );
   }
 
   return (
     <>
-      <Card className={`mb-4 ${depth > 0 ? `ml-${Math.min(depth * 8, 32)} border-l-4 border-l-primary/30` : ""}`}>
-        <CardHeader className="pb-2">
+      <div className={`mb-4 ${depth > 0 ? `ml-${Math.min(depth * 8, 32)} pl-4 border-l-2 border-l-primary/20` : ""}`}>
+        <div className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <h4 className="font-semibold text-sm">{comment.authorName}</h4>
@@ -176,7 +173,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
                 {canReply && !showReplyForm && (
                   <Button
                     variant="ghost"
-                    size="sm"
+                      size="sm"
                     onClick={handleReply}
                     className="text-xs"
                   >
@@ -186,9 +183,9 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
               </div>
             )}
           </div>
-        </CardHeader>
+        </div>
         
-        <CardContent>
+        <div>
           {isEditing ? (
             <div className="space-y-3">
               {editError && (
@@ -244,8 +241,8 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
               <p className="text-foreground whitespace-pre-wrap">{comment.content}</p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {showReplyForm && (
         <div className={`ml-${Math.min((depth + 1) * 8, 32)} mb-4`}>

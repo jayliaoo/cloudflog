@@ -20,7 +20,7 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
     // Fetch current user
     const user = await getCurrentUser(request, env);
 
-    // Fetch post by slug
+    // Fetch post by slug from database (including "about" post)
     const postData = await db
       .select({
         id: posts.id,

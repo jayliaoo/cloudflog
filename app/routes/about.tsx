@@ -64,26 +64,6 @@ export default function AboutPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Get in Touch</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                I'm always interested in connecting with fellow developers and tech enthusiasts.
-                Feel free to reach out if you have any questions or just want to chat about technology.
-              </p>
-              <div className="space-y-3">
-                <Button className="w-full justify-start" asChild>
-                  <a href="mailto:hello@example.com">
-                    <Mail className="mr-2 h-4 w-4" />
-                    hello@example.com
-                  </a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
               <CardTitle>Connect With Me</CardTitle>
             </CardHeader>
             <CardContent>

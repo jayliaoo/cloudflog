@@ -4,10 +4,11 @@ import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { desc, eq, inArray, count } from "drizzle-orm";
-import { Form, Link } from "react-router";
+import { Form, Link, Outlet } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
+import AdminLayout from "~/components/layouts/admin-layout";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -49,6 +50,21 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .select({ count: count() })
     .from(posts)
     .where(eq(posts.featured, true));
+  
+  // Fetch total database statistics
+  const totalPostsCount = await db
+    .select({ count: count() })
+    .from(posts);
+  
+  const publishedPostsCount = await db
+    .select({ count: count() })
+    .from(posts)
+    .where(eq(posts.published, true));
+  
+  const draftPostsCount = await db
+    .select({ count: count() })
+    .from(posts)
+    .where(eq(posts.published, false));
   
   // Build base query for posts
   let postsQuery = db
@@ -147,7 +163,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     currentPage: page,
     totalPages,
     totalPosts: totalCount,
-    featuredCount: featuredCount[0].count
+    featuredCount: featuredCount[0].count,
+    totalPostsCount: totalPostsCount[0].count,
+    publishedPostsCount: publishedPostsCount[0].count,
+    draftPostsCount: draftPostsCount[0].count
   });
 }
 
@@ -206,7 +225,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function Admin({ loaderData }: { loaderData: any }) {
-  const { posts, user, allTags, currentTag, currentStatus, currentPage, totalPages, totalPosts, featuredCount } = loaderData as { 
+  const { posts, user, allTags, currentTag, currentStatus, currentPage, totalPages, totalPosts, featuredCount, totalPostsCount, publishedPostsCount, draftPostsCount } = loaderData as { 
     posts: any[], 
     user: any, 
     allTags: any[], 
@@ -215,21 +234,23 @@ export default function Admin({ loaderData }: { loaderData: any }) {
     currentPage: number,
     totalPages: number,
     totalPosts: number,
-    featuredCount: number
+    featuredCount: number,
+    totalPostsCount: number,
+    publishedPostsCount: number,
+    draftPostsCount: number
   };
   
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          </div>
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Posts Management</h1>
+        </div>
         
         {/* Active Filters Display */}
         {(currentTag || currentStatus) && (
-          <div className="mb-4 flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Filtered by:</span>
             {currentStatus && currentStatus !== 'all' && (
               <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground">
@@ -244,41 +265,6 @@ export default function Admin({ loaderData }: { loaderData: any }) {
             <span className="text-sm text-muted-foreground">({posts.length} posts)</span>
           </div>
         )}
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-muted-foreground truncate">Total Posts</dt>
-              <dd className="mt-1 text-3xl font-semibold">{posts.length}</dd>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-muted-foreground truncate">Published Posts</dt>
-              <dd className="mt-1 text-3xl font-semibold">
-                {posts.filter(post => post.published).length}
-              </dd>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-muted-foreground truncate">Featured Posts</dt>
-              <dd className="mt-1 text-3xl font-semibold">{loaderData.featuredCount}</dd>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="px-4 py-5 sm:p-6">
-              <dt className="text-sm font-medium text-muted-foreground truncate">Draft Posts</dt>
-              <dd className="mt-1 text-3xl font-semibold">
-                {posts.filter(post => !post.published).length}
-              </dd>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Actions and Filters */}
         <div className="mb-8 flex flex-wrap items-center gap-4">
@@ -542,6 +528,6 @@ export default function Admin({ loaderData }: { loaderData: any }) {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

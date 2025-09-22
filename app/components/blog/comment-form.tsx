@@ -3,7 +3,6 @@ import { Form } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 interface CommentFormProps {
   postId: number;
@@ -117,13 +116,13 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
   };
 
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="text-lg">
+    <div className="mb-6">
+      <div className="mb-4">
+        <h4 className="text-lg font-semibold">
           {isReply ? "Reply to Comment" : "Leave a Comment"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </h4>
+      </div>
+      <div>
         {!user ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">
@@ -170,7 +169,7 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
             </div>
           </Form>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

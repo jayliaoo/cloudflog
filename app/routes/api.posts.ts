@@ -21,6 +21,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
         published: posts.published,
+        featured: posts.featured,
       })
       .from(posts)
       .where(eq(posts.published, true))

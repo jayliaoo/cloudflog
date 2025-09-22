@@ -9,6 +9,7 @@ interface User {
   name: string | null;
   email: string;
   image: string | null;
+  role?: string;
 }
 
 interface BlogLayoutProps {
@@ -77,10 +78,17 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link to="/about" className="px-3 py-2 text-sm font-medium hover:text-primary">
+                  <Link to="/posts/about" className="px-3 py-2 text-sm font-medium hover:text-primary">
                     About
                   </Link>
                 </NavigationMenuItem>
+                {user?.role === 'owner' && (
+                  <NavigationMenuItem>
+                    <Link to="/admin" className="px-3 py-2 text-sm font-medium hover:text-primary text-yellow-600 dark:text-yellow-400">
+                      Admin
+                    </Link>
+                  </NavigationMenuItem>
+                )}
               </NavigationMenu>
             </div>
             
@@ -139,17 +147,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                             </p>
                           </div>
                           <div className="p-2">
-                            <Link 
-                              to="/admin" 
-                              className="block"
-                              target="_blank"
-                              onClick={() => setIsUserMenuOpen(false)}
-                            >
-                              <Button variant="default" size="sm" className="w-full justify-start">
-                                Admin Panel
-                              </Button>
-                            </Link>
-                            <Form action="/auth/signout" method="post" className="mt-1">
+                            <Form action="/auth/signout" method="post">
                               <Button type="submit" variant="outline" size="sm" className="w-full justify-start border-yellow-500 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-800">
                                 <LogOut className="h-4 w-4 mr-2" />
                                 Sign Out
@@ -209,14 +207,11 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                 <Link to="/tags" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   Tags
                 </Link>
-                <Link to="/about" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
+                <Link to="/posts/about" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   About
                 </Link>
                 {user ? (
                   <>
-                    <Link to="/admin" className="px-3 py-2 text-sm font-medium hover:text-primary bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 rounded-md hover:bg-yellow-200 dark:hover:bg-yellow-900/30" onClick={() => setIsMenuOpen(false)} target="_blank">
-                      Admin
-                    </Link>
                     <Form action="/auth/signout" method="post">
                       <button
                         type="submit"
@@ -242,9 +237,9 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
       </main>
       {/* Footer */}
       <footer className="border-t bg-muted/50">
-        <div className="container mx-auto px-4 py-12">
-          <div className="mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p className="text-center text-sm text-muted-foreground">&copy; 2024 My Blog. Built with React Router and Cloudflare Workers.</p>
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>&copy; 2024 My Blog. Built with React Router and Cloudflare Workers.</p>
           </div>
         </div>
       </footer>

@@ -1,9 +1,6 @@
 import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { CalendarDays, User, Clock, Tag } from "lucide-react";
+import PostCard from "~/components/blog/PostCard";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc, and, count, sql } from "drizzle-orm";
@@ -36,21 +33,6 @@ export async function loader({
     const totalCount = totalCountResult[0].count;
     const totalPages = Math.ceil(totalCount / postsPerPage);
 
-    // Fetch featured posts (first 3)
-    const featuredPostsData = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        slug: posts.slug,
-        excerpt: posts.excerpt,
-        coverImage: posts.coverImage,
-        createdAt: posts.createdAt,
-      })
-      .from(posts)
-      .where(and(eq(posts.published, true), eq(posts.featured, true)))
-      .orderBy(desc(posts.createdAt))
-      .limit(3);
-
     // Fetch published posts with pagination (excluding featured posts if any)
     const postsData = await db
       .select({
@@ -60,54 +42,20 @@ export async function loader({
         excerpt: posts.excerpt,
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
+        featured: posts.featured,
+        tags: sql<string>`GROUP_CONCAT(${tags.name}, ', ')`
       })
       .from(posts)
+      .leftJoin(postTags, eq(posts.id, postTags.postId))
+      .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
       .where(eq(posts.published, true))
-      .orderBy(desc(posts.createdAt))
+      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.coverImage, posts.createdAt, posts.featured)
+      .orderBy(desc(posts.featured), desc(posts.createdAt))
       .limit(postsPerPage)
       .offset(offset);
 
-    // Fetch tags for featured posts
-    const featuredPostsWithTags = await Promise.all(
-      featuredPostsData.map(async (post) => {
-        const postTagsData = await db
-          .select({
-            tagName: tags.name,
-            tagSlug: tags.slug,
-          })
-          .from(postTags)
-          .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
-          .where(eq(postTags.postId, post.id));
-
-        return {
-          ...post,
-          tags: postTagsData.map(pt => pt.tagName),
-        };
-      })
-    );
-
-    // Fetch tags for each post
-    const postsWithTags = await Promise.all(
-      postsData.map(async (post) => {
-        const postTagsData = await db
-          .select({
-            tagName: tags.name,
-            tagSlug: tags.slug,
-          })
-          .from(postTags)
-          .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
-          .where(eq(postTags.postId, post.id));
-
-        return {
-          ...post,
-          tags: postTagsData.map(pt => pt.tagName),
-        };
-      })
-    );
-
     return data({ 
-      featuredPosts: featuredPostsWithTags,
-      posts: postsWithTags,
+      posts: postsData,
       currentPage: page,
       totalPages,
       totalCount
@@ -140,127 +88,20 @@ export default function BlogPage() {
     );
   }
 
-  const { featuredPosts, posts, currentPage, totalPages, totalCount } = loaderData;
+  const { posts, currentPage, totalPages, totalCount } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">Posts</h1>
-        <p className="text-lg text-muted-foreground">
-          Thoughts on web development, cloud computing, and modern technologies.
-        </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="max-w-4xl mx-auto">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Featured Posts Section */}
-          {featuredPosts.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 flex items-center">
-                <span className="text-yellow-500 mr-2">★</span>
-                Featured Posts
-              </h2>
-              <div className="space-y-6">
-                {featuredPosts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden border-yellow-200 bg-yellow-50/10">
-                    {post.coverImage && (
-                      <img
-                        src={post.coverImage}
-                        alt={post.title}
-                        className="aspect-video object-cover"
-                      />
-                    )}
-                   
-                    <CardHeader>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        <CalendarDays className="h-4 w-4" />
-                        <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                        <span className="text-yellow-500 font-semibold">★ Featured</span>
-                      </div>
-                      <CardTitle>
-                        <Link to={`/posts/${post.slug}`} className="hover:text-primary">
-                          {post.title}
-                        </Link>
-                      </CardTitle>
-                      <CardDescription>
-                        {post.excerpt}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <Button size="sm" asChild>
-                          <Link to={`/posts/${post.slug}`}>
-                            Read More
-                            <Clock className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="mt-4">
-                          {post.tags.map((tag) => (
-                            <Link key={tag} to={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}>
-                              <Badge variant="secondary" className="mr-2 text-xs hover:bg-secondary/80 cursor-pointer">
-                                {tag}
-                              </Badge>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
+        <div className="space-y-8">
           {/* Regular Posts */}
           {posts.map((post) => (
-            <Card key={post.id} className="overflow-hidden">
-              {post.coverImage && (
-                <img
-                  src={post.coverImage}
-                  alt={post.title}
-                  className="aspect-video object-cover"
-                />
-              )}
-             
-              <CardHeader>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <CalendarDays className="h-4 w-4" />
-                  <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                </div>
-                <CardTitle>
-                  <Link to={`/posts/${post.slug}`} className="hover:text-primary">
-                    {post.title}
-                  </Link>
-                </CardTitle>
-                <CardDescription>
-                  {post.excerpt}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <Button size="sm" asChild>
-                    <Link to={`/posts/${post.slug}`}>
-                      Read More
-                      <Clock className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-                {post.tags && post.tags.length > 0 && (
-                  <div className="mt-4">
-                    {post.tags.map((tag) => (
-                      <Link key={tag} to={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}>
-                        <Badge variant="secondary" className="mr-2 text-xs hover:bg-secondary/80 cursor-pointer">
-                          {tag}
-                        </Badge>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <PostCard key={post.id} post={post} />
           ))}
           
           {/* Pagination */}
@@ -322,48 +163,6 @@ export default function BlogPage() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-8">
-          {/* About */}
-          <Card>
-            <CardHeader>
-              <CardTitle>About</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Welcome to my tech blog where I share insights on modern web development,
-                cloud technologies, and programming best practices.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Popular Tags */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Popular Tags</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-                  React
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-                  JavaScript
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-                  Web Development
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-                  Cloud
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-accent">
-                  Tutorial
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

@@ -1,12 +1,11 @@
 import { data, useLoaderData } from "react-router";
 import { Link, useParams } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { CalendarDays, Clock, Tag, Hash } from "lucide-react";
+import { Hash } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc, count, and } from "drizzle-orm";
+import PostCard from "~/components/blog/PostCard";
 
 export async function loader({ 
   context, 
@@ -158,49 +157,7 @@ export default function TagPage() {
 
       <div className="space-y-8">
         {posts.map((post) => (
-          <Card key={post.id} className="overflow-hidden">
-            {post.coverImage && (
-              <img
-                src={post.coverImage}
-                alt={post.title}
-                className="aspect-video object-cover"
-              />
-            )}
-            
-            <CardHeader>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                <CalendarDays className="h-4 w-4" />
-                <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-              </div>
-              <CardTitle>
-                <Link to={`/posts/${post.slug}`} className="hover:text-primary">
-                  {post.title}
-                </Link>
-              </CardTitle>
-              <CardDescription>
-                {post.excerpt}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <Button size="sm" asChild>
-                  <Link to={`/posts/${post.slug}`}>
-                    Read More
-                    <Clock className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                {post.tags && post.tags.length > 0 && (
-                  <div className="flex gap-2">
-                    {post.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <PostCard key={post.id} post={post} />
         ))}
       </div>
 
