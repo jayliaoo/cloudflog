@@ -62,7 +62,7 @@ export default function SignIn() {
             Sign in to your blog
           </CardTitle>
           <CardDescription>
-            Use your GitHub account to access the admin panel
+            Use your GitHub account to access the blog
           </CardDescription>
         </CardHeader>
         <CardContent>

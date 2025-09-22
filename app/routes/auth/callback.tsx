@@ -56,12 +56,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       `<!DOCTYPE html>
       <html>
         <head>
-          <meta http-equiv="refresh" content="0; url=/admin">
-          <script>window.location.href = '/admin';</script>
+          <meta http-equiv="refresh" content="0; url=/posts">
+          <script>window.location.href = '/posts';</script>
         </head>
         <body>
-          <p>Authentication successful. Redirecting to admin panel...</p>
-          <a href="/admin">Click here if not redirected</a>
+          <p>Authentication successful. Redirecting to blog posts...</p>
+          <a href="/posts">Click here if not redirected</a>
         </body>
       </html>`,
       {

@@ -3,7 +3,7 @@ import { data, redirect } from "react-router";
 import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
-import { desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray, count } from "drizzle-orm";
 import { Form, Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -43,6 +43,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     })
     .from(tags)
     .orderBy(tags.name);
+
+  // Fetch featured posts count
+  const featuredCount = await db
+    .select({ count: count() })
+    .from(posts)
+    .where(eq(posts.featured, true));
   
   // Build base query for posts
   let postsQuery = db
@@ -52,6 +58,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       slug: posts.slug,
       excerpt: posts.excerpt,
       published: posts.published,
+      featured: posts.featured,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,
     })
@@ -139,7 +146,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     currentStatus: statusFilter,
     currentPage: page,
     totalPages,
-    totalPosts: totalCount
+    totalPosts: totalCount,
+    featuredCount: featuredCount[0].count
   });
 }
 
@@ -161,7 +169,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   const intent = formData.get("intent");
   const postId = formData.get("postId");
   
-  if (!postId || !intent || !["publish", "unpublish", "delete"].includes(intent as string)) {
+  if (!postId || !intent || !["publish", "unpublish", "delete", "feature", "unfeature"].includes(intent as string)) {
     return data({ error: "Invalid request" }, { status: 400 });
   }
   
@@ -174,6 +182,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
       await db.delete(postTags).where(eq(postTags.postId, postIdNum));
       // Then delete the post
       await db.delete(posts).where(eq(posts.id, postIdNum));
+    } else if (intent === "feature" || intent === "unfeature") {
+      // Toggle featured status
+      const newFeaturedStatus = intent === "feature" ? true : false;
+      
+      await db.update(posts)
+        .set({ featured: newFeaturedStatus })
+        .where(eq(posts.id, postIdNum));
     } else {
       // Update the post status based on intent
       const newPublishedStatus = intent === "publish" ? true : false;
@@ -191,7 +206,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function Admin({ loaderData }: { loaderData: any }) {
-  const { posts, user, allTags, currentTag, currentStatus, currentPage, totalPages, totalPosts } = loaderData as { 
+  const { posts, user, allTags, currentTag, currentStatus, currentPage, totalPages, totalPosts, featuredCount } = loaderData as { 
     posts: any[], 
     user: any, 
     allTags: any[], 
@@ -199,7 +214,8 @@ export default function Admin({ loaderData }: { loaderData: any }) {
     currentStatus: string | null,
     currentPage: number,
     totalPages: number,
-    totalPosts: number
+    totalPosts: number,
+    featuredCount: number
   };
   
   return (
@@ -233,7 +249,7 @@ export default function Admin({ loaderData }: { loaderData: any }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="px-4 py-5 sm:p-6">
               <dt className="text-sm font-medium text-muted-foreground truncate">Total Posts</dt>
@@ -246,6 +262,12 @@ export default function Admin({ loaderData }: { loaderData: any }) {
               <dd className="mt-1 text-3xl font-semibold">
                 {posts.filter(post => post.published).length}
               </dd>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="px-4 py-5 sm:p-6">
+              <dt className="text-sm font-medium text-muted-foreground truncate">Featured Posts</dt>
+              <dd className="mt-1 text-3xl font-semibold">{loaderData.featuredCount}</dd>
             </CardContent>
           </Card>
           <Card>
@@ -413,6 +435,18 @@ export default function Admin({ loaderData }: { loaderData: any }) {
                           View
                         </Link>
                       </Button>
+                      <Form method="post" className="inline">
+                        <input type="hidden" name="intent" value={post.featured ? "unfeature" : "feature"} />
+                        <input type="hidden" name="postId" value={post.id} />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant={post.featured ? "default" : "outline"}
+                          className={post.featured ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                        >
+                          {post.featured ? "★ Featured" : "☆ Feature"}
+                        </Button>
+                      </Form>
                       <Form method="post" className="inline">
                         <input type="hidden" name="intent" value="delete" />
                         <input type="hidden" name="postId" value={post.id} />

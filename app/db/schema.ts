@@ -30,6 +30,7 @@ export const posts = sqliteTable('post', {
   coverImage: text(),
   authorId: integer().notNull().references(() => users.id, { onDelete: 'cascade' }),
   published: integer({ mode: 'boolean' }).notNull().default(false),
+  featured: integer({ mode: 'boolean' }).notNull().default(false),
   createdAt: timestampField(),
   updatedAt: timestampField(),
 });

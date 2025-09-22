@@ -24,7 +24,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       // Set session cookie and redirect
       const headers = new Headers();
       headers.append('Set-Cookie', `session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`);
-      headers.append('Location', '/admin');
+      headers.append('Location', '/posts');
       
       return new Response(null, { 
         status: 302, 
