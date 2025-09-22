@@ -43,13 +43,14 @@ export async function loader({
         coverImage: posts.coverImage,
         createdAt: posts.createdAt,
         featured: posts.featured,
+        viewCount: posts.viewCount,
         tags: sql<string>`GROUP_CONCAT(${tags.name}, ', ')`
       })
       .from(posts)
       .leftJoin(postTags, eq(posts.id, postTags.postId))
       .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
       .where(eq(posts.published, true))
-      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.coverImage, posts.createdAt, posts.featured)
+      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.coverImage, posts.createdAt, posts.featured, posts.viewCount)
       .orderBy(desc(posts.featured), desc(posts.createdAt))
       .limit(postsPerPage)
       .offset(offset);

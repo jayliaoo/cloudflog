@@ -2,9 +2,9 @@ import { data, redirect } from "react-router";
 import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { posts, tags, comments, users } from "~/db/schema";
-import { eq, count, desc } from "drizzle-orm";
+import { eq, count, desc, sql } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { BarChart3, FileText, Tag, MessageSquare, Users, TrendingUp } from "lucide-react";
+import { BarChart3, FileText, Tag, MessageSquare, Users, TrendingUp, Eye } from "lucide-react";
 import type { LoaderFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
 
@@ -56,6 +56,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .select({ count: count() })
     .from(users);
   
+  // Calculate total views across all posts
+  const totalViewsResult = await db
+    .select({ totalViews: sql<number>`SUM(${posts.viewCount})` })
+    .from(posts);
+  
+  const totalViews = totalViewsResult[0].totalViews || 0;
+  
   // Get recent posts
   const recentPosts = await db
     .select({
@@ -91,6 +98,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       totalTags: totalTagsCount[0].count,
       totalComments: totalCommentsCount[0].count,
       totalUsers: totalUsersCount[0].count,
+      totalViews: totalViews,
     },
     recentPosts,
     recentComments,
@@ -149,6 +157,13 @@ export default function AdminDashboard({ loaderData }: { loaderData: any }) {
       icon: Users,
       color: "text-orange-600",
       bgColor: "bg-orange-100",
+    },
+    {
+      title: "Total Views",
+      value: stats.totalViews,
+      icon: Eye,
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-100",
     },
   ];
   

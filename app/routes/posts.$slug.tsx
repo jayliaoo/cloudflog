@@ -3,13 +3,14 @@ import { Link, useParams } from "react-router";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { CalendarDays, User, ArrowLeft, Tag } from "lucide-react";
+import { CalendarDays, User, ArrowLeft, Tag, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags, comments } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { marked } from 'marked';
 import { CommentsSection } from "~/components/blog/comments-section";
 import { getCurrentUser } from "~/auth.server";
+import { trackPostView } from "~/utils/view-tracking";
 import type { Route } from "./+types/posts.$slug";
 
 export async function loader({ params, context, request }: Route.LoaderArgs) {
@@ -31,7 +32,8 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
         coverImage: posts.coverImage,
         published: posts.published,
         createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt
+        updatedAt: posts.updatedAt,
+        viewCount: posts.viewCount
       })
       .from(posts)
       .where(eq(posts.slug, params.slug))
@@ -65,9 +67,22 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
       tags: postTagsData.map(pt => pt.tagName),
     };
 
+    // Track view for this post (only for published posts)
+    if (post.published) {
+      try {
+        // Track the view (async, don't await to avoid blocking)
+        trackPostView(post.id, env, user?.id).catch(error => 
+          console.error("Failed to track post view:", error)
+        );
+      } catch (error) {
+        console.error("Error setting up view tracking:", error);
+        // Continue without view tracking - don't break the page
+      }
+    }
+
     return data({
       post: postWithTags,
-      comments: postComments as Comment[],
+      comments: postComments as any as Comment[],
       user
     });
   } catch (error) {
@@ -136,6 +151,12 @@ export default function BlogPostPage() {
                 day: 'numeric',
               })}
             </time>
+            {post.viewCount !== undefined && post.viewCount > 0 && (
+              <div className="flex items-center gap-1 ml-4">
+                <Eye className="h-4 w-4" />
+                <span>{post.viewCount} views</span>
+              </div>
+            )}
           </div>
           
           {post.tags && post.tags.length > 0 && (
@@ -181,7 +202,7 @@ export default function BlogPostPage() {
       {/* Comments Section */}
       <CommentsSection 
         postId={post.id} 
-        comments={comments}
+        comments={comments as any as Comment[]}
         user={user}
       />
     </div>

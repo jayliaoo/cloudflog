@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, primaryKey, unique, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // Helper function for timestamp fields
 const timestampField = () => integer({ mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch('subsec') * 1000)`);
@@ -31,6 +31,7 @@ export const posts = sqliteTable('post', {
   authorId: integer().notNull().references(() => users.id, { onDelete: 'cascade' }),
   published: integer({ mode: 'boolean' }).notNull().default(false),
   featured: integer({ mode: 'boolean' }).notNull().default(false),
+  viewCount: integer().notNull().default(0), // New view count column
   createdAt: timestampField(),
   updatedAt: timestampField(),
 });
@@ -40,12 +41,12 @@ export const comments = sqliteTable('comment', {
   content: text().notNull(),
   authorName: text(), // Optional for signed-in users
   authorEmail: text(), // Optional for signed-in users
-  authorId: integer('author_id').references(() => users.id, { onDelete: 'set null' }), // Reference to user if signed in
+  authorId: integer().references(() => users.id, { onDelete: 'set null' }), // Reference to user if signed in
   postId: integer().notNull().references(() => posts.id, { onDelete: 'cascade' }),
-  parentId: integer('parent_id').references(() => comments.id, { onDelete: 'cascade' }),
-  editToken: text('edit_token'),
-  editedAt: integer('edited_at', { mode: 'timestamp_ms' }),
-  deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
+  parentId: integer(),
+  editToken: text(),
+  editedAt: integer({ mode: 'timestamp_ms' }),
+  deletedAt: integer({ mode: 'timestamp_ms' }),
   approved: integer({ mode: 'boolean' }).notNull().default(false),
   createdAt: timestampField(),
   updatedAt: timestampField(),
@@ -75,6 +76,17 @@ export const postTags = sqliteTable('post_tags', {
   pk: primaryKey({ columns: [table.postId, table.tagSlug] }),
 }));
 
+// New table for tracking user-specific views
+export const postViews = sqliteTable('post_views', {
+  id: integer().primaryKey({ autoIncrement: true }),
+  postId: integer().notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  userId: integer().default(0), // 0 for anonymous users
+  viewCount: integer().notNull().default(0), // New view count column
+  viewedAt: timestampField(),
+}, (table) => ({
+  uniquePostUser: uniqueIndex('post_views_postId_userId_idx').on(table.postId, table.userId),
+}));
+
 
 
 // Type exports
@@ -98,3 +110,6 @@ export type NewTag = typeof tags.$inferInsert;
 
 export type PostTag = typeof postTags.$inferSelect;
 export type NewPostTag = typeof postTags.$inferInsert;
+
+export type PostView = typeof postViews.$inferSelect;
+export type NewPostView = typeof postViews.$inferInsert;

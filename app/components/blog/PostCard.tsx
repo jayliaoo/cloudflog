@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { CalendarDays, Clock, Tag } from "lucide-react";
+import { CalendarDays, Clock, Tag, Eye } from "lucide-react";
 
 interface PostCardProps {
   post: {
@@ -12,6 +12,7 @@ interface PostCardProps {
     coverImage: string | null;
     createdAt: string;
     featured?: boolean;
+    viewCount?: number;
     tags: string | null | string[];
   };
 }
@@ -59,6 +60,12 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <CalendarDays className="h-4 w-4" />
           <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+          {post.viewCount !== undefined && post.viewCount > 0 && (
+            <div className="flex items-center gap-1">
+              <Eye className="h-4 w-4" />
+              <span>{post.viewCount}</span>
+            </div>
+          )}
           {post.featured && (
             <span className="ml-auto px-2 py-1 text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-yellow-900 rounded-full">
               ★ Featured

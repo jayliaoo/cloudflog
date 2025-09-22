@@ -1,1 +1,0 @@
-ALTER TABLE `post` ADD `featured` integer DEFAULT false NOT NULL;
