@@ -89,15 +89,19 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
         // Store edit token in localStorage for future edits
         localStorage.setItem(`comment-edit-${postId}-${Date.now()}`, editToken);
         
-        // Reset form
-        setFormData({ authorName: "", authorEmail: "", content: "" });
+        // Reset form - preserve user info for authenticated users
+        setFormData({ 
+          authorName: user?.name || "", 
+          authorEmail: user?.email || "", 
+          content: "" 
+        });
         setErrors({});
         onSubmit?.();
       } else {
         const error = await response.json();
         setErrors({ submit: error.message || "Failed to submit comment" });
       }
-    } catch (error) {
+    } catch {
       setErrors({ submit: "Failed to submit comment. Please try again." });
     } finally {
       setIsSubmitting(false);

@@ -38,7 +38,7 @@ export async function action({ request, context }: LoaderFunctionArgs) {
   // Build GitHub OAuth authorization URL
   const params = new URLSearchParams({
     client_id: env.GITHUB_CLIENT_ID,
-    redirect_uri: `${env.NEXTAUTH_URL}/auth/callback`,
+    redirect_uri: `${env.AUTH_URL}/auth/callback`,
     scope: 'user:email',
     state: state,
     allow_signup: 'false'

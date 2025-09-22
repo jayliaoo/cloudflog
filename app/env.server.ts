@@ -9,7 +9,6 @@ export function getEnv(): Env {
     ASSETS: {} as any,
     GITHUB_CLIENT_ID: 'your-github-client-id',
     GITHUB_CLIENT_SECRET: 'your-github-client-secret',
-    NEXTAUTH_URL: 'http://localhost:5173' as "http://localhost:5173",
-    NEXTAUTH_SECRET: 'your-nextauth-secret' as "your-nextauth-secret",
+    AUTH_URL: 'http://localhost:5173' as "http://localhost:5173", 
   };
 }

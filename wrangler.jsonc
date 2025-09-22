@@ -11,7 +11,7 @@
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
 		"ADMIN_EMAIL": "jayliaoo@outlook.com",
-		"NEXTAUTH_URL": "http://localhost:5173",
+		"AUTH_URL": "http://localhost:5173",
 	},
 	"observability": {
 		"enabled": true

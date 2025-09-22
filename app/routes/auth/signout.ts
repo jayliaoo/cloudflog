@@ -7,7 +7,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   
   if (cookieHeader) {
     const cookies = parseCookies(cookieHeader);
-    const sessionToken = cookies['next-auth.session-token'];
+    const sessionToken = cookies['session'];
     
     if (sessionToken) {
       await deleteSession(sessionToken, env);

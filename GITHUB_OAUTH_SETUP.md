@@ -29,7 +29,6 @@ You need to update your environment variables in Cloudflare:
 4. Update these variables:
    - `GITHUB_CLIENT_ID`: Your GitHub app's Client ID
    - `GITHUB_CLIENT_SECRET`: Your GitHub app's Client Secret
-   - `NEXTAUTH_URL`: `http://localhost:5173` (for local development)
 
 ## 4. Test the Authentication
 
@@ -43,7 +42,6 @@ You need to update your environment variables in Cloudflare:
 For production deployment:
 1. Update the Homepage URL to your actual domain
 2. Update the Authorization callback URL to `https://yourdomain.com/auth/callback`
-3. Update the `NEXTAUTH_URL` environment variable to your actual domain
 
 ## Troubleshooting
 

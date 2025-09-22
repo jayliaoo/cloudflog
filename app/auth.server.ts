@@ -106,7 +106,7 @@ export async function authenticateWithGitHub(code: string, env: Env): Promise<st
         client_id: env.GITHUB_CLIENT_ID,
         client_secret: env.GITHUB_CLIENT_SECRET,
         code: code,
-        redirect_uri: `${env.NEXTAUTH_URL}/auth/callback`,
+        redirect_uri: `${env.AUTH_URL}/auth/callback`,
       }),
     });
 

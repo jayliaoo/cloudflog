@@ -14,7 +14,7 @@ function getSessionTokenFromRequest(request: Request): string | null {
     return acc;
   }, {} as Record<string, string>);
   
-  return cookies['session'] || cookies['next-auth.session-token'] || null;
+  return cookies['session'] || null;
 }
 
 export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {

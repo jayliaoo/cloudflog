@@ -38,26 +38,18 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     
     // Only add Secure flag for HTTPS (production)
     // Skip for localhost development
-    if (env.NEXTAUTH_URL.startsWith('https://')) {
+    if (env.AUTH_URL.startsWith('https://')) {
       cookieOptions.push('Secure');
     }
     
     headers.append('Set-Cookie', cookieOptions.join('; '));
+
     
-    // Also set the next-auth cookie for compatibility
-    const nextAuthCookieOptions = [
-      `next-auth.session-token=${sessionToken}`,
-      'Path=/',
-      'HttpOnly',
-      'Max-Age=2592000', // 30 days
-      'SameSite=Lax'
-    ];
-    
-    if (env.NEXTAUTH_URL.startsWith('https://')) {
-      nextAuthCookieOptions.push('Secure');
+    if (env.AUTH_URL.startsWith('https://')) {
+      cookieOptions.push('Secure');
     }
     
-    headers.append('Set-Cookie', nextAuthCookieOptions.join('; '));
+    headers.append('Set-Cookie', cookieOptions.join('; '));
     
     // Use HTML redirect with meta refresh as fallback for better reliability
     return new Response(

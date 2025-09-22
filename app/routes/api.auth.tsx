@@ -23,7 +23,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       
       // Set session cookie and redirect
       const headers = new Headers();
-      headers.append('Set-Cookie', `next-auth.session-token=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`);
+      headers.append('Set-Cookie', `session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`);
       headers.append('Location', '/admin');
       
       return new Response(null, { 
