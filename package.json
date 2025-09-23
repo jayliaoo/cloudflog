@@ -7,12 +7,11 @@
     "cf-typegen": "wrangler types",
     "deploy": "npm run build && wrangler deploy",
     "dev": "react-router dev",
-    "postinstall": "npm run cf-typegen",
     "preview": "npm run build && vite preview",
     "typecheck": "npm run cf-typegen && react-router typegen && tsc -b",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply blog",
-    "db:studio": "drizzle-kit studio",
+    "db:migrate-remote": "wrangler d1 migrations apply blog --remote",
     "shadcn:add": "npx shadcn@latest add"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 import { data } from "react-router";
 import { getDBClient } from "~/db/index";
 import { comments } from "~/db/schema";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { getSession } from "~/auth.server";
 
 function getSessionTokenFromRequest(request: Request): string | null {
@@ -85,7 +85,7 @@ async function createComment(formData: FormData, db: any, user: any) {
       const parentComment = await db
         .select()
         .from(comments)
-        .where(and(eq(comments.id, parentId), eq(comments.approved, true)));
+        .where(and(eq(comments.id, parentId)));
       
       if (parentComment.length === 0) {
         return data({ error: "Parent comment not found or not approved" }, { status: 400 });
@@ -156,7 +156,7 @@ async function updateComment(formData: FormData, db: any, user: any) {
     return data({ comment: updatedComment[0] });
   } catch (error) {
     console.error("Failed to update comment:", error);
-    return json({ error: "Failed to update comment" }, { status: 500 });
+    return data({ error: "Failed to update comment" }, { status: 500 });
   }
 }
 
@@ -200,6 +200,6 @@ async function deleteComment(formData: FormData, db: any, user: any) {
     return data({ message: "Comment deleted successfully" });
   } catch (error) {
     console.error("Failed to delete comment:", error);
-    return json({ error: "Failed to delete comment" }, { status: 500 });
+    return data({ error: "Failed to delete comment" }, { status: 500 });
   }
 }

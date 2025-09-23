@@ -41,7 +41,7 @@ export const comments = sqliteTable('comment', {
   authorId: integer().references(() => users.id, { onDelete: 'set null' }), // Reference to user if signed in
   postId: integer().notNull().references(() => posts.id, { onDelete: 'cascade' }),
   parentId: integer(),
-  deletedAt: timestampField(),
+  deletedAt: integer({ mode: 'timestamp_ms' }),
   createdAt: timestampField(),
   updatedAt: timestampField(),
 });

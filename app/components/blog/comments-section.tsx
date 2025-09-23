@@ -8,7 +8,7 @@ interface Comment {
   authorName: string;
   authorId: number;
   createdAt: number;
-  editedAt?: number;
+  updatedAt?: number;
   deletedAt?: number;
   postId: number;
   parentId?: number;
@@ -84,9 +84,10 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
         const processedComments = data.comments.map((comment: Comment) => ({
           ...comment,
           createdAt: new Date(comment.createdAt).getTime(),
-          editedAt: comment.editedAt ? new Date(comment.editedAt).getTime() : undefined,
+          updatedAt: comment.updatedAt ? new Date(comment.updatedAt).getTime() : undefined,
           deletedAt: comment.deletedAt ? new Date(comment.deletedAt).getTime() : undefined,
         }));
+        console.log("processedComments", processedComments);
         setComments(processedComments);
       }
     } catch (error) {
@@ -96,9 +97,9 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
     }
   };
 
-  const commentTree = buildCommentTree(comments.filter(c => !c.deletedAt));
-  const approvedCommentsCount = comments.filter(c => !c.deletedAt).length;
-
+  const commentTree = buildCommentTree(comments);
+  const approvedCommentsCount = comments.length;
+  console.log("approvedCommentsCount", approvedCommentsCount);
   return (
     <div className="mt-12">
       <div className="mb-6">

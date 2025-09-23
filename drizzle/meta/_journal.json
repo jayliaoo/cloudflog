@@ -15,6 +15,20 @@
       "when": 1758627153179,
       "tag": "0001_chemical_wong",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1758637118723,
+      "tag": "0002_furry_frightful_four",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1758637315039,
+      "tag": "0003_daily_thing",
+      "breakpoints": true
     }
   ]
 }

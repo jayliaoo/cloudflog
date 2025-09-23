@@ -182,7 +182,6 @@ export async function authenticateWithGitHub(code: string, env: Env): Promise<st
         .set({
           name: githubUser.name || githubUser.login,
           image: githubUser.avatar_url,
-          emailVerified: new Date()
         })
         .where(eq(users.id, userId));
     } else {
@@ -195,7 +194,6 @@ export async function authenticateWithGitHub(code: string, env: Env): Promise<st
         name: githubUser.name || githubUser.login,
         email: email,
         image: githubUser.avatar_url,
-        emailVerified: new Date(),
         role: isFirstUser ? 'owner' : 'reader'
       }).returning();
       userId = result[0].id;

@@ -84,9 +84,6 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
       });
       
       if (response.ok) {
-        // Store edit token in localStorage for future edits
-        localStorage.setItem(`comment-edit-${postId}-${Date.now()}`, editToken);
-        
         // Reset form - preserve user info for authenticated users
         setFormData({ 
           authorName: user?.name || "", 
