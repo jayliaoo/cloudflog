@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test</title>
+</head>
+<body>
+    <h1>R2 Upload CORS Test</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="uploadFile()">Upload to R2</button>
+    <div id="status"></div>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('status');
+            
+            if (!fileInput.files[0]) {
+                status.textContent = 'Please select a file';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            status.textContent = 'Getting signed URL...';
+
+            try {
+                // Get signed URL from your API
+                const response = await fetch(`http://localhost:5174/api/images?action=getUploadUrl&filename=${file.name}&contentType=${file.type}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error('Failed to get signed URL');
+                }
+
+                status.textContent = 'Uploading to R2...';
+                
+                // Upload to R2 using fetch with CORS
+                const uploadResponse = await fetch(data.signedUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': file.type,
+                        'x-amz-checksum-crc32': 'AAAAAA==',
+                        'x-amz-sdk-checksum-algorithm': 'CRC32'
+                    },
+                    body: file,
+                    mode: 'cors' // This is the key setting
+                });
+
+                console.log('Upload response status:', uploadResponse.status);
+                console.log('Upload response headers:', Object.fromEntries(uploadResponse.headers.entries()));
+                
+                if (uploadResponse.ok) {
+                    status.textContent = 'Upload successful!';
+                } else {
+                    const errorText = await uploadResponse.text();
+                    status.textContent = `Upload failed: ${uploadResponse.status} - ${errorText}`;
+                    console.error('Upload error:', errorText);
+                }
+            } catch (error) {
+                status.textContent = `Error: ${error.message}`;
+                console.error('Full error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

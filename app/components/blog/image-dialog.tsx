@@ -30,24 +30,35 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
     if (!file) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
+    
     try {
-      const response = await fetch("/api/images", {
-        method: "POST",
-        body: formData,
+      // Step 1: Get signed URL from our API
+      const signedUrlResponse = await fetch(`/api/images?action=getUploadUrl&filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}`);
+      
+      if (!signedUrlResponse.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+      
+      const { signedUrl, finalUrl } = await signedUrlResponse.json<{ signedUrl: string; finalUrl: string }>();
+      
+      // Step 2: Upload file directly to R2 using the signed URL
+      const uploadResponse = await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
       });
 
-      const result = await response.json<{ success: boolean; image?: { url: string; originalName: string }; error?: string }>();
-
-      if (response.ok && result.success && result.image) {
-        onImageInsert(result.image.url, altText.trim() || result.image.originalName);
-        resetForm();
-        onOpenChange(false);
-      } else {
-        alert(result.error || "Failed to upload image");
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload file to R2');
       }
+
+      // Step 3: Insert the image into the editor
+      onImageInsert(finalUrl, altText.trim() || file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "));
+      resetForm();
+      onOpenChange(false);
+      
     } catch (error) {
       console.error("Upload error:", error);
       alert("Failed to upload image. Please try again.");

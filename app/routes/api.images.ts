@@ -1,135 +1,128 @@
-import { data, type ActionFunctionArgs } from "react-router";
-import { v4 as uuidv4 } from "uuid";
-import { getSession } from "~/auth.server";
+import { eq } from "drizzle-orm";
+import { data, type LoaderFunctionArgs } from "react-router";
 import { getDBClient } from "~/db";
 import { images } from "~/db/schema";
-import { eq } from "drizzle-orm";
+import { getCurrentUser } from "~/auth.server";
+import { createS3Client, getSignedUrlForUpload } from "~/utils/s3-client";
 
-export async function action({ request, context }: ActionFunctionArgs) {
+
+
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
+  const url = new URL(request.url);
   
-  // Get session from cookie
-  const cookieHeader = request.headers.get("Cookie");
-  const sessionToken = cookieHeader?.match(/session=([^;]+)/)?.[1];
-  
-  if (!sessionToken) {
-    return data({ error: "Unauthorized" }, { status: 401 });
-  }
-  
-  const session = await getSession(sessionToken, env);
-  if (!session?.user?.id) {
-    return data({ error: "Unauthorized" }, { status: 401 });
-  }
-  
-  // Check if user is owner (admin access required for image uploads)
-  if (session.user.role !== 'owner') {
-    return data({ error: "Admin access required" }, { status: 403 });
-  }
-  
-  const db = getDBClient(env.D1);
-
-  const formData = await request.formData();
-  const file = formData.get("file") as File;
-  
-  if (!file) {
-    return data({ error: "No file provided" }, { status: 400 });
-  }
-
-  // Validate file type
-  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-  if (!allowedTypes.includes(file.type)) {
-    return data({ error: "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed." }, { status: 400 });
-  }
-
-  // Validate file size (max 5MB)
-  const maxSize = 5 * 1024 * 1024; // 5MB
-  if (file.size > maxSize) {
-    return data({ error: "File too large. Maximum size is 5MB." }, { status: 400 });
-  }
-
-  try {
-    // Generate UUID for object key
-    const objectKey = uuidv4();
+  // Handle signed URL generation for uploads
+  if (url.searchParams.get("action") === "getUploadUrl") {
+    const filename = url.searchParams.get("filename");
+    const contentType = url.searchParams.get("contentType");
     
-    // Read file as buffer
-    const buffer = await file.arrayBuffer();
-    
-    // Upload to R2 (only in production or when R2 is available)
-    const env = context.cloudflare.env as Env;
-    if (env.R2) {
-      await env.R2.put(objectKey, buffer, {
-        httpMetadata: {
-          contentType: file.type,
-        },
-      });
-    } else if (import.meta.env.DEV) {
-      // In development without R2, we'll just save metadata
-      console.log("Development mode: Image metadata saved without R2 upload");
-    } else {
-      throw new Error("R2 bucket not available");
+    if (!filename || !contentType) {
+      return data({ error: "Missing filename or contentType" }, { status: 400 });
     }
 
-    // Save metadata to database
-    const [imageRecord] = await db.insert(images).values({
-      objectKey,
-      originalName: file.name,
-      mimeType: file.type,
-      size: file.size,
-      uploadedBy: session.user.id,
-    }).returning();
+    try {
+      // Get current user (optional in development)
+      const user = await getCurrentUser(request, env);
+      const originalFilename = filename;
+      
+      // Generate unique object key
+      const objectKey = `${crypto.randomUUID()}.jpg`;
+      
+      // Construct final URL for the uploaded image
+      const finalImageUrl = `${env.IMAGE_BASE_URL?.replace(/\/$/, '')}${objectKey}`;
+      
+      // Insert metadata into database
+      const db = getDBClient(env.D1);
+      const [imageRecord] = await db
+        .insert(images)
+        .values({
+          objectKey,
+          originalName: originalFilename,
+          mimeType: contentType,
+          size: 0, // Size will be updated after upload
+          uploadedBy: user?.id || null,
+          createdAt: new Date(),
+        })
+        .returning();
 
-    return data({
-      success: true,
-      image: {
+      // Generate signed URL using S3 client utilities
+      const s3Config = {
+        accessKeyId: env.R2_ACCESS_KEY_ID,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+        endpoint: env.R2_ENDPOINT || "https://<account-id>.r2.cloudflarestorage.com",
+        region: env.R2_REGION || 'auto',
+        bucket: env.R2_BUCKET_NAME || 'blog-images',
+      };
+
+      const signedUrl = await getSignedUrlForUpload(
+        s3Config,
+        s3Config.bucket,
         objectKey,
-        originalName: file.name,
-        url: `/api/images/${objectKey}`,
-      },
-    });
-  } catch (error) {
-    console.error("Image upload error:", error);
-    return data({ error: "Failed to upload image" }, { status: 500 });
-  }
-}
+        contentType,
+      );
 
-// GET endpoint to serve images
-export async function loader({ params, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
-  const objectKey = params.objectKey;
-  
-  if (!objectKey) {
-    return data({ error: "Object key required" }, { status: 400 });
+      return data({
+        success: true,
+        signedUrl,
+        objectKey,
+        finalUrl: finalImageUrl,
+      });
+    } catch (error) {
+      console.error("Signed URL generation error:", error);
+      return data({ error: "Failed to generate signed URL", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    }
   }
 
-  try {
-    // In development, R2 might not be available, so we'll return a placeholder
-    if (import.meta.env.DEV && !env.R2) {
+  // Original image serving functionality
+  const filename = url.pathname.split("/").pop();
+
+  if (!filename) {
+    return data({ error: "No filename provided" }, { status: 400 });
+  }
+
+  // Check if S3 credentials are available
+  if (!env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY) {
+    // In development, return a placeholder image
+    if (import.meta.env.DEV) {
       // Return a 1x1 transparent PNG as placeholder in development
-      const placeholderImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+      const placeholderImage =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
       return new Response(placeholderImage, {
         headers: {
           "Content-Type": "image/png",
           "Cache-Control": "public, max-age=3600",
         },
       });
+    } else {
+      return data({ error: "S3 credentials not configured" }, { status: 500 });
+    }
+  }
+
+  try {
+    // Get metadata from database
+    const db = getDBClient(env.D1);
+    const [imageRecord] = await db
+      .select()
+      .from(images)
+      .where(eq(images.objectKey, filename))
+      .limit(1);
+
+    if (!imageRecord) {
+      return data({ error: "Image metadata not found" }, { status: 404 });
     }
 
-    const object = await env.R2.get(objectKey);
-    
-    if (!object) {
-      return data({ error: "Image not found" }, { status: 404 });
+    // In development with credentials, redirect to R2 URL
+    if (import.meta.env.DEV) {
+      console.log(`Development mode: Redirecting to R2 for ${filename}`);
+      const imageUrl = `${env.R2_ENDPOINT || 'https://534b483058263f37d29575599ffd483f.r2.cloudflarestorage.com'}/${env.R2_BUCKET_NAME || 'blog'}/${filename}`;
+      return Response.redirect(imageUrl, 302);
+    } else {
+      // In production, redirect to the S3/R2 URL
+      const imageUrl = `${env.IMAGE_BASE_URL}${filename}`;
+      return Response.redirect(imageUrl, 302);
     }
-
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set("etag", object.httpEtag);
-    headers.set("cache-control", "public, max-age=31536000");
-
-    return new Response(object.body, {
-      headers,
-    });
   } catch (error) {
-    console.error("Image fetch error:", error);
-    return data({ error: "Failed to fetch image" }, { status: 500 });
+    console.error("Image retrieval error:", error);
+    return data({ error: "Failed to retrieve image" }, { status: 500 });
   }
 }
