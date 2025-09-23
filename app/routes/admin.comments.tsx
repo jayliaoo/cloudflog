@@ -34,16 +34,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .select({
       id: comments.id,
       content: comments.content,
-      authorName: comments.authorName,
-      authorEmail: comments.authorEmail,
+      authorName: users.name,
       createdAt: comments.createdAt,
       postTitle: posts.title,
       postSlug: posts.slug,
-      userName: users.name,
     })
     .from(comments)
-    .leftJoin(posts, eq(comments.postId, posts.id))
-    .leftJoin(users, eq(comments.authorId, users.id))
+    .innerJoin(posts, eq(comments.postId, posts.id))
+    .innerJoin(users, eq(comments.authorId, users.id))
     .orderBy(desc(comments.createdAt));
   
   return data({ comments: allComments });
@@ -117,7 +115,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
       if (response.ok) {
         window.location.reload();
       } else {
-        const responseData = await response.json();
+        const responseData = await response.json() as { error: string };
         alert(responseData.error || "Failed to delete comment");
       }
     } catch (error) {

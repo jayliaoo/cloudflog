@@ -40,7 +40,6 @@ export async function createSession(userId: number, env: Env): Promise<string> {
 
 // Get session from token
 export async function getSession(sessionToken: string, env: Env): Promise<Session | null> {
-  console.log('getSession:', sessionToken);
   let db
   try{
     db = getDBClient(env.D1);

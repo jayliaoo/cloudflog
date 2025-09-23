@@ -4,7 +4,6 @@ import { Button } from "~/components/ui/button";
 import { X, Plus } from "lucide-react";
 
 interface Tag {
-  id: number;
   name: string;
   slug: string;
 }
@@ -34,7 +33,7 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
       setLoading(true);
       try {
         const response = await fetch(`/api/tags?search=${encodeURIComponent(inputValue)}`);
-        const data = await response.json();
+        const data = await response.json<{ tags: Tag[] }>();
         
         if (data.tags) {
           // Filter out already selected tags
@@ -114,8 +113,7 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
           body: formData
         });
 
-        const data = await response.json();
-        if (data.tag) {
+        const data = await response.json<{ tag?: Tag; error?: string }>();        if (data.tag) {
           const newTags = [...selectedTags, data.tag.name];
           onTagsChange(newTags);
         } else if (data.error) {
@@ -206,7 +204,7 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
 
           {!loading && suggestions.map((tag) => (
             <button
-              key={tag.id}
+              key={tag.slug}
               type="button"
               className="w-full px-3 py-2 text-left text-sm hover:bg-accent focus:bg-accent focus:outline-none"
               onClick={() => handleSuggestionClick(tag)}

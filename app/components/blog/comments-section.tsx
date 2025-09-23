@@ -6,12 +6,10 @@ interface Comment {
   id: number;
   content: string;
   authorName: string;
-  authorEmail: string;
   authorId: number;
   createdAt: number;
   editedAt?: number;
   deletedAt?: number;
-  approved: boolean;
   postId: number;
   parentId?: number;
   replies?: Comment[];
@@ -98,8 +96,8 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
     }
   };
 
-  const commentTree = buildCommentTree(comments.filter(c => c.approved && !c.deletedAt));
-  const approvedCommentsCount = comments.filter(c => c.approved && !c.deletedAt).length;
+  const commentTree = buildCommentTree(comments.filter(c => !c.deletedAt));
+  const approvedCommentsCount = comments.filter(c => !c.deletedAt).length;
 
   return (
     <div className="mt-12">

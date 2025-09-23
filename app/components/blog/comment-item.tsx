@@ -10,12 +10,10 @@ interface CommentItemProps {
     id: number;
     content: string;
     authorName: string;
-    authorEmail: string;
     authorId: number;
     createdAt: number;
     editedAt?: number;
     deletedAt?: number;
-    approved: boolean;
     postId: number;
     parentId?: number;
     replies?: any[];
@@ -32,7 +30,6 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [editAuthorName, setEditAuthorName] = useState(comment.authorName);
-  const [editAuthorEmail, setEditAuthorEmail] = useState(comment.authorEmail);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editError, setEditError] = useState("");
 
@@ -67,11 +64,6 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
       setEditError("Author name is required");
       return;
     }
-    
-    if (!editAuthorEmail.trim()) {
-      setEditError("Email is required");
-      return;
-    }
 
     setIsSubmitting(true);
     setEditError("");
@@ -80,7 +72,6 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
       const formData = new FormData();
       formData.append("content", editContent);
       formData.append("authorName", editAuthorName);
-      formData.append("authorEmail", editAuthorEmail);
       
       const response = await fetch(`/api/comments/${comment.id}`, {
         method: "PUT",
@@ -121,7 +112,6 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
     setIsEditing(false);
     setEditContent(comment.content);
     setEditAuthorName(comment.authorName);
-    setEditAuthorEmail(comment.authorEmail);
     setEditError("");
   };
 
@@ -200,13 +190,6 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
                   value={editAuthorName}
                   onChange={(e) => setEditAuthorName(e.target.value)}
                   placeholder="Your Name"
-                  className="text-sm"
-                />
-                <Input
-                  type="email"
-                  value={editAuthorEmail}
-                  onChange={(e) => setEditAuthorEmail(e.target.value)}
-                  placeholder="Your Email"
                   className="text-sm"
                 />
               </div>

@@ -20,21 +20,16 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         slug: posts.slug,
         excerpt: posts.excerpt,
         createdAt: posts.createdAt,
-        author: {
-          name: users.name,
-          image: users.image
-        },
         tags: sql<string>`GROUP_CONCAT(${tags.name}, ', ')`
       })
       .from(posts)
-      .innerJoin(users, eq(posts.authorId, users.id))
       .leftJoin(postTags, eq(posts.id, postTags.postId))
       .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
       .where(and(
         eq(posts.published, true),
         eq(posts.featured, true)
       ))
-      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt, users.name, users.image)
+      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt)
       .orderBy(desc(posts.createdAt))
       .limit(4);
 
@@ -46,17 +41,13 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         slug: posts.slug,
         excerpt: posts.excerpt,
         createdAt: posts.createdAt,
-        author: {
-          name: users.name
-        },
         tags: sql<string>`GROUP_CONCAT(${tags.name}, ', ')`
       })
       .from(posts)
-      .innerJoin(users, eq(posts.authorId, users.id))
       .leftJoin(postTags, eq(posts.id, postTags.postId))
       .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
       .where(eq(posts.published, true))
-      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt, users.name)
+      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt)
       .orderBy(desc(posts.createdAt))
       .limit(6);
 
@@ -187,10 +178,6 @@ export default function HomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-2 mb-4">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{post.author.name}</span>
-                </div>
                 <Button asChild>
                   <Link to={`/posts/${post.slug}`}>Read More</Link>
                 </Button>

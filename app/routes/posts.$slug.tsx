@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { CalendarDays, User, ArrowLeft, Tag, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, tags, postTags, comments } from "~/db/schema";
+import { posts, tags, postTags, comments, users } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { marked } from 'marked';
 import { CommentsSection } from "~/components/blog/comments-section";
@@ -57,11 +57,17 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
 
     // Fetch comments for the post
     const postComments = await db
-      .select()
+      .select({
+        id: comments.id,
+        content: comments.content,
+        authorName: users.name,
+        createdAt: comments.createdAt,
+        postId: comments.postId,
+      })
       .from(comments)
-      .where(eq(comments.postId, post.id))
+      .innerJoin(users, eq(comments.authorId, users.id))
       .orderBy(comments.createdAt);
-
+    console.log('postComments', postComments);
     const postWithTags = {
       ...post,
       tags: postTagsData.map(pt => pt.tagName),

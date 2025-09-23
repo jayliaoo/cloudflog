@@ -81,7 +81,6 @@ export async function trackPostView(
           postId,
           userId: userId || 0, // Use 0 for anonymous users
           viewCount: 1, // New view count column
-          viewedAt: new Date(),
         });
         console.log('View record inserted successfully');
       } catch (insertError) {

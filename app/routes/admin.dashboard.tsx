@@ -81,11 +81,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .select({
       id: comments.id,
       content: comments.content,
-      authorName: comments.authorName,
+      authorName: users.name,
       createdAt: comments.createdAt,
       postId: comments.postId,
     })
     .from(comments)
+    .innerJoin(users, eq(comments.authorId, users.id))
     .orderBy(desc(comments.createdAt))
     .limit(5);
   
