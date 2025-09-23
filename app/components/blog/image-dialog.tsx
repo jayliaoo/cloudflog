@@ -39,9 +39,9 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
         body: formData,
       });
 
-      const result = await response.json();
+      const result = await response.json<{ success: boolean; image?: { url: string; originalName: string }; error?: string }>();
 
-      if (response.ok && result.success) {
+      if (response.ok && result.success && result.image) {
         onImageInsert(result.image.url, altText.trim() || result.image.originalName);
         resetForm();
         onOpenChange(false);

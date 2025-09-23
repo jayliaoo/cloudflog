@@ -9,9 +9,8 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"main": "./workers/app.ts",
 	"vars": {
-		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
-		"ADMIN_EMAIL": "jayliaoo@outlook.com",
-		"AUTH_URL": "http://localhost:5173",
+		"AUTH_URL": "https://blog.jayliao.workers.dev",
+		"IMAGE_BASE_URL": "https://pub-472ed6155ec7452a9847ea0870702ffa.r2.dev/"
 	},
 	"observability": {
 		"enabled": true
