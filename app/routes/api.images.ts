@@ -15,6 +15,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   if (url.searchParams.get("action") === "getUploadUrl") {
     const filename = url.searchParams.get("filename");
     const contentType = url.searchParams.get("contentType");
+    const cacheControl = url.searchParams.get("cacheControl");
     
     if (!filename || !contentType) {
       return data({ error: "Missing filename or contentType" }, { status: 400 });
@@ -25,15 +26,19 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       const user = await getCurrentUser(request, env);
       const originalFilename = filename;
       
-      // Generate unique object key
-      const objectKey = `${crypto.randomUUID()}.jpg`;
+      // Extract file extension from original filename
+      const fileParts = originalFilename.split('.');
+      const fileExtension = fileParts.length > 1 ? fileParts.pop()?.toLowerCase() || 'jpg' : 'jpg';
+      
+      // Generate unique object key with original extension
+      const objectKey = `${crypto.randomUUID()}.${fileExtension}`;
       
       // Construct final URL for the uploaded image
-      const finalImageUrl = `${env.IMAGE_BASE_URL?.replace(/\/$/, '')}${objectKey}`;
+      const finalImageUrl = `${env.IMAGE_BASE_URL?.replace(/\/$/, '')}/${objectKey}`;
       
       // Insert metadata into database
       const db = getDBClient(env.D1);
-      const [imageRecord] = await db
+      const [] = await db
         .insert(images)
         .values({
           objectKey,
@@ -59,6 +64,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         s3Config.bucket,
         objectKey,
         contentType,
+        undefined, // metadata
+        3600, // expiresIn
+        cacheControl || 'public, max-age=31536000, immutable' // Default to 1 year cache
       );
 
       return data({

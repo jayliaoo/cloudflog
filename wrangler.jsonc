@@ -10,7 +10,7 @@
 	"main": "./workers/app.ts",
 	"vars": {
 		"AUTH_URL": "https://blog.jayliao.workers.dev",
-		"IMAGE_BASE_URL": "https://pub-472ed6155ec7452a9847ea0870702ffa.r2.dev/",
+		"IMAGE_BASE_URL": "https://pub-472ed6155ec7452a9847ea0870702ffa.r2.dev",
 		"R2_ENDPOINT": "https://534b483058263f37d29575599ffd483f.r2.cloudflarestorage.com",
 		"R2_REGION": "auto",
 		"R2_BUCKET_NAME": "blog"

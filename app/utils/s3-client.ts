@@ -24,7 +24,8 @@ export async function getSignedUrlForUpload(
   key: string,
   contentType: string,
   metadata?: Record<string, string>,
-  expiresIn: number = 3600 // 1 hour default
+  expiresIn: number = 3600, // 1 hour default
+  cacheControl?: string // Optional cache control header
 ) {
   // Use aws4fetch to generate signed URL
   const aws = createS3Client(config);
@@ -33,20 +34,29 @@ export async function getSignedUrlForUpload(
   const cleanEndpoint = config.endpoint.replace(/\/$/, ''); // Remove trailing slash
   const objectUrl = `${cleanEndpoint}/${bucket}/${key}`;
   
+  // Create headers object
+  const headers: Record<string, string> = {
+    'Content-Type': contentType,
+  };
+  
+  // Add cache control as metadata instead of header
+  if (cacheControl) {
+    if (!metadata) {
+      metadata = {};
+    }
+    metadata['cache-control'] = cacheControl;
+  }
+  
   // Create a request that will be signed
   const request = new Request(objectUrl, {
     method: 'PUT',
-    headers: {
-      'Content-Type': contentType,
-    }
+    headers: headers
   });
   
   // Sign the request and get the signed URL
   const signedRequest = await aws.sign(request, {
     aws: { signQuery: true },
-    headers: {
-      'Content-Type': contentType,
-    }
+    headers: headers
   });
   
   // Return the signed URL
