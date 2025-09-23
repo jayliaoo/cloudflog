@@ -2,11 +2,10 @@ import { data, redirect } from "react-router";
 import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { comments, posts, users } from "~/db/schema";
-import { eq, desc, sql } from "drizzle-orm";
-import { Form, Link } from "react-router";
+import { eq, desc } from "drizzle-orm";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { MessageSquare, User, Calendar, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
@@ -168,18 +167,8 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
                     <div className="flex items-center space-x-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">
-                        {comment.userName || comment.authorName}
+                        {comment.authorName}
                       </span>
-                      {comment.userName && (
-                        <Badge variant="secondary" className="text-xs">
-                          Registered
-                        </Badge>
-                      )}
-                      {!comment.userName && (
-                        <Badge variant="outline" className="text-xs">
-                          Guest
-                        </Badge>
-                      )}
                     </div>
                     
                     <p className="text-sm text-gray-600">{comment.content}</p>

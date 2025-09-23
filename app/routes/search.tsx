@@ -1,9 +1,8 @@
 import { data, useLoaderData, Form } from "react-router";
 import { Link, useSearchParams } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { CalendarDays, Search, Clock } from "lucide-react";
+import { Search } from "lucide-react";
+import PostCard from "~/components/blog/PostCard";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { desc, eq, or, like, and, count } from "drizzle-orm";
@@ -108,6 +107,7 @@ export async function loader({ request, context }: { request: Request; context: 
         
         return {
           ...post,
+          excerpt: post.excerpt || "",
           tags: postTagsData.map(pt => pt.tagName),
         };
       })
@@ -195,53 +195,7 @@ export default function SearchPage() {
       {posts.length > 0 && (
         <div className="space-y-6">
           {posts.map((post) => (
-            <Card key={post.id} className="overflow-hidden">
-              {post.coverImage && (
-                <img
-                  src={post.coverImage}
-                  alt={post.title}
-                  className="aspect-video object-cover"
-                />
-              )}
-              
-              <CardHeader>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <CalendarDays className="h-4 w-4" />
-                  <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                </div>
-                <CardTitle>
-                  <Link to={`/posts/${post.slug}`} className="hover:text-primary">
-                    {post.title}
-                  </Link>
-                </CardTitle>
-                <p className="text-muted-foreground">
-                  {post.excerpt}
-                </p>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <Button size="sm" asChild>
-                    <Link to={`/posts/${post.slug}`}>
-                      Read More
-                      <Clock className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-                
-                {post.tags && post.tags.length > 0 && (
-                  <div className="mt-4">
-                    {post.tags.map((tag) => (
-                      <Link key={tag} to={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}>
-                        <Badge variant="secondary" className="mr-2 text-xs hover:bg-secondary/80 cursor-pointer">
-                          {tag}
-                        </Badge>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <PostCard key={post.id} post={post} />
           ))}
         </div>
       )}
