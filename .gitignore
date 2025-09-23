@@ -17,3 +17,5 @@
 !.env.example
 
 .github_token
+
+*.log

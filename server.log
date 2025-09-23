@@ -1,9 +1,0 @@
-
-> dev
-> react-router dev
-
-Using vars defined in .dev.vars
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: use --host to expose
-  ➜  Debug:   http://localhost:5173/__debug
-  ➜  press h + enter to show help
