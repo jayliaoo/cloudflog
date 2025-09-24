@@ -6,7 +6,7 @@ import { Badge } from "~/components/ui/badge";
 import { CalendarDays, User, ArrowLeft, Tag, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags, comments, users } from "~/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, lt, gt, desc, asc, and } from "drizzle-orm";
 import { marked } from 'marked';
 import { CommentsSection } from "~/components/blog/comments-section";
 import { getCurrentUser } from "~/auth.server";
@@ -67,6 +67,28 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
       .from(comments)
       .innerJoin(users, eq(comments.authorId, users.id))
       .orderBy(comments.createdAt);
+
+    // Fetch previous post (older post)
+    const previousPostData = await db
+      .select({
+        title: posts.title,
+        slug: posts.slug,
+      })
+      .from(posts)
+      .where(and(eq(posts.published, true), lt(posts.createdAt, post.createdAt)))
+      .orderBy(desc(posts.createdAt))
+      .limit(1);
+
+    // Fetch next post (newer post)
+    const nextPostData = await db
+      .select({
+        title: posts.title,
+        slug: posts.slug,
+      })
+      .from(posts)
+      .where(and(eq(posts.published, true), gt(posts.createdAt, post.createdAt)))
+      .orderBy(asc(posts.createdAt))
+      .limit(1);
     const postWithTags = {
       ...post,
       tags: postTagsData.map(pt => pt.tagName),
@@ -95,7 +117,9 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
     return data({
       post: postWithTags,
       comments: processedComments,
-      user
+      user,
+      previousPost: previousPostData[0] || null,
+      nextPost: nextPostData[0] || null
     });
   } catch (error) {
     console.error("Error fetching post from database:", error);
@@ -125,7 +149,7 @@ export default function BlogPostPage() {
     );
   }
 
-  const { post, comments, user } = loaderData;
+  const { post, comments, user, previousPost, nextPost } = loaderData;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -206,18 +230,26 @@ export default function BlogPostPage() {
 
       {/* Navigation */}
       <nav className="mt-12 flex items-center justify-between">
-        <Button variant="secondary" size="sm" asChild>
-          <Link to="/posts">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Previous Post
-          </Link>
-        </Button>
-        <Button variant="secondary" size="sm" asChild>
-          <Link to="/posts">
-            Next Post
-            <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
-          </Link>
-        </Button>
+        {previousPost ? (
+          <Button variant="secondary" size="sm" asChild>
+            <Link to={`/posts/${previousPost.slug}`}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Previous Post
+            </Link>
+          </Button>
+        ) : (
+          <div></div>
+        )}
+        {nextPost ? (
+          <Button variant="secondary" size="sm" asChild>
+            <Link to={`/posts/${nextPost.slug}`}>
+              Next Post
+              <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+            </Link>
+          </Button>
+        ) : (
+          <div></div>
+        )}
       </nav>
 
       {/* Comments Section */}
