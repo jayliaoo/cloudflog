@@ -95,9 +95,6 @@ export default function TagsPage() {
                   View posts
                   <Hash className="h-3 w-3" />
                 </Link>
-                <Badge variant="outline" className="text-xs">
-                  #{tag.tagSlug}
-                </Badge>
               </div>
             </CardContent>
           </Card>
