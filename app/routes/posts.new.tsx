@@ -48,7 +48,6 @@ export async function loader({ request, context }: { request: Request; context: 
         content: posts.content,
         excerpt: posts.excerpt,
         coverImage: posts.coverImage,
-        authorId: posts.authorId,
         published: posts.published,
       })
       .from(posts)
@@ -93,17 +92,17 @@ export default function NewPost() {
   
   // Handle loader errors
   useEffect(() => {
-    if (loaderData.error) {
+    if ('error' in loaderData && loaderData.error) {
       setError(loaderData.error);
     }
-  }, [loaderData.error]);
+  }, [loaderData]);
   
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
     content: "",
-    tags: [],
+    tags: [] as string[],
     published: false,
   });
 
@@ -111,7 +110,7 @@ export default function NewPost() {
 
   // Load existing post data when editing
   useEffect(() => {
-    if (isEditing && loaderData.post) {
+    if (isEditing && 'post' in loaderData && loaderData.post) {
       setFormData({
         title: loaderData.post.title || "",
         slug: loaderData.post.slug || "",
@@ -120,7 +119,7 @@ export default function NewPost() {
         published: loaderData.post.published || false,
       });
     }
-  }, [isEditing, loaderData.post]);
+  }, [isEditing, loaderData]);
 
   const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
