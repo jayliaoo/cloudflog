@@ -2,7 +2,7 @@ import { data, redirect } from "react-router";
 import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
-import { desc, eq, inArray, count } from "drizzle-orm";
+import { desc, eq, inArray, count, like, and, or } from "drizzle-orm";
 import { Form, Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -30,6 +30,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const tagFilter = url.searchParams.get('tag');
   const statusFilter = url.searchParams.get('status'); // 'all', 'published', 'draft'
   const featuredFilter = url.searchParams.get('featured'); // 'all', 'featured', 'unfeatured'
+  const searchQuery = url.searchParams.get('search');
   
   // Get pagination parameters
   const page = parseInt(url.searchParams.get('page') || '1', 10);
@@ -46,6 +47,64 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .from(tags)
     .orderBy(tags.name);
   
+  // Build conditions array for filtering
+  const conditions = [];
+  
+  // Apply status filter
+  if (statusFilter === 'published') {
+    conditions.push(eq(posts.published, true));
+  } else if (statusFilter === 'draft') {
+    conditions.push(eq(posts.published, false));
+  }
+  
+  // Apply featured filter
+  if (featuredFilter === 'featured') {
+    conditions.push(eq(posts.featured, true));
+  } else if (featuredFilter === 'unfeatured') {
+    conditions.push(eq(posts.featured, false));
+  }
+  
+  // Apply search filter
+  if (searchQuery && searchQuery.trim()) {
+    const searchTerm = `%${searchQuery.trim()}%`;
+    conditions.push(
+      or(
+        like(posts.title, searchTerm),
+        like(posts.content, searchTerm)
+      )
+    );
+  }
+  
+  // Apply tag filter if specified
+  if (tagFilter) {
+    // Get post IDs that have the specified tag
+    const taggedPosts = await db
+      .select({ postId: postTags.postId })
+      .from(postTags)
+      .where(eq(postTags.tagSlug, tagFilter));
+    
+    const postIds = taggedPosts.map(tp => tp.postId);
+    
+    if (postIds.length > 0) {
+      // Add tag filter to conditions
+      conditions.push(inArray(posts.id, postIds));
+    } else {
+      // No posts have this tag, return empty result
+      return data({ 
+        posts: [], 
+        allTags, 
+        user, 
+        currentTag: tagFilter, 
+        currentStatus: statusFilter,
+        currentFeatured: featuredFilter,
+        currentSearch: searchQuery,
+        currentPage: page,
+        totalPages: 0,
+        totalPosts: 0
+      });
+    }
+  }
+  
   // Build base query for posts
   let postsQuery = db
     .select({
@@ -60,47 +119,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     })
     .from(posts);
   
-  // Apply status filter
-  if (statusFilter === 'published') {
-    postsQuery = postsQuery.where(eq(posts.published, true));
-  } else if (statusFilter === 'draft') {
-    postsQuery = postsQuery.where(eq(posts.published, false));
-  }
-  
-  // Apply featured filter
-  if (featuredFilter === 'featured') {
-    postsQuery = postsQuery.where(eq(posts.featured, true));
-  } else if (featuredFilter === 'unfeatured') {
-    postsQuery = postsQuery.where(eq(posts.featured, false));
-  }
-  
-  // Apply tag filter if specified
-  if (tagFilter) {
-    // Get post IDs that have the specified tag
-    const taggedPosts = await db
-      .select({ postId: postTags.postId })
-      .from(postTags)
-      .where(eq(postTags.tagSlug, tagFilter));
-    
-    const postIds = taggedPosts.map(tp => tp.postId);
-    
-    if (postIds.length > 0) {
-      // Filter posts by the tagged post IDs
-      postsQuery = postsQuery.where(inArray(posts.id, postIds));
-    } else {
-      // No posts have this tag, return empty result
-      return data({ 
-        posts: [], 
-        allTags, 
-        user, 
-        currentTag: tagFilter, 
-        currentStatus: statusFilter,
-        currentFeatured: featuredFilter,
-        currentPage: page,
-        totalPages: 0,
-        totalPosts: 0
-      });
-    }
+  // Apply all conditions
+  if (conditions.length > 0) {
+    postsQuery = postsQuery.where(and(...conditions));
   }
   
   // Get total count for pagination
@@ -140,6 +161,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     currentTag: tagFilter, 
     currentStatus: statusFilter,
     currentFeatured: featuredFilter,
+    currentSearch: searchQuery,
     currentPage: page,
     totalPages,
     totalPosts: totalCount,
@@ -201,12 +223,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function AdminPosts({ loaderData }: { loaderData: any }) {
-  const { posts, allTags, currentTag, currentStatus, currentFeatured, currentPage, totalPages, totalPosts } = loaderData as { 
+  const { posts, allTags, currentTag, currentStatus, currentFeatured, currentSearch, currentPage, totalPages, totalPosts } = loaderData as { 
     posts: any[], 
     allTags: any[], 
     currentTag: string | null, 
     currentStatus: string | null,
     currentFeatured: string | null,
+    currentSearch: string | null,
     currentPage: number,
     totalPages: number,
     totalPosts: number
@@ -224,75 +247,106 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
       
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
+        {/* Search Input */}
+        <div className="w-64">
+          <input
+            type="text"
+            placeholder="Search posts by title or content..."
+            defaultValue={currentSearch || ''}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const searchValue = (e.target as HTMLInputElement).value;
+                const url = new URL(window.location.href);
+                if (searchValue.trim()) {
+                  url.searchParams.set('search', searchValue.trim());
+                } else {
+                  url.searchParams.delete('search');
+                }
+                url.searchParams.delete('page'); // Reset to first page when searching
+                window.location.href = url.toString();
+              }
+            }}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          />
+        </div>
+        
         {/* Status Filter */}
-        <select
-          value={currentStatus || 'all'}
-          onChange={(e) => {
-            const newStatus = e.target.value;
-            const url = new URL(window.location.href);
-            if (newStatus === 'all') {
-              url.searchParams.delete('status');
-            } else {
-              url.searchParams.set('status', newStatus);
-            }
-            window.location.href = url.toString();
-          }}
-          className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <option value="all">All Posts</option>
-          <option value="published">Published Only</option>
-          <option value="draft">Draft Only</option>
-        </select>
+        <div className="w-64">
+          <select
+            value={currentStatus || 'all'}
+            onChange={(e) => {
+              const newStatus = e.target.value;
+              const url = new URL(window.location.href);
+              if (newStatus === 'all') {
+                url.searchParams.delete('status');
+              } else {
+                url.searchParams.set('status', newStatus);
+              }
+              window.location.href = url.toString();
+            }}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="all">All Posts</option>
+            <option value="published">Published Only</option>
+            <option value="draft">Draft Only</option>
+          </select>
+        </div>
         
         {/* Featured Filter */}
-        <select
-          value={currentFeatured || 'all'}
-          onChange={(e) => {
-            const newFeatured = e.target.value;
-            const url = new URL(window.location.href);
-            if (newFeatured === 'all') {
-              url.searchParams.delete('featured');
-            } else {
-              url.searchParams.set('featured', newFeatured);
-            }
-            window.location.href = url.toString();
-          }}
-          className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <option value="all">All Posts</option>
-          <option value="featured">Featured Only</option>
-          <option value="unfeatured">Unfeatured Only</option>
-        </select>
+        <div className="w-64">
+          <select
+            value={currentFeatured || 'all'}
+            onChange={(e) => {
+              const newFeatured = e.target.value;
+              const url = new URL(window.location.href);
+              if (newFeatured === 'all') {
+                url.searchParams.delete('featured');
+              } else {
+                url.searchParams.set('featured', newFeatured);
+              }
+              window.location.href = url.toString();
+            }}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="all">All Posts</option>
+            <option value="featured">Featured Only</option>
+            <option value="unfeatured">Unfeatured Only</option>
+          </select>
+        </div>
         
         {/* Tag Filter */}
-        <select
-          value={currentTag || ''}
-          onChange={(e) => {
-            const newTag = e.target.value;
-            const url = new URL(window.location.href);
-            if (newTag === '') {
-              url.searchParams.delete('tag');
-            } else {
-              url.searchParams.set('tag', newTag);
-            }
-            window.location.href = url.toString();
-          }}
-          className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <option value="">All Tags</option>
-          {allTags.map((tag) => (
-            <option key={tag.slug} value={tag.slug}>
-              {tag.name}
-            </option>
-          ))}
-        </select>
+        <div className="w-64">
+          <select
+            value={currentTag || ''}
+            onChange={(e) => {
+              const newTag = e.target.value;
+              const url = new URL(window.location.href);
+              if (newTag === '') {
+                url.searchParams.delete('tag');
+              } else {
+                url.searchParams.set('tag', newTag);
+              }
+              window.location.href = url.toString();
+            }}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="">All Tags</option>
+            {allTags.map((tag) => (
+              <option key={tag.slug} value={tag.slug}>
+                {tag.name}
+              </option>
+            ))}
+          </select>
+        </div>
         
-        {/* Clear Filters */}
-        {(currentTag || currentStatus || currentFeatured) && (
-          <Button size="sm" asChild>
-            <Link to="/admin/posts">Clear Filters</Link>
-          </Button>
-        )}
+        {/* Clear Filters - Always Visible */}
+        <Button 
+          size="sm" 
+          disabled={currentTag === '' && currentStatus === 'all' && currentFeatured === 'all' && !currentSearch}
+          asChild
+        >
+          <Link to="/admin/posts">Clear Filters</Link>
+        </Button>
       </div>
       
       {/* Posts List */}
@@ -410,7 +464,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
               size="sm"
               asChild
             >
-              <Link to={`/admin/posts?page=${currentPage - 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
+              <Link to={`/admin/posts?page=${currentPage - 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}>
                 Previous
               </Link>
             </Button>
@@ -437,7 +491,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                   size="sm"
                   asChild
                 >
-                  <Link to={`/admin/posts?page=${pageNum}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
+                  <Link to={`/admin/posts?page=${pageNum}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}>
                     {pageNum}
                   </Link>
                 </Button>
@@ -451,7 +505,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
               size="sm"
               asChild
             >
-              <Link to={`/admin/posts?page=${currentPage + 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
+              <Link to={`/admin/posts?page=${currentPage + 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}>
                 Next
               </Link>
             </Button>
