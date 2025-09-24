@@ -63,32 +63,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   
   const totalViews = totalViewsResult[0].totalViews || 0;
   
-  // Get recent posts
-  const recentPosts = await db
-    .select({
-      id: posts.id,
-      title: posts.title,
-      slug: posts.slug,
-      published: posts.published,
-      createdAt: posts.createdAt,
-    })
-    .from(posts)
-    .orderBy(desc(posts.createdAt))
-    .limit(5);
-  
-  // Get recent comments
-  const recentComments = await db
-    .select({
-      id: comments.id,
-      content: comments.content,
-      authorName: users.name,
-      createdAt: comments.createdAt,
-      postId: comments.postId,
-    })
-    .from(comments)
-    .innerJoin(users, eq(comments.authorId, users.id))
-    .orderBy(desc(comments.createdAt))
-    .limit(5);
+
   
   return data({
     stats: {
@@ -101,13 +76,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       totalUsers: totalUsersCount[0].count,
       totalViews: totalViews,
     },
-    recentPosts,
-    recentComments,
   });
 }
 
 export default function AdminDashboard({ loaderData }: { loaderData: any }) {
-  const { stats, recentPosts, recentComments } = loaderData;
+  const { stats } = loaderData;
   
   const statCards = [
     {
@@ -189,61 +162,7 @@ export default function AdminDashboard({ loaderData }: { loaderData: any }) {
           </Card>
         ))}
       </div>
-      
-      {/* Recent Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Posts */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Posts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentPosts.map((post) => (
-                <div key={post.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{post.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(post.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      post.published 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                    }`}>
-                      {post.published ? 'Published' : 'Draft'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Recent Comments */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Comments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentComments.map((comment) => (
-                <div key={comment.id} className="p-3 border rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium">{comment.authorName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(comment.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{comment.content}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+
     </div>
     </AdminLayout>
   );
