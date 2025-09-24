@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { CalendarDays, Clock, Tag, Eye } from "lucide-react";
+import { CalendarDays, Clock, Tag, Eye, MessageCircle } from "lucide-react";
 
 interface PostCardProps {
   post: {
@@ -13,6 +13,7 @@ interface PostCardProps {
     createdAt: string;
     featured?: boolean;
     viewCount?: number;
+    commentCount?: number;
     tags: string | null | string[];
   };
 }
@@ -21,8 +22,8 @@ interface PostCardProps {
 function renderTags(tags: string | null | string[]) {
   if (!tags) return null;
   
-  // Handle both string format ("tag1, tag2") and array format (["tag1", "tag2"])
-  const tagNames = Array.isArray(tags) ? tags : tags.split(', ').filter(tag => tag.trim());
+  // Handle both string format ("tag1,tag2") and array format (["tag1", "tag2"])
+  const tagNames = Array.isArray(tags) ? tags : tags.split(',').filter(tag => tag.trim());
   if (tagNames.length === 0) return null;
   
   return (
@@ -64,6 +65,12 @@ export default function PostCard({ post }: PostCardProps) {
             <div className="flex items-center gap-1">
               <Eye className="h-4 w-4" />
               <span>{post.viewCount}</span>
+            </div>
+          )}
+          {post.commentCount !== undefined && (
+            <div className="flex items-center gap-1">
+              <MessageCircle className="h-4 w-4" />
+              <span>{post.commentCount}</span>
             </div>
           )}
           {post.featured && (

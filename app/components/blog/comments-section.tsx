@@ -18,7 +18,7 @@ interface Comment {
 interface CommentsSectionProps {
   postId: number;
   comments: Comment[];
-  user?: { id: number; name: string; email: string; image?: string } | null;
+  user?: { id: number; name: string; email: string; image?: string; role?: string } | null;
   onCommentUpdate?: () => void;
 }
 
@@ -87,7 +87,6 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
           updatedAt: comment.updatedAt ? new Date(comment.updatedAt).getTime() : undefined,
           deletedAt: comment.deletedAt ? new Date(comment.deletedAt).getTime() : undefined,
         }));
-        console.log("processedComments", processedComments);
         setComments(processedComments);
       }
     } catch (error) {
@@ -99,7 +98,6 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
 
   const commentTree = buildCommentTree(comments);
   const approvedCommentsCount = comments.length;
-  console.log("approvedCommentsCount", approvedCommentsCount);
   return (
     <div className="mt-12">
       <div className="mb-6">

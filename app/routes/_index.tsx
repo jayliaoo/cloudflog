@@ -2,17 +2,17 @@ import { data, useLoaderData } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
-import { ArrowRight, CalendarDays, User, Tag } from "lucide-react";
+import { ArrowRight, CalendarDays, User, Tag, MessageCircle, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, users, tags, postTags } from "~/db/schema";
-import { eq, desc, and, isNotNull, sql } from "drizzle-orm";
+import { posts, users, tags, postTags, comments } from "~/db/schema";
+import { eq, desc, and, isNotNull, sql, count, isNull } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
   const db = getDBClient(env.D1);
 
   try {
-    // Fetch featured posts with tags
+    // Fetch featured posts with tags, comment count, and view count
     const featuredPostsData = await db
       .select({
         id: posts.id,
@@ -20,20 +20,23 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         slug: posts.slug,
         excerpt: posts.excerpt,
         createdAt: posts.createdAt,
-        tags: sql<string>`GROUP_CONCAT(${tags.name}, ', ')`
+        viewCount: posts.viewCount,
+        tags: sql<string>`GROUP_CONCAT(DISTINCT ${tags.name})`,
+        commentCount: sql<number>`COUNT(DISTINCT CASE WHEN ${comments.deletedAt} IS NULL THEN ${comments.id} END)`
       })
       .from(posts)
       .leftJoin(postTags, eq(posts.id, postTags.postId))
       .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
+      .leftJoin(comments, eq(posts.id, comments.postId))
       .where(and(
         eq(posts.published, true),
         eq(posts.featured, true)
       ))
-      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt)
+      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt, posts.viewCount)
       .orderBy(desc(posts.createdAt))
       .limit(4);
 
-    // Fetch recent posts (latest published posts) with tags
+    // Fetch recent posts (latest published posts) with tags, comment count, and view count
     const recentPostsData = await db
       .select({
         id: posts.id,
@@ -41,13 +44,16 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         slug: posts.slug,
         excerpt: posts.excerpt,
         createdAt: posts.createdAt,
-        tags: sql<string>`GROUP_CONCAT(${tags.name}, ', ')`
+        viewCount: posts.viewCount,
+        tags: sql<string>`GROUP_CONCAT(DISTINCT ${tags.name})`,
+        commentCount: sql<number>`COUNT(DISTINCT CASE WHEN ${comments.deletedAt} IS NULL THEN ${comments.id} END)`
       })
       .from(posts)
       .leftJoin(postTags, eq(posts.id, postTags.postId))
       .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
+      .leftJoin(comments, eq(posts.id, comments.postId))
       .where(eq(posts.published, true))
-      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt)
+      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt, posts.viewCount)
       .orderBy(desc(posts.createdAt))
       .limit(6);
 
@@ -87,7 +93,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
 function renderTags(tagsString: string | null) {
   if (!tagsString) return null;
   
-  const tagNames = tagsString.split(', ').filter(tag => tag.trim());
+  const tagNames = tagsString.split(',').filter(tag => tag.trim());
   if (tagNames.length === 0) return null;
   
   return (
@@ -172,15 +178,31 @@ export default function HomePage() {
                   <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 {renderTags(post.tags)}
-                <CardTitle>{post.title}</CardTitle>
-                <CardDescription>
-                  {post.excerpt}
-                </CardDescription>
+                <Link to={`/posts/${post.slug}`} className="no-underline">
+                  <CardTitle className="hover:text-primary transition-colors cursor-pointer">{post.title}</CardTitle>
+                </Link>
+                <Link to={`/posts/${post.slug}`} className="no-underline">
+                  <CardDescription className="hover:text-foreground transition-colors cursor-pointer">
+                    {post.excerpt}
+                  </CardDescription>
+                </Link>
               </CardHeader>
               <CardContent>
-                <Button asChild>
-                  <Link to={`/posts/${post.slug}`}>Read More</Link>
-                </Button>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Eye className="h-4 w-4" />
+                      <span>{post.viewCount || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="h-4 w-4" />
+                      <span>{post.commentCount || 0}</span>
+                    </div>
+                  </div>
+                  <Button asChild>
+                    <Link to={`/posts/${post.slug}`}>Read More</Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -200,12 +222,28 @@ export default function HomePage() {
             <Card key={post.id}>
               <CardHeader>
                 {renderTags(post.tags)}
-                <CardTitle className="text-lg">{post.title}</CardTitle>
-                <CardDescription className="text-sm">
-                  {post.excerpt}
-                </CardDescription>
+                <Link to={`/posts/${post.slug}`} className="no-underline">
+                  <CardTitle className="text-lg hover:text-primary transition-colors cursor-pointer">{post.title}</CardTitle>
+                </Link>
+                <Link to={`/posts/${post.slug}`} className="no-underline">
+                  <CardDescription className="text-sm hover:text-foreground transition-colors cursor-pointer">
+                    {post.excerpt}
+                  </CardDescription>
+                </Link>
               </CardHeader>
               <CardContent>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Eye className="h-3 w-3" />
+                      <span>{post.viewCount || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="h-3 w-3" />
+                      <span>{post.commentCount || 0}</span>
+                    </div>
+                  </div>
+                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

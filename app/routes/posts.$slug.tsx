@@ -67,11 +67,17 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
       .from(comments)
       .innerJoin(users, eq(comments.authorId, users.id))
       .orderBy(comments.createdAt);
-    console.log('postComments', postComments);
     const postWithTags = {
       ...post,
       tags: postTagsData.map(pt => pt.tagName),
     };
+
+    // Normalize comment dates to timestamps for CommentsSection
+    const processedComments = postComments.map((c) => ({
+      ...c,
+      createdAt: new Date(c.createdAt as any).getTime(),
+      // Optional fields can be added later when available
+    }));
 
     // Track view for this post (only for published posts)
     if (post.published) {
@@ -88,7 +94,7 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
 
     return data({
       post: postWithTags,
-      comments: postComments as any as Comment[],
+      comments: processedComments,
       user
     });
   } catch (error) {
@@ -186,6 +192,15 @@ export default function BlogPostPage() {
           <div dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }} />
         </div>
 
+        {/* Owner Edit Button */}
+        {user?.role === 'owner' && (
+          <div className="mt-8 flex justify-end">
+            <Button size="sm" asChild>
+              <Link to={`/posts/new?edit=${post.id}`}>Edit</Link>
+            </Button>
+          </div>
+        )}
+
 
       </article>
 
@@ -208,8 +223,8 @@ export default function BlogPostPage() {
       {/* Comments Section */}
       <CommentsSection 
         postId={post.id} 
-        comments={comments as any as Comment[]}
-        user={user}
+        comments={comments as any}
+        user={user ? { id: user.id, name: user.name ?? "", email: user.email, image: user.image ?? undefined, role: user.role } : null}
       />
     </div>
   );

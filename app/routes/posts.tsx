@@ -2,8 +2,8 @@ import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
 import PostCard from "~/components/blog/PostCard";
 import { getDBClient } from "~/db";
-import { posts, tags, postTags } from "~/db/schema";
-import { eq, desc, and, count, sql } from "drizzle-orm";
+import { posts, tags, postTags, comments } from "~/db/schema";
+import { eq, desc, and, count, sql, isNull } from "drizzle-orm";
 
 export async function loader({ 
   context, 
@@ -44,11 +44,13 @@ export async function loader({
         createdAt: posts.createdAt,
         featured: posts.featured,
         viewCount: posts.viewCount,
-        tags: sql<string>`GROUP_CONCAT(${tags.name}, ', ')`
+        commentCount: count(comments.id),
+        tags: sql<string>`GROUP_CONCAT(DISTINCT ${tags.name})`
       })
       .from(posts)
       .leftJoin(postTags, eq(posts.id, postTags.postId))
       .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
+      .leftJoin(comments, and(eq(posts.id, comments.postId), isNull(comments.deletedAt)))
       .where(eq(posts.published, true))
       .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.coverImage, posts.createdAt, posts.featured, posts.viewCount)
       .orderBy(desc(posts.featured), desc(posts.createdAt))

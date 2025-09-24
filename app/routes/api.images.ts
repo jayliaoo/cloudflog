@@ -121,7 +121,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     // In development with credentials, redirect to R2 URL
     if (import.meta.env.DEV) {
-      console.log(`Development mode: Redirecting to R2 for ${filename}`);
       const imageUrl = `${env.R2_ENDPOINT || 'https://534b483058263f37d29575599ffd483f.r2.cloudflarestorage.com'}/${env.R2_BUCKET_NAME || 'blog'}/${filename}`;
       return Response.redirect(imageUrl, 302);
     } else {

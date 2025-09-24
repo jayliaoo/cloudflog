@@ -144,7 +144,6 @@ export async function action({ request, context }: { request: Request; context: 
               console.log("Some tag associations may already exist");
             }
           
-            console.log("Post created with tags:", cleanTags);
           }
         }
         
@@ -230,15 +229,11 @@ export async function action({ request, context }: { request: Request; context: 
           .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
           .where(eq(postTags.postId, updateIdNum));
         
-        console.log(`Fetched tags for post ${updateIdNum} response:`, updatedPostTags);
-        
         const postWithTags = {
           ...updatedPost,
           tags: updatedPostTags.map(pt => pt.tagName),
         };
         
-        console.log(`Returning post with tags for ${updateIdNum}:`, postWithTags.tags);
-          
         return data({ success: true, message: "Post updated successfully", post: postWithTags });
         
       case "DELETE":

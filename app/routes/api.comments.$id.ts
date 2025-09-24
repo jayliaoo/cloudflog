@@ -2,20 +2,18 @@ import { data } from "react-router";
 import { getDBClient } from "~/db/index";
 import { comments } from "~/db/schema";
 import { eq } from "drizzle-orm";
-import { getSession } from "~/auth.server";
+import { getCurrentUser } from "~/auth.server";
 
 export async function action({ request, params, context }: { request: Request; params: { id: string }; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
   const db = getDBClient(env.D1);
-  
-  // Check authentication
-  const sessionToken = request.headers.get('Authorization')?.replace('Bearer ', '');
-  const session = sessionToken ? await getSession(sessionToken, env) : null;
-  
-  if (!session) {
+
+  // Authenticate via cookie-based session
+  const user = await getCurrentUser(request, env);
+  if (!user) {
     return data({ error: "Authentication required" }, { status: 401 });
   }
-  
+
   const commentId = parseInt(params.id);
   const method = request.method;
 
@@ -24,9 +22,9 @@ export async function action({ request, params, context }: { request: Request; p
   }
 
   if (method === "PUT") {
-    return updateComment(commentId, request, db, session.user);
+    return updateComment(commentId, request, db, user);
   } else if (method === "DELETE") {
-    return deleteComment(commentId, db, session.user);
+    return deleteComment(commentId, db, user, request);
   }
 
   return data({ error: "Method not allowed" }, { status: 405 });
@@ -55,7 +53,7 @@ async function updateComment(commentId: number, request: Request, db: any, user:
       return data({ error: "Cannot edit deleted comment" }, { status: 400 });
     }
 
-    // Verify the user owns this comment
+    // Verify the user owns this comment for editing
     if (existingComment[0].authorId !== user.id) {
       return data({ error: "You can only edit your own comments" }, { status: 403 });
     }
@@ -64,7 +62,6 @@ async function updateComment(commentId: number, request: Request, db: any, user:
       .update(comments)
       .set({
         content: content.trim(),
-        editedAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(comments.id, commentId))
@@ -77,8 +74,11 @@ async function updateComment(commentId: number, request: Request, db: any, user:
   }
 }
 
-async function deleteComment(commentId: number, db: any, user: any) {
+async function deleteComment(commentId: number, db: any, user: any, request: Request) {
   try {
+    const url = new URL(request.url);
+    const mode = url.searchParams.get("mode"); // 'archive' | 'hard'
+
     // Verify comment exists
     const existingComment = await db
       .select()
@@ -89,22 +89,26 @@ async function deleteComment(commentId: number, db: any, user: any) {
       return data({ error: "Comment not found" }, { status: 404 });
     }
 
-    // Verify the user owns this comment
-    if (existingComment[0].authorId !== user.id) {
-      return data({ error: "You can only delete your own comments" }, { status: 403 });
+    // Only blog owner can delete any comment
+    if (user.role !== "owner") {
+      return data({ error: "Only the blog owner can delete comments" }, { status: 403 });
     }
 
-    // Soft delete by setting deletedAt
-    const deletedComment = await db
-      .update(comments)
-      .set({
-        deletedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(comments.id, commentId))
-      .returning();
-
-    return data({ message: "Comment deleted successfully" });
+    if (mode === "hard") {
+      // Permanent removal
+      await db.delete(comments).where(eq(comments.id, commentId));
+      return data({ message: "Comment permanently removed" });
+    } else {
+      // Archive (soft delete) by setting deletedAt
+      await db
+        .update(comments)
+        .set({
+          deletedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(comments.id, commentId));
+      return data({ message: "Comment archived" });
+    }
   } catch (error) {
     console.error("Failed to delete comment:", error);
     return data({ error: "Failed to delete comment" }, { status: 500 });

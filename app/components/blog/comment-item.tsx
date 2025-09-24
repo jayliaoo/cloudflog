@@ -4,6 +4,8 @@ import { Button } from "~/components/ui/button";
 import { CommentForm } from "./comment-form";
 import { Textarea } from "~/components/ui/textarea";
 import { Input } from "~/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "~/components/ui/dialog";
+import { Select, SelectOption } from "~/components/ui/select";
 
 interface CommentItemProps {
   comment: {
@@ -18,7 +20,7 @@ interface CommentItemProps {
     parentId?: number;
     replies?: any[];
   };
-  user?: { id: number; name: string; email: string; image?: string } | null;
+  user?: { id: number; name: string; email: string; image?: string; role?: string } | null;
   depth?: number;
   onReply?: () => void;
   onEdit?: (id: number, content: string) => void;
@@ -32,6 +34,9 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
   const [editAuthorName, setEditAuthorName] = useState(comment.authorName);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editError, setEditError] = useState("");
+  const [deleteMode, setDeleteMode] = useState<'archive' | 'hard'>('archive');
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const maxDepth = 4; // Limit nesting depth to prevent excessive indentation
   const canReply = depth < maxDepth;
@@ -44,6 +49,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
     const isAuthor = user && comment.authorId === user.id;
     return isWithinTimeLimit && isAuthor;
   };
+  const isOwner = user?.role === 'owner';
 
   const handleReply = () => {
     setShowReplyForm(true);
@@ -93,18 +99,28 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
   };
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this comment?")) {
-      try {
-        const response = await fetch(`/api/comments/${comment.id}`, {
-          method: "DELETE",
-        });
-
-        if (response.ok) {
-          onDelete?.(comment.id);
-        }
-      } catch (error) {
-        console.error("Failed to delete comment:", error);
+    setDeleteError("");
+    try {
+      const response = await fetch(`/api/comments/${comment.id}?mode=${deleteMode}`, {
+        method: "DELETE",
+      });
+  
+      if (response.ok) {
+        const res: any = await response.json().catch(() => ({}));
+        alert(res.message || (deleteMode === 'hard' ? 'Comment permanently removed' : 'Comment archived'));
+        setIsDeleteOpen(false);
+        onDelete?.(comment.id);
+      } else {
+        const res: any = await response.json().catch(() => ({}));
+        const msg = res.error || res.message || 'Failed to delete comment';
+        setDeleteError(msg);
+        alert(msg);
       }
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+      const msg = "Failed to delete comment. Please try again.";
+      setDeleteError(msg);
+      alert(msg);
     }
   };
 
@@ -125,7 +141,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
 
   return (
     <>
-      <div className={`mb-4 ${depth > 0 ? `ml-${Math.min(depth * 8, 32)} pl-4 border-l-2 border-l-primary/20` : ""}`}>
+      <div className={`mb-4 ${depth > 0 ? `ml-${Math.min(depth * 8, 32)} pl-4 border-l-2 border-l-primary/20` : ""}`}>        
         <div className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -150,20 +166,51 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
                     >
                       Edit
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDelete}
-                      className="text-xs text-destructive hover:text-destructive/80"
-                    >
-                      Delete
-                    </Button>
                   </>
+                )}
+                {isOwner && (
+                  <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-destructive hover:text-destructive/80"
+                      >
+                        Delete
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Delete Comment</DialogTitle>
+                        <DialogDescription>
+                          This action requires owner permission. Choose delete mode and confirm.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Delete Mode</label>
+                          <Select value={deleteMode} onChange={(e) => setDeleteMode(e.target.value as 'archive' | 'hard')}>
+                            <SelectOption value="archive">Archive (soft delete)</SelectOption>
+                            <SelectOption value="hard">Permanent (hard delete)</SelectOption>
+                          </Select>
+                        </div>
+                        {deleteError && (
+                          <div className="text-destructive text-sm bg-destructive/10 p-2 rounded">
+                            {deleteError}
+                          </div>
+                        )}
+                      </div>
+                      <DialogFooter>
+                        <Button variant="secondary" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleDelete}>Confirm Delete</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 )}
                 {canReply && !showReplyForm && (
                   <Button
                     variant="ghost"
-                      size="sm"
+                    size="sm"
                     onClick={handleReply}
                     className="text-xs"
                   >

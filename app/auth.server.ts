@@ -152,7 +152,6 @@ export async function authenticateWithGitHub(code: string, env: Env): Promise<st
 
       if (emailsResponse.ok) {
         const emails = await emailsResponse.json() as Array<{ email: string; primary: boolean }>;
-        console.log('GitHub user emails:', emails);
         const primaryEmail = emails.find((e) => e.primary);
         email = primaryEmail?.email || emails[0]?.email;
       }

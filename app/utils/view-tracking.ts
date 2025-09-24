@@ -27,9 +27,6 @@ export async function trackPostView(
       // Continue even if update fails - the view record was still created
     }
 
-
-    console.log(`Tracking view for post ${postId}, userId: ${userId}`);
-
     // Check if this view already exists
     // For logged-in users: check by userId
     // For anonymous users: check if any anonymous view exists for this post
@@ -37,7 +34,6 @@ export async function trackPostView(
 
     userId = userId || 0;
     // Logged-in user: check by userId
-    console.log(`Checking existing view for logged-in user ${userId}`);
     try {
       existingView = await db
         .select()
@@ -54,11 +50,8 @@ export async function trackPostView(
       existingView = []; // Assume no existing view if check fails
     }
 
-    console.log(`Existing view check result: ${existingView.length} records found`);
-
     // If view already exists, increment the view count instead of skipping
     if (existingView.length > 0) {
-      console.log('View already exists, incrementing view count');
       try {
         await db
           .update(postViews)
@@ -69,12 +62,10 @@ export async function trackPostView(
               eq(postViews.userId, userId)
             )
           );
-        console.log('View count incremented successfully');
       } catch (updateError) {
         console.error('Failed to increment view count:', updateError);
       }
     } else {
-      console.log('Inserting new view record');
       // Insert new view record
       try {
         await db.insert(postViews).values({
@@ -82,16 +73,12 @@ export async function trackPostView(
           userId: userId || 0, // Use 0 for anonymous users
           viewCount: 1, // New view count column
         });
-        console.log('View record inserted successfully');
       } catch (insertError) {
         console.error('Failed to insert view record:', insertError);
         // If insert fails, we can't continue
         return;
       }
     }
-
-  
-    console.log('View tracking completed successfully');
   } catch (error) {
     console.error("Error tracking post view:", error);
   }
