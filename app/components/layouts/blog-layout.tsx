@@ -2,7 +2,7 @@ import { Link, Outlet, Form } from "react-router";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink } from "~/components/ui/navigation-menu";
 import { Button } from "~/components/ui/button";
 import { useState, useRef, useEffect } from "react";
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, Plus } from "lucide-react";
 
 interface User {
   id: number;
@@ -107,6 +107,16 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                   </div>
                 </Form>
               </div>
+              
+              {/* Post Button - Only show for authenticated users with owner role */}
+              {user?.role === 'owner' && (
+                <Button asChild size="sm">
+                  <Link to="/posts/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Post
+                  </Link>
+                </Button>
+              )}
               
               <div className="flex items-center space-x-2">
                 {user ? (

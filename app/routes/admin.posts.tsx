@@ -238,12 +238,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <Button asChild>
-            <Link to="/posts/new">Create New Post</Link>
-          </Button>
-        </div>
+
       
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
