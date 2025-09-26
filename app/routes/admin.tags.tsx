@@ -1,14 +1,16 @@
 import { data, redirect } from "react-router";
 import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
-import { tags, postTags, posts } from "~/db/schema";
+import { tags, postTags } from "~/db/schema";
 import { eq, count, desc } from "drizzle-orm";
-import { Form, Link } from "react-router";
-import { Edit, Trash2, Tag, Plus, Eye } from "lucide-react";
+import { Link } from "react-router";
+import { Trash2, Tag, Plus, Eye } from "lucide-react";
 import { useState } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
 import Pagination from "~/components/Pagination";
+
+const tagsPerPage = 10;
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -29,7 +31,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // Parse pagination parameters
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
-  const tagsPerPage = 20;
   
   // Get total count for pagination
   const totalTagsResult = await db
@@ -305,7 +306,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
           currentPage={currentPage}
           totalPages={totalPages}
           totalCount={totalTags}
-          itemsPerPage={20}
+          itemsPerPage={tagsPerPage}
           itemName="tags"
           baseUrl="/admin/tags"
         />

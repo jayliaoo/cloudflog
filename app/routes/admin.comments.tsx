@@ -10,6 +10,8 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
 import Pagination from "~/components/Pagination";
 
+const commentsPerPage = 10;
+
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
   
@@ -29,7 +31,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // Parse pagination parameters
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
-  const commentsPerPage = 20;
+  
   
   // Get total count for pagination
   const totalCommentsResult = await db
@@ -260,7 +262,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
           currentPage={currentPage}
           totalPages={totalPages}
           totalCount={totalComments}
-          itemsPerPage={20}
+          itemsPerPage={commentsPerPage}
           itemName="comments"
           baseUrl="/admin/comments"
         />
