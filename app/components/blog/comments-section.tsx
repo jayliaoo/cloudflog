@@ -64,7 +64,7 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
     try {
       const response = await fetch(`/api/comments?postId=${postId}`);
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json<{ comments: Comment[] }>();
         console.log('data.comments.length:', data.comments.length);
         setComments(data.comments);
       }
