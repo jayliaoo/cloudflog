@@ -1,6 +1,5 @@
 import { Link } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { CalendarDays, Clock, Tag, Eye, MessageCircle } from "lucide-react";
 
 interface PostCardProps {
@@ -91,12 +90,10 @@ export default function PostCard({ post }: PostCardProps) {
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between">
-          <Button size="sm" asChild>
-            <Link to={`/posts/${post.slug}`}>
-              Read More
-              <Clock className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <Link to={`/posts/${post.slug}`}>
+            Read More
+            <Clock className="ml-2 h-4 w-4" />
+          </Link>
         </div>
       </CardContent>
     </Card>

@@ -1,11 +1,10 @@
 import { data, useLoaderData } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
-import { ArrowRight, CalendarDays, User, Tag, MessageCircle, Eye } from "lucide-react";
+import { ArrowRight, CalendarDays, Tag, MessageCircle, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, users, tags, postTags, comments } from "~/db/schema";
-import { eq, desc, and, isNotNull, sql, count, isNull } from "drizzle-orm";
+import { posts, tags, postTags, comments } from "~/db/schema";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;

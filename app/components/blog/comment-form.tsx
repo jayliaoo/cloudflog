@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Form } from "react-router";
-import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 
 interface CommentFormProps {
@@ -154,13 +153,13 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
             </div>
             
             <div className="flex gap-2">
-              <Button type="submit" disabled={isSubmitting}>
+              <button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Submitting..." : (isReply ? "Post Reply" : "Post Comment")}
-              </Button>
+              </button>
               {onCancel && (
-                <Button type="button" onClick={onCancel} disabled={isSubmitting}>
+                <button type="button" onClick={onCancel} disabled={isSubmitting}>
                   Cancel
-                </Button>
+                </button>
               )}
             </div>
           </Form>
