@@ -226,10 +226,15 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
         {children}
       </main>
       {/* Footer */}
-      <footer className="border-t bg-muted/50">
+      <footer className="border-t border-t-gray-200 shadow-2xl">
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 My Blog. Built with React Router and Cloudflare Workers.</p>
+            <p>&copy; 2025 {ownerUser?.name}'s Blog. All Rights Reserved. Powered by Cloudflog</p>
+            <div className="flex space-x-4 mt-4 sm:mt-0">
+              <a href="#" className="hover:text-slate-900"><i data-lucide="twitter"></i></a>
+              <a href="#" className="hover:text-slate-900"><i data-lucide="github"></i></a>
+              <a href="#" className="hover:text-slate-900"><i data-lucide="linkedin"></i></a>
+            </div>
           </div>
         </div>
       </footer>

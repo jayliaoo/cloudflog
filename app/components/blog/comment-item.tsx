@@ -136,7 +136,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
 
   return (
     <>
-      <div className={`mb-4 ${depth > 0 ? `ml-${Math.min(depth * 8, 32)} pl-4 border-l-2 border-l-primary/20` : ""}`}>        
+      <div className={`mb-4 border-b border-b-gray-200 pb-3 last:border-b-0 ${depth > 0 ? `ml-${Math.min(depth * 4, 32)} pl-4 border-l border-l-gray-200` : ""}`}>        
         <div className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">

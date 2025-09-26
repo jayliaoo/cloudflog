@@ -1,6 +1,6 @@
 import { data, useLoaderData } from "react-router";
-import { Link, useParams } from "react-router";
-import { CalendarDays, User, ArrowLeft, Tag, Eye } from "lucide-react";
+import { Link } from "react-router";
+import { CalendarDays, ArrowLeft, Tag, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags, comments, users } from "~/db/schema";
 import { eq, lt, gt, desc, asc, and } from "drizzle-orm";
@@ -60,9 +60,11 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
         authorName: users.name,
         createdAt: comments.createdAt,
         postId: comments.postId,
+        parentId: comments.parentId,
       })
       .from(comments)
       .innerJoin(users, eq(comments.authorId, users.id))
+      .where(eq(comments.postId, post.id))
       .orderBy(comments.createdAt);
 
     // Fetch previous post (older post)

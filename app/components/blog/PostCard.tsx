@@ -72,7 +72,7 @@ export default function PostCard({ post }: PostCardProps) {
             </div>
           )}
           {post.featured && (
-            <span className="ml-auto px-2 py-1 text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-yellow-900 rounded-full">
+            <span className="ml-auto px-2 py-1 text-xs font-medium bg-indigo-500 hover:bg-indigo-600 text-white rounded-full">
               ★ Featured
             </span>
           )}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CommentForm } from "./comment-form";
 import { CommentItem } from "./comment-item";
 
@@ -22,23 +22,19 @@ interface CommentsSectionProps {
   onCommentUpdate?: () => void;
 }
 
-export function CommentsSection({ postId, comments: initialComments, user, onCommentUpdate }: CommentsSectionProps) {
-  const [comments, setComments] = useState<Comment[]>(initialComments);
-  const [isLoading, setIsLoading] = useState(false);
+// Build nested comment structure
+const buildCommentTree = (comments: Comment[]): Comment[] => {
+  const commentMap = new Map<number, Comment>();
+  const rootComments: Comment[] = [];
 
-  // Build nested comment structure
-  const buildCommentTree = (comments: Comment[]): Comment[] => {
-    const commentMap = new Map<number, Comment>();
-    const rootComments: Comment[] = [];
+  // First pass: create a map of all comments
+  comments.forEach(comment => {
+    commentMap.set(comment.id, { ...comment, replies: [] });
+  });
 
-    // First pass: create a map of all comments
-    comments.forEach(comment => {
-      commentMap.set(comment.id, { ...comment, replies: [] });
-    });
-
-    // Second pass: build the tree structure
-    comments.forEach(comment => {
-      const commentWithReplies = commentMap.get(comment.id)!;
+  // Second pass: build the tree structure
+  comments.forEach(comment => {
+    const commentWithReplies = commentMap.get(comment.id)!;
       
       if (comment.parentId) {
         const parentComment = commentMap.get(comment.parentId);
@@ -50,9 +46,34 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
         rootComments.push(commentWithReplies);
       }
     });
-
+    console.log('rootComments:', rootComments);
     return rootComments;
   };
+
+export function CommentsSection({ postId, comments: initialComments, user, onCommentUpdate }: CommentsSectionProps) {
+  const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [isLoading, setIsLoading] = useState(false);
+  const [commentTree, setCommentTree] = useState<Comment[]>([]);
+
+  useEffect(() => {
+    setCommentTree(buildCommentTree(comments));
+  }, [comments]);
+
+  const fetchComments = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/comments?postId=${postId}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('data.comments.length:', data.comments.length);
+        setComments(data.comments);
+      }
+    } catch (error) {
+      console.error("Failed to fetch comments:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const handleCommentSubmit = async () => {
     // Refresh comments after submission
@@ -74,35 +95,11 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
     onCommentUpdate?.();
   };
 
-  const fetchComments = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/comments?postId=${postId}`);
-      if (response.ok) {
-        const data = await response.json<{ comments: Comment[] }>();
-        // Convert ISO date strings to Unix timestamps
-        const processedComments = data.comments.map((comment: Comment) => ({
-          ...comment,
-          createdAt: new Date(comment.createdAt).getTime(),
-          updatedAt: comment.updatedAt ? new Date(comment.updatedAt).getTime() : undefined,
-          deletedAt: comment.deletedAt ? new Date(comment.deletedAt).getTime() : undefined,
-        }));
-        setComments(processedComments);
-      }
-    } catch (error) {
-      console.error("Failed to fetch comments:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const commentTree = buildCommentTree(comments);
-  const approvedCommentsCount = comments.length;
   return (
     <div className="mt-12">
       <div className="mb-6">
         <h3 className="text-2xl font-bold">
-          Comments ({approvedCommentsCount})
+          Comments ({commentTree.length})
         </h3>
       </div>
       

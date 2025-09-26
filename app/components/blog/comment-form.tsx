@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Form } from "react-router";
 
 interface CommentFormProps {
   postId: number;
@@ -45,8 +44,7 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     
     if (!validateForm()) {
       return;
@@ -130,7 +128,7 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
             </a>
           </div>
         ) : (
-          <Form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             {errors.submit && (
               <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
                 {errors.submit}
@@ -153,7 +151,8 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
             
             <div className="flex gap-2">
               <button 
-                type="submit" 
+                type="button" 
+                onClick={handleSubmit}
                 disabled={isSubmitting}
                 className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-4 py-2 rounded-full font-medium transition"
               >
@@ -170,7 +169,7 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
                 </button>
               )}
             </div>
-          </Form>
+          </div>
         )}
       </div>
     </div>
