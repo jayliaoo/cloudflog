@@ -131,9 +131,6 @@ export default function HomePage() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Unable to load content at this time. Please try refreshing the page.
           </p>
-          <Button size="lg" asChild>
-            <Link to="/about">About Me</Link>
-          </Button>
         </div>
       </div>
     );
@@ -151,12 +148,10 @@ export default function HomePage() {
             <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
               {aboutPost.excerpt}
             </p>
-            <Button size="lg" variant="outline" asChild>
-              <Link to={`/posts/${aboutPost.slug}`}>
-                Learn More About Me
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <Link to={`/posts/${aboutPost.slug}`}>
+              Learn More About Me
+              <ArrowRight className="ml-2 h-4 w-4 inline" />
+            </Link>
           </div>
         </div>
       </section>
@@ -165,9 +160,7 @@ export default function HomePage() {
       <section className="py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Featured Posts</h2>
-          <Button variant="secondary" asChild>
-            <Link to="/posts">View All Posts</Link>
-          </Button>
+          <Link to="/posts">View All Posts</Link>
         </div>
         <div className="grid gap-8 md:grid-cols-2">
           {featuredPosts.map((post) => (
@@ -199,9 +192,7 @@ export default function HomePage() {
                       <span>{post.commentCount || 0}</span>
                     </div>
                   </div>
-                  <Button asChild>
-                    <Link to={`/posts/${post.slug}`}>Read More</Link>
-                  </Button>
+                  <Link to={`/posts/${post.slug}`}>Read More</Link>
                 </div>
               </CardContent>
             </Card>
@@ -213,9 +204,7 @@ export default function HomePage() {
       <section className="py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Recent Posts</h2>
-          <Button variant="secondary" asChild>
-            <Link to="/posts">View All Posts</Link>
-          </Button>
+          <Link to="/posts">View All Posts</Link>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {recentPosts.map((post) => (
@@ -248,9 +237,7 @@ export default function HomePage() {
                   <span className="text-sm text-muted-foreground">
                     {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
-                  <Button size="sm" asChild>
-                    <Link to={`/posts/${post.slug}`}>Read</Link>
-                  </Button>
+                  <Link to={`/posts/${post.slug}`}>Read</Link>
                 </div>
               </CardContent>
             </Card>

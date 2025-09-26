@@ -1,6 +1,4 @@
-import { Link, Outlet, Form } from "react-router";
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink } from "~/components/ui/navigation-menu";
-import { Button } from "~/components/ui/button";
+import { Link, Form } from "react-router";
 import { useState, useRef, useEffect } from "react";
 import { Search, User, LogOut, Plus } from "lucide-react";
 
@@ -8,7 +6,7 @@ interface User {
   id: number;
   name: string | null;
   email: string;
-  image: string | null;
+  image: string;
   role?: string;
 }
 
@@ -41,81 +39,70 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
   }, [isUserMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4">
+    <div className="min-h-screen flex flex-col">
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <nav className="container mx-auto sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-2">
+              <Link to="/" className="flex items-center space-x-3 nav-link">
                 {ownerUser ? (
                   <>
-                    {ownerUser.image ? (
-                      <img 
-                        src={ownerUser.image} 
-                        alt="Blog logo" 
-                        className="h-8 w-8 rounded-full"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary" />
-                      </div>
-                    )}
-                    <span className="text-xl font-bold">{ownerUser.name || ownerUser.email.split('@')[0]}'s Blog</span>
+                    <img 
+                      src={ownerUser.image} 
+                      alt="Blog logo" 
+                      className="h-10 w-10 rounded-full"
+                    />
+                    <span className="text-xl font-bold text-slate-900">{ownerUser.name}'s Blog</span>
                   </>
                 ) : (
-                  <span className="text-xl font-bold">My Blog</span>
+                  <>
+                    <div className="h-10 w-10 rounded-full bg-primary/10">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-xl font-bold text-slate-900">My Blog</span>
+                  </>
                 )}
               </Link>
-              <NavigationMenu className="hidden md:flex">
-                <NavigationMenuItem>
-                  <Link to="/posts" className="px-3 py-2 text-sm font-medium hover:text-primary">
+              <div className="hidden lg:flex items-center space-x-2">
+                  <Link to="/posts" className="text-slate-600 px-3 py-2 text-sm font-medium  nav-link hover:text-slate-900">
                     Posts
                   </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/tags" className="px-3 py-2 text-sm font-medium hover:text-primary">
+                  <Link to="/tags" className="text-slate-600 px-3 py-2 text-sm font-medium hover:text-slate-900">
                     Tags
                   </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/posts/about" className="px-3 py-2 text-sm font-medium hover:text-primary">
+                  <Link to="/posts/about" className="text-slate-600 px-3 py-2 text-sm font-medium hover:text-slate-900">
                     About
                   </Link>
-                </NavigationMenuItem>
                 {user?.role === 'owner' && (
-                  <NavigationMenuItem>
-                    <Link to="/admin" className="px-3 py-2 text-sm font-medium hover:text-primary text-yellow-600 dark:text-yellow-400">
+                    <Link to="/admin" className="text-slate-600 px-3 py-2 text-sm font-medium hover:text-slate-900">
                       Admin
                     </Link>
-                  </NavigationMenuItem>
                 )}
-              </NavigationMenu>
+              </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
               {/* Search Bar */}
-              <div className="hidden md:flex max-w-xs">
+              <div className="relative hidden lg:block">
                 <Form method="get" action="/search" className="w-full">
-                  <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <input
                     type="text"
                     name="q"
                     placeholder="Search posts..."
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10"
+                    className="bg-slate-100 border border-slate-200 py-2 pl-10 pr-4 text-sm focus:outline-node focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition rounded-lg"
                     />
-                  </div>
                 </Form>
               </div>
               
               {/* Post Button - Only show for authenticated users with owner role */}
               {user?.role === 'owner' && (
-                <Button asChild size="sm">
+                <button className="hidden lg:inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition items-center space-x-2">
                   <Link to="/posts/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Post
+                    <Plus absoluteStrokeWidth className="h-4 w-4 mr-2 inline-block pb-1" />
+                    <span>Post</span>
                   </Link>
-                </Button>
+                </button>
               )}
               
               <div className="flex items-center space-x-2">
@@ -158,10 +145,10 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                           </div>
                           <div className="p-2">
                             <Form action="/auth/signout" method="post">
-                              <Button type="submit" variant="outline" size="sm" className="w-full justify-start border-yellow-500 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-800">
-                                <LogOut className="h-4 w-4 mr-2" />
+                              <button type="submit" className="w-full block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 text-left">
+                                <LogOut className="h-4 w-4 mr-2 inline" />
                                 Sign Out
-                              </Button>
+                              </button>
                             </Form>
                           </div>
                         </div>
@@ -170,14 +157,14 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                   </div>
                 ) : (
                   <Link to="/auth/signin">
-                    <Button variant="default" size="sm">
+                    <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">
                       Sign In
-                    </Button>
+                    </button>
                   </Link>
                 )}
               </div>
               <button
-                className="md:hidden p-2"
+                className="lg:hidden p-2"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 <span className="sr-only">Toggle menu</span>
@@ -190,7 +177,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
           
           {/* Mobile menu */}
           {isMenuOpen && (
-            <div className="md:hidden border-t py-4">
+            <div className="lg:hidden border-t py-4">
               {/* Mobile Search */}
               <div className="px-3 pb-4">
                 <Form method="get" action="/search">
@@ -220,27 +207,20 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                 <Link to="/posts/about" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
                   About
                 </Link>
-                {user ? (
-                  <>
-                    <Form action="/auth/signout" method="post">
-                      <button
-                        type="submit"
-                        className="px-3 py-2 text-sm font-medium hover:text-primary text-left w-full border border-yellow-500 text-yellow-700 dark:text-yellow-300 rounded-md hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Sign Out
-                      </button>
-                    </Form>
-                  </>
-                ) : (
-                  <Link to="/auth/signin" className="px-3 py-2 text-sm font-medium hover:text-primary bg-yellow-500 dark:bg-yellow-600 text-white rounded-md hover:bg-yellow-600 dark:hover:bg-yellow-700" onClick={() => setIsMenuOpen(false)}>
-                    Sign In
-                  </Link>
-                )}
+                  {user?.role === 'owner' && (
+                    <>
+                      <Link to="/admin" className="px-3 py-2 text-sm font-medium hover:text-primary">
+                        Admin
+                      </Link>
+                      <Link to="/posts/new" className="px-3 py-2 text-sm font-medium hover:text-primary">
+                        <span>New Post</span>
+                      </Link>
+                    </>
+                  )}
               </nav>
             </div>
           )}
-        </div>
+        </nav>
       </header>
       <main className="flex-1">
         {children}
