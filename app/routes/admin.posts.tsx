@@ -344,111 +344,140 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
         </Link>
       </div>
       
-      {/* Posts List */}
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-        <ul className="divide-y divide-border">
-          {posts.map((post) => (
-            <li key={post.id}>
-              <div className="px-4 py-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="text-lg font-medium truncate">
-                        <Link to={`/posts/${post.slug}`} className="hover:text-primary">
+      {/* Posts Table */}
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/50">
+              <tr className="border-b">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Title</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Tags</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Created</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Updated</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {posts.map((post) => (
+                <tr key={post.id} className="hover:bg-muted/25">
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <Link to={`/posts/${post.slug}`} className="font-medium hover:text-primary truncate max-w-xs">
                           {post.title}
                         </Link>
-                      </h3>
-                      {!post.published && (
-                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">Draft</span>
-                      )}
-                      {post.featured && (
-                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-yellow-500 text-white">
-                          Featured
-                        </span>
+                        {post.featured && (
+                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-yellow-500 text-white">
+                            <Star className="h-3 w-3 mr-1" />
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                      {post.excerpt && (
+                        <p className="text-sm text-muted-foreground line-clamp-1 max-w-xs">
+                          {post.excerpt}
+                        </p>
                       )}
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                      {post.excerpt}
-                    </p>
-                    {post.tags && post.tags.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {post.tags.map((tag: string) => (
-                          <span key={tag} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-background text-foreground">
+                  </td>
+                  <td className="px-4 py-3">
+                    {post.published ? (
+                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800">
+                        Published
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
+                        Draft
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {post.tags && post.tags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {post.tags.slice(0, 2).map((tag: string) => (
+                          <span key={tag} className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium bg-background text-foreground">
                             {tag}
                           </span>
                         ))}
+                        {post.tags.length > 2 && (
+                          <span className="text-xs text-muted-foreground">+{post.tags.length - 2} more</span>
+                        )}
                       </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">No tags</span>
                     )}
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Created: {new Date(post.createdAt).toLocaleDateString()}
-                      {post.updatedAt !== post.createdAt && (
-                        <> • Updated: {new Date(post.updatedAt).toLocaleDateString()}</>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {post.updatedAt !== post.createdAt ? new Date(post.updatedAt).toLocaleDateString() : '-'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end space-x-1">
+                      {!post.published ? (
+                        <Form method="post" className="inline">
+                          <input type="hidden" name="intent" value="publish" />
+                          <input type="hidden" name="postId" value={post.id} />
+                          <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-2">
+                            <Eye className="h-3 w-3" />
+                          </button>
+                        </Form>
+                      ) : (
+                        <Form method="post" className="inline">
+                          <input type="hidden" name="intent" value="unpublish" />
+                          <input type="hidden" name="postId" value={post.id} />
+                          <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2">
+                            <EyeOff className="h-3 w-3" />
+                          </button>
+                        </Form>
                       )}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2 ml-4">
-                    {!post.published ? (
+                      
+                      {post.featured ? (
+                        <Form method="post" className="inline">
+                          <input type="hidden" name="intent" value="unfeature" />
+                          <input type="hidden" name="postId" value={post.id} />
+                          <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2">
+                            <Star className="h-3 w-3 fill-current" />
+                          </button>
+                        </Form>
+                      ) : (
+                        <Form method="post" className="inline">
+                          <input type="hidden" name="intent" value="feature" />
+                          <input type="hidden" name="postId" value={post.id} />
+                          <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2">
+                            <Star className="h-3 w-3" />
+                          </button>
+                        </Form>
+                      )}
+                      
+                      <Link 
+                        to={`/posts/new?edit=${post.id}`}
+                        className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Link>
+                      
                       <Form method="post" className="inline">
-                        <input type="hidden" name="intent" value="publish" />
+                        <input type="hidden" name="intent" value="delete" />
                         <input type="hidden" name="postId" value={post.id} />
-                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3">
-                          <Eye className="h-4 w-4 mr-1" />
-                          Publish
+                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 px-2">
+                          <Trash2 className="h-3 w-3" />
                         </button>
                       </Form>
-                    ) : (
-                      <Form method="post" className="inline">
-                        <input type="hidden" name="intent" value="unpublish" />
-                        <input type="hidden" name="postId" value={post.id} />
-                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
-                          <EyeOff className="h-4 w-4 mr-1" />
-                          Unpublish
-                        </button>
-                      </Form>
-                    )}
-                    
-                    {post.featured ? (
-                      <Form method="post" className="inline">
-                        <input type="hidden" name="intent" value="unfeature" />
-                        <input type="hidden" name="postId" value={post.id} />
-                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
-                          <Star className="h-4 w-4 mr-1" />
-                          Unfeature
-                        </button>
-                      </Form>
-                    ) : (
-                      <Form method="post" className="inline">
-                        <input type="hidden" name="intent" value="feature" />
-                        <input type="hidden" name="postId" value={post.id} />
-                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
-                          <Star className="h-4 w-4 mr-1" />
-                          Feature
-                        </button>
-                      </Form>
-                    )}
-                    
-                    <Link 
-                      to={`/posts/new?edit=${post.id}`}
-                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Link>
-                    
-                    <Form method="post" className="inline">
-                      <input type="hidden" name="intent" value="delete" />
-                      <input type="hidden" name="postId" value={post.id} />
-                      <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-3">
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </button>
-                    </Form>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {posts.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No posts found.
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Pagination */}

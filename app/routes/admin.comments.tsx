@@ -150,66 +150,79 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
         </div>
       </div>
       
-      {/* Comments List */}
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+      {/* Comments Table */}
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-6">
           <h3 className="text-2xl font-semibold leading-none tracking-tight">All Comments ({filteredComments.length})</h3>
         </div>
-        <div className="p-6 pt-0">
-          <div className="space-y-4">
-            {filteredComments.map((comment) => (
-              <div key={comment.id} className="p-4 border rounded-lg">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 space-y-2">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/50">
+              <tr className="border-b">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Author</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Content</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Post</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Date</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filteredComments.map((comment) => (
+                <tr key={comment.id} className="hover:bg-muted/25">
+                  <td className="px-4 py-3">
                     <div className="flex items-center space-x-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">
                         {comment.authorName}
                       </span>
                     </div>
-                    
-                    <p className="text-sm text-gray-600">{comment.content}</p>
-                    
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-1">
-                        <MessageSquare className="h-4 w-4" />
-                        <Link to={`/posts/${comment.postSlug}`} className="hover:underline">
-                          {comment.postTitle}
-                        </Link>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(comment.createdAt)}
-                      </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-sm text-muted-foreground line-clamp-2 max-w-md">
+                      {comment.content}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center space-x-1">
+                      <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                      <Link to={`/posts/${comment.postSlug}`} className="text-sm hover:text-primary hover:underline truncate max-w-xs">
+                        {comment.postTitle}
+                      </Link>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2 ml-4">
-                    <Link 
-                      to={`/posts/${comment.postSlug}#comments`}
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Link>
-                    <button
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-3"
-                      onClick={() => handleDeleteComment(comment.id, comment.authorName)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {filteredComments.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                {searchTerm ? "No comments found matching your search." : "No comments yet."}
-              </div>
-            )}
-          </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {formatDate(comment.createdAt)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end space-x-1">
+                      <Link 
+                        to={`/posts/${comment.postSlug}#comments`}
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2"
+                      >
+                        <Eye className="h-3 w-3" />
+                      </Link>
+                      <button
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 px-2"
+                        onClick={() => handleDeleteComment(comment.id, comment.authorName)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredComments.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              {searchTerm ? "No comments found matching your search." : "No comments yet."}
+            </div>
+          )}
         </div>
       </div>
       </div>

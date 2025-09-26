@@ -145,7 +145,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
         setNewTagName("");
         window.location.reload();
       } else {
-        const responseData = await response.json();
+        const responseData = await response.json() as { error: string };
         alert(responseData.error || "Failed to create tag");
       }
     } catch (error) {
@@ -172,7 +172,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
       if (response.ok) {
         window.location.reload();
       } else {
-        const responseData = await response.json();
+        const responseData = await response.json() as { error: string };
         alert(responseData.error || "Failed to delete tag");
       }
     } catch (error) {
@@ -184,50 +184,91 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-        </div>
-      
-      {/* Tags List */}
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-        <div className="flex flex-col space-y-1.5 p-6">
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">All Tags ({tags.length})</h3>
-        </div>
-        <div className="p-6 pt-0">
-          <div className="space-y-4">
-            {tags.map((tag) => (
-              <div key={tag.slug} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Tag className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <h3 className="font-medium">{tag.name}</h3>
-                    <p className="text-sm text-muted-foreground">Slug: {tag.slug}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
-                    {tag.postCount} post{tag.postCount !== 1 ? 's' : ''}
-                  </span>
-                  <Link 
-                    to={`/tags/${tag.slug}`}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Link>
-                  <button
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-3"
-                    onClick={() => handleDeleteTag(tag.slug, tag.name)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+        {/* Create New Tag */}
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+          <div className="flex flex-col space-y-1.5 p-6">
+            <h3 className="text-2xl font-semibold leading-none tracking-tight">Create New Tag</h3>
+          </div>
+          <div className="p-6 pt-0">
+            <form onSubmit={handleCreateTag} className="flex gap-4">
+              <input
+                type="text"
+                placeholder="Tag name..."
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 max-w-md"
+                required
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Tag
+              </button>
+            </form>
           </div>
         </div>
-      </div>
+      
+        {/* Tags Table */}
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+          <div className="flex flex-col space-y-1.5 p-6">
+            <h3 className="text-2xl font-semibold leading-none tracking-tight">All Tags ({tags.length})</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50">
+                <tr className="border-b">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Name</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Slug</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Posts</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {tags.map((tag) => (
+                  <tr key={tag.slug} className="hover:bg-muted/25">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center space-x-2">
+                        <Tag className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{tag.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-muted-foreground font-mono">{tag.slug}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
+                        {tag.postCount} post{tag.postCount !== 1 ? 's' : ''}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end space-x-1">
+                        <Link 
+                          to={`/tags/${tag.slug}`}
+                          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Link>
+                        <button
+                          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 px-2"
+                          onClick={() => handleDeleteTag(tag.slug, tag.name)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {tags.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No tags found.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );
