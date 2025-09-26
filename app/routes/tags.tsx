@@ -1,7 +1,5 @@
 import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
 import { Tag, Hash } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
@@ -67,37 +65,37 @@ export default function TagsPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {tags.map((tag) => (
-          <Card key={tag.tagSlug} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
+          <div key={tag.tagSlug} className="bg-white rounded-lg shadow-sm border border-slate-200 hover:shadow-lg transition-shadow">
+            <div className="p-6 pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Tag className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">
+                  <Tag className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-lg font-semibold">
                     <Link 
                       to={`/tag/${tag.tagSlug}`} 
-                      className="hover:text-primary transition-colors"
+                      className="text-slate-900 hover:text-blue-600 transition-colors"
                     >
                       {tag.tagName}
                     </Link>
-                  </CardTitle>
+                  </h3>
                 </div>
-                <Badge variant="secondary" className="text-sm">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
                   {tag.postCount} {tag.postCount === 1 ? 'post' : 'posts'}
-                </Badge>
+                </span>
               </div>
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div className="px-6 pb-6">
               <div className="flex items-center justify-between">
                 <Link 
                   to={`/tag/${tag.tagSlug}`}
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                  className="text-sm text-blue-600 hover:underline flex items-center gap-1"
                 >
                   View posts
                   <Hash className="h-3 w-3" />
                 </Link>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 

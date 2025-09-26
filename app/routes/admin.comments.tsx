@@ -4,9 +4,6 @@ import { getDBClient } from "~/db";
 import { comments, posts, users } from "~/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Link } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
 import { MessageSquare, User, Calendar, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
@@ -138,27 +135,27 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
       <div className="space-y-6">
       
       {/* Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Search Comments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Input
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="flex flex-col space-y-1.5 p-6">
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">Search Comments</h3>
+        </div>
+        <div className="p-6 pt-0">
+          <input
             type="text"
             placeholder="Search by content, author, or post title..."
             value={searchTerm}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-            className="max-w-md"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 max-w-md"
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       
       {/* Comments List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Comments ({filteredComments.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="flex flex-col space-y-1.5 p-6">
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">All Comments ({filteredComments.length})</h3>
+        </div>
+        <div className="p-6 pt-0">
           <div className="space-y-4">
             {filteredComments.map((comment) => (
               <div key={comment.id} className="p-4 border rounded-lg">
@@ -188,20 +185,20 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
                   </div>
                   
                   <div className="flex items-center space-x-2 ml-4">
-                    <Link to={`/posts/${comment.postSlug}#comments`}>
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
+                    <Link 
+                      to={`/posts/${comment.postSlug}#comments`}
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
                     </Link>
-                    <Button
-                      size="sm"
-                      variant="destructive"
+                    <button
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-3"
                       onClick={() => handleDeleteComment(comment.id, comment.authorName)}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
                       Delete
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -213,8 +210,8 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       </div>
     </AdminLayout>
   );

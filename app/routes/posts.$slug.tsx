@@ -1,8 +1,5 @@
 import { data, useLoaderData } from "react-router";
 import { Link, useParams } from "react-router";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
 import { CalendarDays, User, ArrowLeft, Tag, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags, comments, users } from "~/db/schema";
@@ -138,12 +135,12 @@ export default function BlogPostPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Post Not Found</h1>
-          <p className="text-lg text-muted-foreground mb-4">
+          <p className="text-lg text-slate-600 mb-4">
             Unable to load the requested blog post at this time.
           </p>
-          <Button size="lg" asChild>
-            <Link to="/posts">Back to Posts</Link>
-          </Button>
+          <Link to="/posts" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full font-medium transition">
+            Back to Posts
+          </Link>
         </div>
       </div>
     );
@@ -155,12 +152,10 @@ export default function BlogPostPage() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Back Button */}
       <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/posts">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Posts
-          </Link>
-        </Button>
+        <Link to="/posts" className="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-full text-sm font-medium transition flex items-center w-fit">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Posts
+        </Link>
       </div>
 
       {/* Post Header */}
@@ -178,7 +173,7 @@ export default function BlogPostPage() {
           
           <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
           
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
             <CalendarDays className="h-4 w-4" />
             <time dateTime={post.createdAt.toISOString()}>
               {post.createdAt.toLocaleDateString('en-US', {
@@ -199,10 +194,10 @@ export default function BlogPostPage() {
             <div className="flex flex-wrap gap-2 mb-4">
               {post.tags.map((tag) => (
                 <Link key={tag} to={`/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`}>
-                  <Badge variant="secondary" className="text-sm hover:bg-secondary/80 cursor-pointer">
+                  <span className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-full text-sm font-medium transition cursor-pointer flex items-center">
                     <Tag className="mr-1 h-3 w-3" />
                     {tag}
-                  </Badge>
+                  </span>
                 </Link>
               ))}
             </div>
@@ -219,9 +214,9 @@ export default function BlogPostPage() {
         {/* Owner Edit Button */}
         {user?.role === 'owner' && (
           <div className="mt-8 flex justify-end">
-            <Button size="sm" asChild>
-              <Link to={`/posts/new?edit=${post.id}`}>Edit</Link>
-            </Button>
+            <Link to={`/posts/new?edit=${post.id}`} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-medium transition">
+              Edit
+            </Link>
           </div>
         )}
 
@@ -231,22 +226,18 @@ export default function BlogPostPage() {
       {/* Navigation */}
       <nav className="mt-12 flex items-center justify-between">
         {previousPost ? (
-          <Button variant="secondary" size="sm" asChild>
-            <Link to={`/posts/${previousPost.slug}`}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Previous Post
-            </Link>
-          </Button>
+          <Link to={`/posts/${previousPost.slug}`} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-medium transition flex items-center">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Previous Post
+          </Link>
         ) : (
           <div></div>
         )}
         {nextPost ? (
-          <Button variant="secondary" size="sm" asChild>
-            <Link to={`/posts/${nextPost.slug}`}>
-              Next Post
-              <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
-            </Link>
-          </Button>
+          <Link to={`/posts/${nextPost.slug}`} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-medium transition flex items-center">
+            Next Post
+            <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+          </Link>
         ) : (
           <div></div>
         )}

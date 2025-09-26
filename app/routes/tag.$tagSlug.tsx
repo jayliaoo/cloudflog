@@ -1,7 +1,6 @@
 import { data, useLoaderData } from "react-router";
 import { Link, useParams } from "react-router";
-import { Badge } from "~/components/ui/badge";
-import { Hash } from "lucide-react";
+import { Hash, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc, count, and } from "drizzle-orm";
@@ -125,9 +124,12 @@ export default function TagPage() {
           <p className="text-lg text-muted-foreground mb-4">
             The tag "{tagSlug}" could not be found.
           </p>
-          <Button asChild>
-            <Link to="/tags">Browse All Tags</Link>
-          </Button>
+          <Link 
+            to="/tags"
+            className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Browse All Tags
+          </Link>
         </div>
       </div>
     );
@@ -144,11 +146,11 @@ export default function TagPage() {
           </Link>
         </div>
         <div className="flex items-center gap-3">
-          <Hash className="h-8 w-8 text-primary" />
+          <Hash className="h-8 w-8 text-blue-600" />
           <h1 className="text-4xl font-bold">{currentTag.name}</h1>
-          <Badge variant="secondary" className="text-lg px-3 py-1">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-lg font-medium bg-slate-100 text-slate-800">
             {totalCount} {totalCount === 1 ? 'post' : 'posts'}
-          </Badge>
+          </span>
         </div>
         <p className="text-lg text-muted-foreground mt-2">
           Browse all posts tagged with "{currentTag.name}"
@@ -157,7 +159,14 @@ export default function TagPage() {
 
       <div className="space-y-8">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostCard 
+            key={post.id} 
+            post={{
+              ...post,
+              excerpt: post.excerpt || "",
+              createdAt: post.createdAt.toISOString()
+            }} 
+          />
         ))}
       </div>
 
@@ -228,9 +237,12 @@ export default function TagPage() {
           <p className="text-muted-foreground mb-4">
             There are no posts tagged with "{currentTag.name}" yet.
           </p>
-          <Button asChild>
-            <Link to="/posts">Browse All Posts</Link>
-          </Button>
+          <Link 
+            to="/posts"
+            className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Browse All Posts
+          </Link>
         </div>
       )}
     </div>

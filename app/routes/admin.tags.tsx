@@ -4,10 +4,6 @@ import { getDBClient } from "~/db";
 import { tags, postTags, posts } from "~/db/schema";
 import { eq, count, desc } from "drizzle-orm";
 import { Form, Link } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Input } from "~/components/ui/input";
 import { Edit, Trash2, Tag, Plus, Eye } from "lucide-react";
 import { useState } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
@@ -193,11 +189,11 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
         </div>
       
       {/* Tags List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Tags ({tags.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="flex flex-col space-y-1.5 p-6">
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">All Tags ({tags.length})</h3>
+        </div>
+        <div className="p-6 pt-0">
           <div className="space-y-4">
             {tags.map((tag) => (
               <div key={tag.slug} className="flex items-center justify-between p-4 border rounded-lg">
@@ -209,29 +205,29 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Badge variant="secondary">
+                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
                     {tag.postCount} post{tag.postCount !== 1 ? 's' : ''}
-                  </Badge>
-                  <Link to={`/tags/${tag.slug}`}>
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
+                  </span>
+                  <Link 
+                    to={`/tags/${tag.slug}`}
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
                   </Link>
-                  <Button
-                    size="sm"
-                    variant="destructive"
+                  <button
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-3"
                     onClick={() => handleDeleteTag(tag.slug, tag.name)}
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
                     Delete
-                  </Button>
+                  </button>
                 </div>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       </div>
     </AdminLayout>
   );

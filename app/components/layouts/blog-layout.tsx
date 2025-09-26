@@ -41,7 +41,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-white shadow-sm sticky top-0 z-50">
-        <nav className="container mx-auto sm:px-6 lg:px-8">
+        <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link to="/" className="flex items-center space-x-3 nav-link">
@@ -89,20 +89,20 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                   <input
                     type="text"
                     name="q"
-                    placeholder="Search posts..."
-                    className="bg-slate-100 border border-slate-200 py-2 pl-10 pr-4 text-sm focus:outline-node focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition rounded-lg"
+                    placeholder="Search..."
+                    className="bg-slate-100 border border-slate-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                     />
                 </Form>
               </div>
               
               {/* Post Button - Only show for authenticated users with owner role */}
               {user?.role === 'owner' && (
-                <button className="hidden lg:inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition items-center space-x-2">
-                  <Link to="/posts/new">
-                    <Plus absoluteStrokeWidth className="h-4 w-4 mr-2 inline-block pb-1" />
-                    <span>Post</span>
-                  </Link>
-                </button>
+                <Link to="/posts/new">
+                  <button className="hidden lg:inline-flex bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition items-center space-x-2">
+                    <Plus className="h-4 w-4" />
+                    <span>New Post</span>
+                  </button>
+                </Link>
               )}
               
               <div className="flex items-center space-x-2">
@@ -157,7 +157,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                   </div>
                 ) : (
                   <Link to="/auth/signin">
-                    <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">
+                    <button className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition">
                       Sign In
                     </button>
                   </Link>
@@ -186,8 +186,8 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                     <input
                         type="text"
                         name="q"
-                        placeholder="Search posts..."
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10"
+                        placeholder="Search..."
+                        className="bg-slate-100 border border-slate-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition w-full"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             setIsMenuOpen(false);

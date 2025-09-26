@@ -1,6 +1,4 @@
 import { useSearchParams } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 
 export default function AuthError() {
   const [searchParams] = useSearchParams();
@@ -20,24 +18,25 @@ export default function AuthError() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-md w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-slate-200">
+        <div className="text-center p-6 pb-4">
+          <h1 className="text-3xl font-bold text-slate-900">
             Authentication Error
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-muted-foreground">
+          </h1>
+        </div>
+        <div className="text-center space-y-4 p-6 pt-0">
+          <p className="text-slate-600">
             {getErrorMessage(error)}
           </p>
-          <Button asChild>
-            <a href="/auth/signin">
-              Try signing in again
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+          <a 
+            href="/auth/signin"
+            className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Try signing in again
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

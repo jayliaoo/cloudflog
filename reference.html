@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- App Container -->
+    <div class="min-h-screen flex flex-col">
+
+        <!-- ======================= Header ======================= -->
+        <header id="header" class="bg-white shadow-sm sticky top-0 z-50">
+            <!-- Logged-Out Header -->
+            <nav id="header-logged-out" class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="#" class="flex items-center space-x-3 nav-link" data-page="home">
+                            <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/e2e8f0/475569?text=B" alt="Blog Logo">
+                            <span class="text-xl font-bold text-slate-900">John's Journey</span>
+                        </a>
+                        <div class="hidden md:flex items-center space-x-2">
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="home">Home</a>
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="posts">Posts</a>
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="tags">Tags</a>
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="about">About Me</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative hidden sm:block">
+                            <input type="text" placeholder="Search..." class="bg-slate-100 border border-slate-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"></i>
+                        </div>
+                        <button id="signInBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition">Sign In</button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Logged-In Header (Initially Hidden) -->
+            <nav id="header-logged-in" class="container mx-auto px-4 sm:px-6 lg:px-8 hidden">
+                 <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="#" class="flex items-center space-x-3 nav-link" data-page="home">
+                            <img class="h-10 w-10 rounded-full" src="https://placehold.co/100x100/e2e8f0/475569?text=B" alt="Blog Logo">
+                            <span class="text-xl font-bold text-slate-900">John's Journey</span>
+                        </a>
+                        <div class="hidden md:flex items-center space-x-1">
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="home">Home</a>
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="posts">Posts</a>
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="tags">Tags</a>
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="about">About Me</a>
+                            <a href="#" class="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-md text-sm font-medium nav-link" data-page="admin">Admin</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative hidden sm:block">
+                            <input type="text" placeholder="Search..." class="bg-slate-100 border border-slate-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"></i>
+                        </div>
+                        <button class="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition flex items-center space-x-2">
+                            <i data-lucide="plus" class="h-4 w-4"></i>
+                            <span>New Post</span>
+                        </button>
+                        <div class="relative">
+                            <button id="avatarBtn" class="block">
+                                <img class="h-10 w-10 rounded-full" src="https://i.pravatar.cc/100?u=admin" alt="User Avatar">
+                            </button>
+                            <div id="avatarDropdown" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden">
+                                <div class="px-4 py-2">
+                                    <p class="text-sm font-semibold text-slate-900">John Doe</p>
+                                    <p class="text-sm text-slate-500 truncate">john.doe@example.com</p>
+                                </div>
+                                <div class="border-t border-slate-100"></div>
+                                <a href="#" id="signOutBtn" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Sign Out</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- ======================= Main Content ======================= -->
+        <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+            <!-- Home Page -->
+            <section id="home" class="content-section active">
+                <!-- About Section -->
+                <div class="text-center bg-white p-8 rounded-2xl shadow-sm mb-12">
+                    <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Welcome to My Digital Garden</h1>
+                    <p class="text-lg text-slate-600 max-w-3xl mx-auto">
+                        I'm John, a software developer and lifelong learner. This is my corner of the internet where I share thoughts on technology, travel, and personal growth.
+                    </p>
+                </div>
+
+                <!-- Featured Posts -->
+                <div class="mb-12">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-6">Featured Posts</h2>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <!-- Post Card Component -->
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                            <img src="https://images.unsplash.com/photo-1555066931-4365d1469c9b?q=80&w=800" alt="Post Image" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-2 text-slate-900">Building a REST API with Node.js</h3>
+                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">An in-depth guide to creating a robust and scalable RESTful API using Node.js, Express, and MongoDB. We cover everything from setup to deployment.</p>
+                                <p class="text-xs text-slate-500 mb-4">September 24, 2025</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Node.js</span>
+                                    <span class="bg-sky-100 text-sky-800 text-xs font-medium px-2.5 py-0.5 rounded-full">API</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- More featured posts... -->
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                            <img src="https://images.unsplash.com/photo-1504208434309-cb69f4052b0e?q=80&w=800" alt="Post Image" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-2 text-slate-900">My Solo Trip Through Japan</h3>
+                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">Reflections and tips from a month-long solo journey across Japan, from the bustling streets of Tokyo to the serene temples of Kyoto.</p>
+                                <p class="text-xs text-slate-500 mb-4">August 15, 2025</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-rose-100 text-rose-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Travel</span>
+                                    <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Japan</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                            <img src="https://images.unsplash.com/photo-1521185496955-15097b20c5fe?q=80&w=800" alt="Post Image" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-2 text-slate-900">The Power of Habit</h3>
+                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">How understanding and building atomic habits can fundamentally change your productivity and personal growth trajectory.</p>
+                                <p class="text-xs text-slate-500 mb-4">July 29, 2025</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Productivity</span>
+                                    <span class="bg-slate-100 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Self-Help</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Posts -->
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-6">Recent Posts</h2>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <!-- Post Cards... -->
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                            <img src="https://images.unsplash.com/photo-1610563166126-a0b9432f7a63?q=80&w=800" alt="Post Image" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-2 text-slate-900">Getting Started with React Hooks</h3>
+                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">A beginner-friendly introduction to React Hooks like useState and useEffect.</p>
+                                <p class="text-xs text-slate-500 mb-4">September 20, 2025</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-sky-100 text-sky-800 text-xs font-medium px-2.5 py-0.5 rounded-full">React</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                            <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800" alt="Post Image" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-2 text-slate-900">Effective Project Management Tips</h3>
+                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">Key strategies for keeping your projects on track and your team aligned.</p>
+                                <p class="text-xs text-slate-500 mb-4">September 12, 2025</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Productivity</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                            <img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=800" alt="Post Image" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold mb-2 text-slate-900">CSS Grid vs. Flexbox</h3>
+                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">When to use CSS Grid and when to use Flexbox for modern web layouts.</p>
+                                <p class="text-xs text-slate-500 mb-4">September 5, 2025</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-fuchsia-100 text-fuchsia-800 text-xs font-medium px-2.5 py-0.5 rounded-full">CSS</span>
+                                    <span class="bg-slate-100 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Web Dev</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Add 3 more recent posts... -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Posts Page -->
+            <section id="posts" class="content-section">
+                <h1 class="text-4xl font-bold text-slate-900 mb-8">All Posts</h1>
+                <div class="space-y-8">
+                    <!-- Post List Item -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="flex-grow">
+                             <h2 class="text-2xl font-bold text-slate-900 mb-2"><a href="#" class="hover:text-indigo-600 nav-link" data-page="post-detail">Building a REST API with Node.js</a></h2>
+                            <p class="text-sm text-slate-500 mb-3">September 24, 2025</p>
+                            <p class="text-slate-600 mb-4 line-clamp-2">An in-depth guide to creating a robust and scalable RESTful API using Node.js, Express, and MongoDB. We cover everything from setup to deployment.</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="#" class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full hover:bg-indigo-200">Node.js</a>
+                                <a href="#" class="bg-sky-100 text-sky-800 text-xs font-medium px-2.5 py-0.5 rounded-full hover:bg-sky-200">API</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- More post list items... -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="flex-grow">
+                             <h2 class="text-2xl font-bold text-slate-900 mb-2"><a href="#" class="hover:text-indigo-600 nav-link" data-page="post-detail">My Solo Trip Through Japan</a></h2>
+                            <p class="text-sm text-slate-500 mb-3">August 15, 2025</p>
+                            <p class="text-slate-600 mb-4 line-clamp-2">Reflections and tips from a month-long solo journey across Japan, from the bustling streets of Tokyo to the serene temples of Kyoto.</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="#" class="bg-rose-100 text-rose-800 text-xs font-medium px-2.5 py-0.5 rounded-full hover:bg-rose-200">Travel</a>
+                                <a href="#" class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full hover:bg-amber-200">Japan</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pagination -->
+                <div class="flex justify-center mt-12">
+                    <nav class="flex items-center space-x-2">
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 px-3 py-1 rounded-md">&laquo; Previous</a>
+                        <a href="#" class="bg-indigo-600 text-white px-3 py-1 rounded-md">1</a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 px-3 py-1 rounded-md">2</a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 px-3 py-1 rounded-md">3</a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 px-3 py-1 rounded-md">Next &raquo;</a>
+                    </nav>
+                </div>
+            </section>
+
+            <!-- Tags Page -->
+            <section id="tags" class="content-section">
+                <h1 class="text-4xl font-bold text-slate-900 mb-8">All Tags</h1>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Tag Card Component -->
+                    <a href="#" class="block bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center">
+                        <h2 class="text-xl font-bold text-slate-900">Node.js</h2>
+                        <p class="text-slate-500">5 Posts</p>
+                    </a>
+                    <a href="#" class="block bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center">
+                        <h2 class="text-xl font-bold text-slate-900">Travel</h2>
+                        <p class="text-slate-500">3 Posts</p>
+                    </a>
+                    <a href="#" class="block bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center">
+                        <h2 class="text-xl font-bold text-slate-900">Productivity</h2>
+                        <p class="text-slate-500">8 Posts</p>
+                    </a>
+                     <!-- More tags... -->
+                </div>
+            </section>
+
+            <!-- Post Detail Page -->
+            <section id="post-detail" class="content-section">
+                <article class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm">
+                    <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4">Building a REST API with Node.js</h1>
+                    <div class="flex items-center text-sm text-slate-500 mb-6 space-x-4">
+                        <span>By John Doe</span>
+                        <span class="text-slate-300">|</span>
+                        <span>September 24, 2025</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-8">
+                        <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Node.js</span>
+                        <span class="bg-sky-100 text-sky-800 text-xs font-medium px-2.5 py-0.5 rounded-full">API</span>
+                    </div>
+
+                    <div class="prose prose-lg max-w-none">
+                        <p>This is where the main body of the post will go. It will be formatted for readability with appropriate spacing, line height, and font sizes. We can include various elements like:</p>
+                        <ul>
+                            <li>Lists of items</li>
+                            <li>Code blocks for technical articles</li>
+                            <li>Blockquotes for emphasis</li>
+                        </ul>
+                        <pre><code>// Example code block
+function greet(name) {
+  console.log(`Hello, ${name}!`);
+}
+greet('World');</code></pre>
+                        <p>And much more. The content will flow naturally, allowing the reader to focus on the message being conveyed. Images can also be embedded within the content to provide visual context.</p>
+                    </div>
+
+                    <hr class="my-12">
+
+                    <!-- Comments Section -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-6">Comments (3)</h2>
+                        <div class="space-y-6">
+                            <!-- Comment -->
+                            <div class="flex space-x-4">
+                                <img src="https://i.pravatar.cc/100?u=comment1" alt="Avatar" class="h-10 w-10 rounded-full">
+                                <div class="flex-1">
+                                    <div class="bg-slate-100 p-4 rounded-xl">
+                                        <p class="font-semibold text-slate-900">Jane Smith</p>
+                                        <p class="text-slate-700">Great article! Really helped clarify some concepts for me.</p>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-1">2 days ago</p>
+                                </div>
+                            </div>
+                            <!-- More comments -->
+                        </div>
+                        <!-- New Comment Form -->
+                        <div class="mt-8">
+                             <h3 class="text-xl font-bold text-slate-900 mb-4">Leave a Comment</h3>
+                             <form class="space-y-4">
+                                 <textarea rows="4" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Write your comment..."></textarea>
+                                 <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-indigo-700 transition">Post Comment</button>
+                             </form>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- About Me Page -->
+            <section id="about" class="content-section">
+                 <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm">
+                    <h1 class="text-4xl font-bold text-slate-900 mb-6">About Me</h1>
+                    <div class="prose prose-lg max-w-none">
+                        <img src="https://i.pravatar.cc/150?u=admin" class="rounded-full float-left mr-6 mb-4 w-32 h-32" alt="John Doe">
+                        <p>Hello! I'm John Doe, a passionate software developer with over a decade of experience building things for the web. My journey in tech started with a simple "Hello, World!" in Python and has since evolved into a deep fascination with creating scalable, user-centric applications.</p>
+                        <p>When I'm not coding, you can find me exploring new hiking trails, trying to perfect my sourdough recipe, or planning my next international adventure. This blog is a space for me to document my learnings, share my experiences, and connect with like-minded individuals.</p>
+                        <h3 class="font-bold">Contact Me</h3>
+                        <p>Feel free to reach out via email at <a href="mailto:john.doe@example.com">john.doe@example.com</a> or connect with me on social media.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Dashboard -->
+            <section id="admin" class="content-section">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Left Sidebar -->
+                    <aside class="w-full md:w-64">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-6">Admin Menu</h2>
+                        <nav class="space-y-2">
+                            <a href="#" class="flex items-center space-x-3 bg-indigo-100 text-indigo-700 font-semibold px-4 py-2 rounded-lg">
+                                <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 text-slate-600 hover:bg-slate-100 hover:text-slate-900 px-4 py-2 rounded-lg">
+                                <i data-lucide="file-text"></i><span>Posts</span>
+                            </a>
+                            <a href="#" class="flex items-center space-x-3 text-slate-600 hover:bg-slate-100 hover:text-slate-900 px-4 py-2 rounded-lg">
+                                <i data-lucide="tags"></i><span>Tags</span>
+                            </a>
+                             <a href="#" class="flex items-center space-x-3 text-slate-600 hover:bg-slate-100 hover:text-slate-900 px-4 py-2 rounded-lg">
+                                <i data-lucide="message-square"></i><span>Comments</span>
+                            </a>
+                        </nav>
+                    </aside>
+                    <!-- Main Content Area -->
+                    <div class="flex-1">
+                        <h1 class="text-3xl font-bold text-slate-900 mb-6">Dashboard</h1>
+                        <!-- Stat Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-slate-500 text-sm font-medium mb-2">Total Posts</h3>
+                                <p class="text-3xl font-bold text-slate-900">42</p>
+                            </div>
+                             <div class="bg-white p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-slate-500 text-sm font-medium mb-2">Total Comments</h3>
+                                <p class="text-3xl font-bold text-slate-900">128</p>
+                            </div>
+                             <div class="bg-white p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-slate-500 text-sm font-medium mb-2">Total Tags</h3>
+                                <p class="text-3xl font-bold text-slate-900">15</p>
+                            </div>
+                        </div>
+
+                        <!-- Posts Management Table (Example) -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm">
+                            <h2 class="text-xl font-bold text-slate-900 mb-4">Manage Posts</h2>
+                            <!-- Controls -->
+                            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                                <input type="text" placeholder="Search posts..." class="flex-grow bg-slate-100 border border-slate-200 rounded-lg py-2 px-4 text-sm">
+                                <select class="bg-slate-100 border border-slate-200 rounded-lg py-2 px-4 text-sm">
+                                    <option>Filter by Status</option>
+                                    <option>Published</option>
+                                    <option>Draft</option>
+                                </select>
+                            </div>
+                            <!-- Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                        <tr>
+                                            <th class="px-6 py-3">Title</th>
+                                            <th class="px-6 py-3">Status</th>
+                                            <th class="px-6 py-3">Date</th>
+                                            <th class="px-6 py-3">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="bg-white border-b">
+                                            <td class="px-6 py-4 font-medium text-slate-900">Building a REST API...</td>
+                                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Published</span></td>
+                                            <td class="px-6 py-4">2025-09-24</td>
+                                            <td class="px-6 py-4 flex space-x-2">
+                                                <a href="#" class="text-indigo-600 hover:underline">Edit</a>
+                                                <a href="#" class="text-rose-600 hover:underline">Delete</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ======================= Footer ======================= -->
+        <footer class="bg-white mt-auto">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center text-sm text-slate-500">
+                    <p>&copy; 2025 John's Journey. All Rights Reserved.</p>
+                    <div class="flex space-x-4 mt-4 sm:mt-0">
+                        <a href="#" class="hover:text-slate-900"><i data-lucide="twitter"></i></a>
+                        <a href="#" class="hover:text-slate-900"><i data-lucide="github"></i></a>
+                        <a href="#" class="hover:text-slate-900"><i data-lucide="linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const signInBtn = document.getElementById('signInBtn');
+            const signOutBtn = document.getElementById('signOutBtn');
+            const headerLoggedOut = document.getElementById('header-logged-out');
+            const headerLoggedIn = document.getElementById('header-logged-in');
+            const avatarBtn = document.getElementById('avatarBtn');
+            const avatarDropdown = document.getElementById('avatarDropdown');
+
+            const contentSections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            // --- Authentication Simulation ---
+            function setLoggedInState(isLoggedIn) {
+                if (isLoggedIn) {
+                    headerLoggedOut.classList.add('hidden');
+                    headerLoggedIn.classList.remove('hidden');
+                } else {
+                    headerLoggedOut.classList.remove('hidden');
+                    headerLoggedIn.classList.add('hidden');
+                }
+            }
+
+            signInBtn.addEventListener('click', () => {
+                setLoggedInState(true);
+            });
+
+            signOutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                avatarDropdown.classList.add('hidden');
+                setLoggedInState(false);
+                navigateTo('home');
+            });
+
+            // --- Avatar Dropdown ---
+            avatarBtn.addEventListener('click', () => {
+                avatarDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                if (!avatarBtn.contains(event.target) && !avatarDropdown.contains(event.target)) {
+                    avatarDropdown.classList.add('hidden');
+                }
+            });
+
+            // --- Page Navigation ---
+            function navigateTo(pageId) {
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                const targetSection = document.getElementById(pageId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                    window.scrollTo(0, 0);
+                }
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page');
+                    navigateTo(pageId);
+                });
+            });
+
+            // Initialize on home page
+            navigateTo('home');
+        });
+    </script>
+</body>
+</html>

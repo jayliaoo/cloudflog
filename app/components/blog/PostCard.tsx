@@ -1,5 +1,4 @@
 import { Link } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { CalendarDays, Clock, Tag, Eye, MessageCircle } from "lucide-react";
 
 interface PostCardProps {
@@ -47,7 +46,7 @@ function renderTags(tags: string | null | string[]) {
 
 export default function PostCard({ post }: PostCardProps) {
   return (
-    <Card key={post.id} className="overflow-hidden">
+    <div key={post.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
       {post.coverImage && (
         <img
           src={post.coverImage}
@@ -56,8 +55,8 @@ export default function PostCard({ post }: PostCardProps) {
         />
       )}
       
-      <CardHeader>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+      <div className="p-6">
+        <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
           <CalendarDays className="h-4 w-4" />
           <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
           {post.viewCount !== undefined && post.viewCount > 0 && (
@@ -79,23 +78,21 @@ export default function PostCard({ post }: PostCardProps) {
           )}
         </div>
         {renderTags(post.tags)}
-        <CardTitle>
-          <Link to={`/posts/${post.slug}`} className="hover:text-primary">
+        <h3 className="text-xl font-semibold text-slate-900 mb-2">
+          <Link to={`/posts/${post.slug}`} className="hover:text-indigo-600 transition-colors">
             {post.title}
           </Link>
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-slate-600 mb-4">
           {post.excerpt}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
         <div className="flex items-center justify-between">
-          <Link to={`/posts/${post.slug}`}>
+          <Link to={`/posts/${post.slug}`} className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center transition-colors">
             Read More
             <Clock className="ml-2 h-4 w-4" />
           </Link>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

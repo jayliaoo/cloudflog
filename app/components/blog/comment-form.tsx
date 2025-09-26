@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Form } from "react-router";
-import { Textarea } from "~/components/ui/textarea";
 
 interface CommentFormProps {
   postId: number;
@@ -120,12 +119,12 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
       <div>
         {!user ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
+            <p className="text-slate-600 mb-4">
               Please sign in to leave a comment.
             </p>
             <a
               href="/auth/signin"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+              className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full font-medium transition"
             >
               Sign In
             </a>
@@ -133,31 +132,40 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
         ) : (
           <Form onSubmit={handleSubmit} className="space-y-4">
             {errors.submit && (
-              <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">
+              <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
                 {errors.submit}
               </div>
             )}
             
             <div>
-              <Textarea
+              <textarea
                 placeholder={isReply ? "Write your reply..." : "Write your comment..."}
                 value={formData.content}
-                onChange={(e) => handleInputChange("content", e.target.value)}
-                className={errors.content ? "border-destructive" : ""}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange("content", e.target.value)}
+                className={`w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-vertical ${errors.content ? "border-red-500" : ""}`}
                 rows={4}
                 disabled={isSubmitting}
               />
               {errors.content && (
-                <p className="text-destructive text-sm mt-1">{errors.content}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.content}</p>
               )}
             </div>
             
             <div className="flex gap-2">
-              <button type="submit" disabled={isSubmitting}>
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-4 py-2 rounded-full font-medium transition"
+              >
                 {isSubmitting ? "Submitting..." : (isReply ? "Post Reply" : "Post Comment")}
               </button>
               {onCancel && (
-                <button type="button" onClick={onCancel} disabled={isSubmitting}>
+                <button 
+                  type="button" 
+                  onClick={onCancel} 
+                  disabled={isSubmitting}
+                  className="bg-slate-100 hover:bg-slate-200 disabled:bg-slate-50 text-slate-700 px-4 py-2 rounded-full font-medium transition"
+                >
                   Cancel
                 </button>
               )}

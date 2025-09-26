@@ -1,6 +1,5 @@
 import { data, useLoaderData, Form } from "react-router";
 import { Link, useSearchParams } from "react-router";
-import { Button } from "~/components/ui/button";
 import { Search } from "lucide-react";
 import PostCard from "~/components/blog/PostCard";
 import { getDBClient } from "~/db";
@@ -157,9 +156,12 @@ export default function SearchPage() {
               placeholder="Search posts by title or content..."
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10"
             />
-            <Button type="submit" variant="default" className="absolute right-2 top-1/2 transform -translate-y-1/2">
+            <button 
+              type="submit" 
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            >
               Search
-            </Button>
+            </button>
           </div>
         </Form>
         
@@ -185,9 +187,12 @@ export default function SearchPage() {
           <p className="text-muted-foreground mb-4">
             No posts match your search for "{query}". Try different keywords or browse all posts.
           </p>
-          <Button asChild>
-            <Link to="/posts">Browse All Posts</Link>
-          </Button>
+          <Link 
+            to="/posts"
+            className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Browse All Posts
+          </Link>
         </div>
       )}
       
@@ -195,7 +200,14 @@ export default function SearchPage() {
       {posts.length > 0 && (
         <div className="space-y-6">
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard 
+              key={post.id} 
+              post={{
+                ...post,
+                excerpt: post.excerpt || "",
+                createdAt: post.createdAt.toISOString()
+              }} 
+            />
           ))}
         </div>
       )}

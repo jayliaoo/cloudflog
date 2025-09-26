@@ -1,5 +1,4 @@
 import { Link, Outlet, useLocation } from "react-router";
-import { Button } from "~/components/ui/button";
 import { BarChart3, FileText, Tag, MessageSquare, Menu, X } from "lucide-react";
 import { useState } from "react";
 
@@ -33,14 +32,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
         <div className="flex items-center justify-between h-16 px-6 border-b">
           <h2 className="text-lg font-semibold">Admin Panel</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
+          <button
+            className="lg:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             onClick={() => setSidebarOpen(false)}
           >
             <X className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
         <nav className="p-4">
           <ul className="space-y-2">
@@ -65,14 +62,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Header */}
         <header className="bg-card px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
+            <button
+              className="lg:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-4 w-4" />
-            </Button>
+            </button>
             <h1 className="text-2xl font-bold">{getPageTitle()}</h1>
           </div>
   

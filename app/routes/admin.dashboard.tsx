@@ -3,7 +3,6 @@ import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { posts, tags, comments, users } from "~/db/schema";
 import { eq, count, desc, sql } from "drizzle-orm";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { BarChart3, FileText, Tag, MessageSquare, Users, TrendingUp, Eye } from "lucide-react";
 import type { LoaderFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
@@ -147,8 +146,8 @@ export default function AdminDashboard({ loaderData }: { loaderData: any }) {
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card) => (
-          <Card key={card.title}>
-            <CardContent className="p-6">
+          <div key={card.title} className="rounded-lg border bg-card text-card-foreground shadow-sm">
+            <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
@@ -158,8 +157,8 @@ export default function AdminDashboard({ loaderData }: { loaderData: any }) {
                   <card.icon className={`h-6 w-6 ${card.color}`} />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 

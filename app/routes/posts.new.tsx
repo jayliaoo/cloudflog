@@ -1,9 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, useLoaderData } from "react-router";
 import { data } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
 import MarkdownPreview from "~/components/blog/markdown-preview";
 import MarkdownToolbar from "~/components/blog/markdown-toolbar";
 import TagInput from "~/components/blog/tag-input";
@@ -87,7 +84,9 @@ export default function NewPost() {
   const editId = searchParams.get('edit');
   const isEditing = !!editId;
   
+  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [loading, setLoading] = useState(false);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [error, setError] = useState<string | null>(null);
   
   // Handle loader errors
@@ -97,7 +96,6 @@ export default function NewPost() {
     }
   }, [loaderData]);
   
-  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -105,8 +103,6 @@ export default function NewPost() {
     tags: [] as string[],
     published: false,
   });
-
-  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load existing post data when editing
   useEffect(() => {
@@ -258,7 +254,7 @@ export default function NewPost() {
               <label htmlFor="title" className="block text-sm font-medium mb-2">
                 Title *
               </label>
-              <Input
+              <input
                 type="text"
                 id="title"
                 name="title"
@@ -266,6 +262,7 @@ export default function NewPost() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="Enter your blog title"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -273,7 +270,7 @@ export default function NewPost() {
               <label htmlFor="slug" className="block text-sm font-medium mb-2">
                 Slug *
               </label>
-              <Input
+              <input
                 type="text"
                 id="slug"
                 name="slug"
@@ -281,6 +278,7 @@ export default function NewPost() {
                 value={formData.slug}
                 onChange={handleChange}
                 placeholder="my-awesome-blog-post"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-muted-foreground mt-1 text-xs">
                 URL-friendly version of your title (lowercase, hyphens only)
@@ -293,35 +291,41 @@ export default function NewPost() {
               <label className="block text-sm font-medium mb-2">
                 Content *
               </label>
-              <div className="border border-input rounded-md overflow-hidden">
-                <div className="flex border-b border-input">
-                  <Button
+              <div className="border border-gray-300 rounded-md overflow-hidden">
+                <div className="flex border-b border-gray-300">
+                  <button
                     type="button"
                     onClick={() => setActiveTab('edit')}
-                    variant={activeTab === 'edit' ? 'default' : 'secondary'}
-                    size="sm"
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      activeTab === 'edit' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                   >
                     Edit
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
                     onClick={() => setActiveTab('preview')}
-                    variant={activeTab === 'preview' ? 'default' : 'secondary'}
-                    size="sm"
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      activeTab === 'preview' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                   >
                     Preview
-                  </Button>
+                  </button>
                 </div>
                 <div className="p-4">
                   {activeTab === 'edit' ? (
                     <>
 
                       <MarkdownToolbar
-                        textareaRef={contentTextareaRef}
+                        textareaRef={contentTextareaRef as React.RefObject<HTMLTextAreaElement>}
                         content={formData.content}
                         setContent={(content) => setFormData(prev => ({ ...prev, content }))}
                       />
-                      <Textarea
+                      <textarea
                         ref={contentTextareaRef}
                         id="content"
                         name="content"
@@ -330,7 +334,7 @@ export default function NewPost() {
                         value={formData.content}
                         onChange={handleChange}
                         placeholder="Write your blog content here..."
-                        className="mt-2"
+                        className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
                       />
                     </>
                   ) : (
@@ -359,29 +363,30 @@ export default function NewPost() {
             </div>
 
             <div className="flex gap-4">
-              <Button 
+              <button 
                 type="button" 
                 onClick={handlePublish} 
                 disabled={loading}
-                variant="default"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
               >
                 {loading ? (isEditing ? "Updating..." : "Publishing...") : (isEditing ? "Update Post" : "Publish Post")}
-              </Button>
-              <Button 
+              </button>
+              <button 
                 type="button" 
                 onClick={handleSaveDraft} 
                 disabled={loading}
-                variant="secondary"
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-md font-medium transition-colors"
               >
                 {loading ? "Saving Draft..." : (isEditing ? "Save as Draft" : "Save Draft")}
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
                 onClick={() => navigate("/admin")}
                 disabled={loading}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-md font-medium transition-colors"
               >
                 Cancel
-              </Button>
+              </button>
             </div>
           </form>
         </div>

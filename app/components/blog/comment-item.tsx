@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Button } from "~/components/ui/button";
 import { CommentForm } from "./comment-form";
-import { Textarea } from "~/components/ui/textarea";
-import { Input } from "~/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "~/components/ui/dialog";
-import { Select, SelectOption } from "~/components/ui/select";
 
 interface CommentItemProps {
   comment: {
@@ -158,64 +153,75 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
               <div className="flex space-x-2">
                 {canEdit() && !isEditing && (
                   <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <button
                       onClick={() => setIsEditing(true)}
-                      className="text-xs"
+                      className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
                     >
                       Edit
-                    </Button>
+                    </button>
                   </>
                 )}
                 {isOwner && (
-                  <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-destructive hover:text-destructive/80"
-                      >
-                        Delete
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Delete Comment</DialogTitle>
-                        <DialogDescription>
-                          This action requires owner permission. Choose delete mode and confirm.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Delete Mode</label>
-                          <Select value={deleteMode} onChange={(e) => setDeleteMode(e.target.value as 'archive' | 'hard')}>
-                            <SelectOption value="archive">Archive (soft delete)</SelectOption>
-                            <SelectOption value="hard">Permanent (hard delete)</SelectOption>
-                          </Select>
-                        </div>
-                        {deleteError && (
-                          <div className="text-destructive text-sm bg-destructive/10 p-2 rounded">
-                            {deleteError}
+                  <>
+                    {isDeleteOpen && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                          <div className="mb-4">
+                            <h3 className="text-lg font-semibold mb-2">Delete Comment</h3>
+                            <p className="text-gray-600 text-sm">
+                              This action requires owner permission. Choose delete mode and confirm.
+                            </p>
                           </div>
-                        )}
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Delete Mode</label>
+                              <select 
+                                value={deleteMode} 
+                                onChange={(e) => setDeleteMode(e.target.value as 'archive' | 'hard')}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              >
+                                <option value="archive">Archive (soft delete)</option>
+                                <option value="hard">Permanent (hard delete)</option>
+                              </select>
+                            </div>
+                            {deleteError && (
+                              <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
+                                {deleteError}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex justify-end space-x-2 mt-6">
+                            <button 
+                              onClick={() => setIsDeleteOpen(false)}
+                              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              onClick={handleDelete}
+                              className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                            >
+                              Confirm Delete
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <DialogFooter>
-                        <Button variant="secondary" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete}>Confirm Delete</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                    )}
+                    <button
+                      onClick={() => setIsDeleteOpen(true)}
+                      className="px-2 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </>
                 )}
                 {canReply && !showReplyForm && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     onClick={handleReply}
-                    className="text-xs"
+                    className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
                   >
                     Reply
-                  </Button>
+                  </button>
                 )}
               </div>
             )}
@@ -226,44 +232,44 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
           {isEditing ? (
             <div className="space-y-3">
               {editError && (
-                <div className="text-destructive text-sm bg-destructive/10 p-2 rounded">
+                <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
                   {editError}
                 </div>
               )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input
+                <input
                   type="text"
                   value={editAuthorName}
                   onChange={(e) => setEditAuthorName(e.target.value)}
                   placeholder="Your Name"
-                  className="text-sm"
+                  className="text-sm px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               
-              <Textarea
+              <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 placeholder="Edit your comment..."
                 rows={3}
-                className="text-sm"
+                className="text-sm w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
               />
               
               <div className="flex space-x-2">
-                <Button
-                  size="sm"
+                <button
                   onClick={handleEdit}
                   disabled={isSubmitting}
+                  className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded transition-colors"
                 >
                   {isSubmitting ? "Saving..." : "Save Changes"}
-                </Button>
-                <Button
-                  size="sm"
+                </button>
+                <button
                   onClick={handleCancelEdit}
                   disabled={isSubmitting}
+                  className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 disabled:opacity-50 rounded transition-colors"
                 >
                   Cancel
-                </Button>
+                </button>
               </div>
             </div>
           ) : (

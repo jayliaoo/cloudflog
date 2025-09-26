@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { X, Plus } from "lucide-react";
 
 interface Tag {
@@ -153,7 +151,7 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
     <div className="relative">
       <div className="flex flex-wrap gap-2 mb-2">
         {selectedTags && selectedTags.map((tag) => (
-          <Badge key={tag} variant="secondary" className="text-sm">
+          <span key={tag} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
             {tag}
             <button
               type="button"
@@ -162,7 +160,7 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
             >
               <X className="h-3 w-3" />
             </button>
-          </Badge>
+          </span>
         ))}
       </div>
       
@@ -189,16 +187,14 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
           
           {!loading && suggestions.length === 0 && inputValue.trim() && (
             <div className="px-3 py-2">
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start"
+                className="w-full justify-start flex items-center px-3 py-2 text-sm text-left hover:bg-accent focus:bg-accent focus:outline-none rounded-md"
                 onClick={handleCreateNewTag}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Create new tag "{inputValue}"
-              </Button>
+              </button>
             </div>
           )}
 

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
 import {
   Bold,
   Italic,
@@ -62,8 +61,6 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
     insertText(codeMarkdown);
   };
 
-
-
   const handleImageInsert = (url: string, altText: string) => {
     insertText(`![${altText}](${url})`);
   };
@@ -74,98 +71,82 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
   };
 
   return (
-    <div className="flex flex-wrap gap-1 p-2 bg-muted border-b border-input rounded-t-md">
-        <Button
+    <div className="flex flex-wrap gap-1 p-2 bg-gray-50 border-b border-gray-300 rounded-t-md">
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
           onClick={() => insertText("**", "**")}
           title="Bold"
-          className="h-8 w-8 p-0"
+          className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
         >
         <Bold className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("*", "*")}
         title="Italic"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Italic className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("~~", "~~")}
         title="Strikethrough"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Strikethrough className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <div className="w-px bg-border mx-1" />
+      <div className="w-px bg-gray-300 mx-1" />
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("# ", "")}
         title="Heading 1"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Heading1 className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("## ", "")}
         title="Heading 2"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Heading2 className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("### ", "")}
         title="Heading 3"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Heading3 className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <div className="w-px bg-border mx-1" />
+      <div className="w-px bg-gray-300 mx-1" />
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={insertLink}
         title="Link"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Link className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => setImageDialogOpen(true)}
         title="Image"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Image className="h-4 w-4" />
-      </Button>
+      </button>
       
       <ImageDialog
         open={imageDialogOpen}
@@ -173,99 +154,83 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
         onImageInsert={handleImageInsert}
       />
       
-      <div className="w-px bg-border mx-1" />
+      <div className="w-px bg-gray-300 mx-1" />
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("- ", "")}
         title="Unordered List"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <List className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("1. ", "")}
         title="Ordered List"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <ListOrdered className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("- [ ] ", "")}
         title="Task List"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <CheckSquare className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <div className="w-px bg-border mx-1" />
+      <div className="w-px bg-gray-300 mx-1" />
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={insertCodeBlock}
         title="Code Block"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Code className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("`", "`")}
         title="Inline Code"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <span className="text-xs font-mono">&lt;/&gt;</span>
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("> ", "")}
         title="Blockquote"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Quote className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <div className="w-px bg-border mx-1" />
+      <div className="w-px bg-gray-300 mx-1" />
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={insertTable}
         title="Table"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Table className="h-4 w-4" />
-      </Button>
+      </button>
       
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => insertText("\n---\n", "")}
         title="Horizontal Rule"
-        className="h-8 w-8 p-0"
+        className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Minus className="h-4 w-4" />
-      </Button>
+      </button>
     </div>
   );
 }

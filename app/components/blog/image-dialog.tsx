@@ -1,10 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Upload, Link, Image as ImageIcon } from "lucide-react";
+import { Upload, Link, Image as ImageIcon, X } from "lucide-react";
 
 interface ImageDialogProps {
   open: boolean;
@@ -17,6 +12,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
   const [altText, setAltText] = useState("");
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [activeTab, setActiveTab] = useState<'url' | 'upload'>('url');
 
   const handleUrlSubmit = () => {
     if (imageUrl.trim()) {
@@ -30,184 +26,201 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
     if (!file) return;
 
     setUploading(true);
-    
     try {
-      // Step 1: Get signed URL from our API
-      const signedUrlResponse = await fetch(`/api/images?action=getUploadUrl&filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(file.type)}`);
-      
-      if (!signedUrlResponse.ok) {
-        throw new Error('Failed to get upload URL');
-      }
-      
-      const { signedUrl, finalUrl } = await signedUrlResponse.json<{ signedUrl: string; finalUrl: string }>();
-      
-      // Step 2: Upload file directly to R2 using the signed URL
-      const uploadResponse = await fetch(signedUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
       });
 
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload file to R2');
+      if (response.ok) {
+        const data = await response.json() as { url: string };
+        onImageInsert(data.url, altText.trim() || file.name);
+        resetForm();
+        onOpenChange(false);
+      } else {
+        console.error('Upload failed');
       }
-
-      // Step 3: Insert the image into the editor
-      onImageInsert(finalUrl, altText.trim() || file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "));
-      resetForm();
-      onOpenChange(false);
-      
     } catch (error) {
-      console.error("Upload error:", error);
-      alert("Failed to upload image. Please try again.");
+      console.error('Upload error:', error);
     } finally {
       setUploading(false);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      // Clean up previous object URL if exists
-      if (file) {
-        URL.revokeObjectURL(URL.createObjectURL(file));
-      }
-      setFile(selectedFile);
-      // Auto-generate alt text from filename
-      const fileName = selectedFile.name.replace(/\.[^/.]+$/, ""); // Remove extension
-      setAltText(fileName.replace(/[-_]/g, " ")); // Replace dashes and underscores with spaces
-    }
-  };
-
   const resetForm = () => {
-    // Clean up object URL if exists
-    if (file) {
-      URL.revokeObjectURL(URL.createObjectURL(file));
-    }
     setImageUrl("");
     setAltText("");
     setFile(null);
+    setActiveTab('url');
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      if (!altText) {
+        setAltText(selectedFile.name.replace(/\.[^/.]+$/, ""));
+      }
+    }
+  };
+
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Insert Image</DialogTitle>
-        </DialogHeader>
-        <Tabs defaultValue="url" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="url">
-              <Link className="h-4 w-4 mr-2" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50" 
+        onClick={() => onOpenChange(false)}
+      />
+      
+      {/* Dialog */}
+      <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md mx-4 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Insert Image</h2>
+          <button
+            onClick={() => onOpenChange(false)}
+            className="p-1 hover:bg-gray-100 rounded"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="mb-4">
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('url')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'url'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Link className="h-4 w-4 inline mr-2" />
               URL
-            </TabsTrigger>
-            <TabsTrigger value="upload">
-              <Upload className="h-4 w-4 mr-2" />
+            </button>
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'upload'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Upload className="h-4 w-4 inline mr-2" />
               Upload
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="url" className="space-y-4 mt-4">
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="space-y-4">
+          {activeTab === 'url' && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="image-url">Image URL</Label>
-                <Input
-                  id="image-url"
+              <div>
+                <label htmlFor="imageUrl" className="block text-sm font-medium mb-2">
+                  Image URL
+                </label>
+                <input
+                  id="imageUrl"
                   type="url"
-                  placeholder="https://example.com/image.jpg"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="alt-text">Alt Text</Label>
-                <Input
-                  id="alt-text"
+              
+              <div>
+                <label htmlFor="altText" className="block text-sm font-medium mb-2">
+                  Alt Text
+                </label>
+                <input
+                  id="altText"
                   type="text"
-                  placeholder="Description of the image"
                   value={altText}
                   onChange={(e) => setAltText(e.target.value)}
+                  placeholder="Describe the image"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="flex justify-end space-x-2 pt-2">
-                <Button
-                  type="button"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="button" 
+              
+              <div className="flex gap-2 pt-4">
+                <button
                   onClick={handleUrlSubmit}
                   disabled={!imageUrl.trim()}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
                 >
                   Insert Image
-                </Button>
+                </button>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="upload" className="space-y-4 mt-4">
+          )}
+
+          {activeTab === 'upload' && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="image-file">Select Image</Label>
-                <Input
-                  id="image-file"
+              <div>
+                <label htmlFor="fileUpload" className="block text-sm font-medium mb-2">
+                  Choose File
+                </label>
+                <input
+                  id="fileUpload"
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <p className="text-sm text-muted-foreground">
-                  Supported formats: JPEG, PNG, GIF, WebP. Max size: 5MB.
-                </p>
+                {file && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    Selected: {file.name}
+                  </p>
+                )}
               </div>
               
-              {file && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Image Preview</Label>
-                    <div className="border border-input rounded-md p-2 bg-muted/30">
-                      <img 
-                        src={URL.createObjectURL(file)} 
-                        alt="Preview" 
-                        className="max-w-full max-h-32 object-contain rounded mx-auto"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="upload-alt-text">Alt Text</Label>
-                    <Input
-                      id="upload-alt-text"
-                      type="text"
-                      placeholder="Description of the image"
-                      value={altText}
-                      onChange={(e) => setAltText(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
+              <div>
+                <label htmlFor="uploadAltText" className="block text-sm font-medium mb-2">
+                  Alt Text
+                </label>
+                <input
+                  id="uploadAltText"
+                  type="text"
+                  value={altText}
+                  onChange={(e) => setAltText(e.target.value)}
+                  placeholder="Describe the image"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
               
-              <div className="flex justify-end space-x-2 pt-2">
-                <Button
-                  type="button"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="button" 
+              <div className="flex gap-2 pt-4">
+                <button
                   onClick={handleFileUpload}
                   disabled={!file || uploading}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
                 >
                   {uploading ? "Uploading..." : "Upload & Insert"}
-                </Button>
+                </button>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

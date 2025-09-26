@@ -1,5 +1,4 @@
 import { data, useLoaderData } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Link } from "react-router";
 import { ArrowRight, CalendarDays, Tag, MessageCircle, Eye } from "lucide-react";
 import { getDBClient } from "~/db";
@@ -163,25 +162,23 @@ export default function HomePage() {
         </div>
         <div className="grid gap-8 md:grid-cols-2">
           {featuredPosts.map((post) => (
-            <Card key={post.id} className="overflow-hidden">
-              <CardHeader>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+            <div key={post.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+              <div className="p-6">
+                <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
                   <CalendarDays className="h-4 w-4" />
                   <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 {renderTags(post.tags)}
                 <Link to={`/posts/${post.slug}`} className="no-underline">
-                  <CardTitle className="hover:text-primary transition-colors cursor-pointer">{post.title}</CardTitle>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2 hover:text-indigo-600 transition-colors cursor-pointer">{post.title}</h3>
                 </Link>
                 <Link to={`/posts/${post.slug}`} className="no-underline">
-                  <CardDescription className="hover:text-foreground transition-colors cursor-pointer">
+                  <p className="text-slate-600 mb-4 hover:text-slate-700 transition-colors cursor-pointer">
                     {post.excerpt}
-                  </CardDescription>
+                  </p>
                 </Link>
-              </CardHeader>
-              <CardContent>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-4 text-sm text-slate-600">
                     <div className="flex items-center gap-1">
                       <Eye className="h-4 w-4" />
                       <span>{post.viewCount || 0}</span>
@@ -191,10 +188,10 @@ export default function HomePage() {
                       <span>{post.commentCount || 0}</span>
                     </div>
                   </div>
-                  <Link to={`/posts/${post.slug}`}>Read More</Link>
+                  <Link to={`/posts/${post.slug}`} className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Read More</Link>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       </section>
@@ -207,21 +204,19 @@ export default function HomePage() {
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {recentPosts.map((post) => (
-            <Card key={post.id}>
-              <CardHeader>
+            <div key={post.id} className="bg-white rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+              <div className="p-6">
                 {renderTags(post.tags)}
                 <Link to={`/posts/${post.slug}`} className="no-underline">
-                  <CardTitle className="text-lg hover:text-primary transition-colors cursor-pointer">{post.title}</CardTitle>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2 hover:text-indigo-600 transition-colors cursor-pointer">{post.title}</h3>
                 </Link>
                 <Link to={`/posts/${post.slug}`} className="no-underline">
-                  <CardDescription className="text-sm hover:text-foreground transition-colors cursor-pointer">
+                  <p className="text-sm text-slate-600 mb-4 hover:text-slate-700 transition-colors cursor-pointer">
                     {post.excerpt}
-                  </CardDescription>
+                  </p>
                 </Link>
-              </CardHeader>
-              <CardContent>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3 text-xs text-slate-600">
                     <div className="flex items-center gap-1">
                       <Eye className="h-3 w-3" />
                       <span>{post.viewCount || 0}</span>
@@ -233,13 +228,13 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-slate-600">
                     {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
-                  <Link to={`/posts/${post.slug}`}>Read</Link>
+                  <Link to={`/posts/${post.slug}`} className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">Read</Link>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       </section>

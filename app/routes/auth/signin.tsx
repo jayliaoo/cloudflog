@@ -1,7 +1,5 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { redirect, useLoaderData } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -55,25 +53,25 @@ export default function SignIn() {
   const { error, errorMessage } = useLoaderData<typeof loader>();
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-md w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-slate-200">
+        <div className="text-center p-6 pb-4">
+          <h1 className="text-3xl font-bold text-slate-900">
             Sign in to your blog
-          </CardTitle>
-          <CardDescription>
+          </h1>
+          <p className="mt-2 text-slate-600">
             Use your GitHub account to access the blog
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="px-6 pb-6">
           {error && (
-            <div className="rounded-md bg-destructive/10 p-4 mb-6">
+            <div className="rounded-md bg-red-50 border border-red-200 p-4 mb-6">
               <div className="flex">
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-destructive">
+                  <h3 className="text-sm font-medium text-red-800">
                     Authentication Error
                   </h3>
-                  <div className="mt-2 text-sm text-destructive/80">
+                  <div className="mt-2 text-sm text-red-700">
                     <p>{errorMessage}</p>
                   </div>
                 </div>
@@ -82,15 +80,15 @@ export default function SignIn() {
           )}
           
           <form method="post" action="/auth/signin">
-            <Button
+            <button
               type="submit"
-              className="w-full"
+              className="w-full bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition"
             >
               Sign in with GitHub
-            </Button>
+            </button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -4,9 +4,6 @@ import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { desc, eq, inArray, count, like, and, or } from "drizzle-orm";
 import { Form, Link } from "react-router";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Card, CardContent } from "~/components/ui/card";
 import { Edit, Trash2, Eye, EyeOff, Star } from "lucide-react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
@@ -335,17 +332,20 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
         </div>
         
         {/* Clear Filters - Always Visible */}
-        <Button 
-          size="sm" 
-          disabled={currentTag === '' && currentStatus === 'all' && currentFeatured === 'all' && !currentSearch}
-          asChild
+        <Link 
+          to="/admin/posts"
+          className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-9 px-3 ${
+            currentTag === '' && currentStatus === 'all' && currentFeatured === 'all' && !currentSearch
+              ? 'pointer-events-none opacity-50 bg-muted text-muted-foreground'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'
+          }`}
         >
-          <Link to="/admin/posts">Clear Filters</Link>
-        </Button>
+          Clear Filters
+        </Link>
       </div>
       
       {/* Posts List */}
-      <Card>
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
         <ul className="divide-y divide-border">
           {posts.map((post) => (
             <li key={post.id}>
@@ -359,12 +359,12 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                         </Link>
                       </h3>
                       {!post.published && (
-                        <Badge variant="secondary">Draft</Badge>
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">Draft</span>
                       )}
                       {post.featured && (
-                        <Badge variant="default" className="bg-yellow-500">
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-yellow-500 text-white">
                           Featured
-                        </Badge>
+                        </span>
                       )}
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
@@ -373,9 +373,9 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                     {post.tags && post.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {post.tags.map((tag: string) => (
-                          <Badge key={tag} variant="outline">
+                          <span key={tag} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium bg-background text-foreground">
                             {tag}
-                          </Badge>
+                          </span>
                         ))}
                       </div>
                     )}
@@ -391,19 +391,19 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                       <Form method="post" className="inline">
                         <input type="hidden" name="intent" value="publish" />
                         <input type="hidden" name="postId" value={post.id} />
-                        <Button type="submit" size="sm" variant="default">
+                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3">
                           <Eye className="h-4 w-4 mr-1" />
                           Publish
-                        </Button>
+                        </button>
                       </Form>
                     ) : (
                       <Form method="post" className="inline">
                         <input type="hidden" name="intent" value="unpublish" />
                         <input type="hidden" name="postId" value={post.id} />
-                        <Button type="submit" size="sm" variant="outline">
+                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
                           <EyeOff className="h-4 w-4 mr-1" />
                           Unpublish
-                        </Button>
+                        </button>
                       </Form>
                     )}
                     
@@ -411,36 +411,37 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                       <Form method="post" className="inline">
                         <input type="hidden" name="intent" value="unfeature" />
                         <input type="hidden" name="postId" value={post.id} />
-                        <Button type="submit" size="sm" variant="outline">
+                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
                           <Star className="h-4 w-4 mr-1" />
                           Unfeature
-                        </Button>
+                        </button>
                       </Form>
                     ) : (
                       <Form method="post" className="inline">
                         <input type="hidden" name="intent" value="feature" />
                         <input type="hidden" name="postId" value={post.id} />
-                        <Button type="submit" size="sm" variant="outline">
+                        <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
                           <Star className="h-4 w-4 mr-1" />
                           Feature
-                        </Button>
+                        </button>
                       </Form>
                     )}
                     
-                    <Button size="sm" variant="outline" asChild>
-                      <Link to={`/posts/new?edit=${post.id}`}>
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Link>
-                    </Button>
+                    <Link 
+                      to={`/posts/new?edit=${post.id}`}
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Link>
                     
                     <Form method="post" className="inline">
                       <input type="hidden" name="intent" value="delete" />
                       <input type="hidden" name="postId" value={post.id} />
-                      <Button type="submit" size="sm" variant="destructive">
+                      <button type="submit" className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 px-3">
                         <Trash2 className="h-4 w-4 mr-1" />
                         Delete
-                      </Button>
+                      </button>
                     </Form>
                   </div>
                 </div>
@@ -448,21 +449,19 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
             </li>
           ))}
         </ul>
-      </Card>
+      </div>
       
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center space-x-2">
           {/* Previous Page */}
           {currentPage > 1 && (
-            <Button
-              size="sm"
-              asChild
+            <Link 
+              to={`/admin/posts?page=${currentPage - 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
             >
-              <Link to={`/admin/posts?page=${currentPage - 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}>
-                Previous
-              </Link>
-            </Button>
+              Previous
+            </Link>
           )}
           
           {/* Page Numbers */}
@@ -480,30 +479,29 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
               }
               
               return (
-                <Button
+                <Link
                   key={pageNum}
-                  variant={pageNum === currentPage ? "default" : "outline"}
-                  size="sm"
-                  asChild
+                  to={`/admin/posts?page=${pageNum}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}
+                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-3 ${
+                    pageNum === currentPage 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                      : 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
+                  }`}
                 >
-                  <Link to={`/admin/posts?page=${pageNum}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}>
-                    {pageNum}
-                  </Link>
-                </Button>
+                  {pageNum}
+                </Link>
               );
             })}
           </div>
           
           {/* Next Page */}
           {currentPage < totalPages && (
-            <Button
-              size="sm"
-              asChild
+            <Link 
+              to={`/admin/posts?page=${currentPage + 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
             >
-              <Link to={`/admin/posts?page=${currentPage + 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}>
-                Next
-              </Link>
-            </Button>
+              Next
+            </Link>
           )}
         </div>
       )}
