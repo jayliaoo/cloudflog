@@ -29,8 +29,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-16 left-0 z-50 w-64 bg-card border-r transition-transform duration-300 ease-in-out lg:translate-x-0`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b">
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-16 left-0 z-50 w-64 bg-card border-r border-r-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0`}>
+        <div className="flex items-center justify-between h-16 px-6 border-b border-b-gray-200">
           <h2 className="text-lg font-semibold">Admin Panel</h2>
           <button
             className="lg:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -60,7 +60,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main content */}
       <div className="lg:ml-64">
         {/* Header */}
-        <header className="bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-30 border-b">
+        <header className="bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-30 border-b border-b-gray-200">
           <div className="flex items-center space-x-4">
             <button
               className="lg:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"

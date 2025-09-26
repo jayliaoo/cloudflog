@@ -9,6 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
 import AdminLayout from "~/components/layouts/admin-layout";
+import Pagination from "~/components/Pagination";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -467,65 +468,19 @@ export default function Admin({ loaderData }: { loaderData: any }) {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalPosts)} of {totalPosts} posts
-            </div>
-            <div className="flex items-center space-x-2">
-              {/* Previous Page */}
-              {currentPage > 1 && (
-                <Button
-                size="sm"
-                asChild
-              >
-                <Link to={`/admin?page=${currentPage - 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
-                  Previous
-                </Link>
-              </Button>
-              )}
-              
-              {/* Page Numbers */}
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={pageNum === currentPage ? "default" : "outline"}
-                      size="sm"
-                      asChild
-                    >
-                      <Link to={`/admin?page=${pageNum}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
-                        {pageNum}
-                      </Link>
-                    </Button>
-                  );
-                })}
-              </div>
-              
-              {/* Next Page */}
-              {currentPage < totalPages && (
-                <Button
-                size="sm"
-                asChild
-              >
-                <Link to={`/admin?page=${currentPage + 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentTag ? `&tag=${currentTag}` : ''}`}>
-                  Next
-                </Link>
-              </Button>
-              )}
-            </div>
-          </div>
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalPosts}
+            itemsPerPage={10}
+            itemName="posts"
+            baseUrl="/admin"
+            searchParams={{
+              ...(currentStatus && currentStatus !== 'all' && { status: currentStatus }),
+              ...(currentTag && { tag: currentTag })
+            }}
+          />
         )}
       </div>
     </AdminLayout>

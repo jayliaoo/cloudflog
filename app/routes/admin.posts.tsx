@@ -7,6 +7,7 @@ import { Form, Link } from "react-router";
 import { Edit, Trash2, Eye, EyeOff, Star } from "lucide-react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
+import Pagination from "~/components/Pagination";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -240,7 +241,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
         {/* Search Input */}
-        <div className="w-64">
+        <div className="w-63">
           <input
             type="text"
             placeholder="Search posts by title or content..."
@@ -258,12 +259,12 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                 window.location.href = url.toString();
               }
             }}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
         
         {/* Status Filter */}
-        <div className="w-64">
+        <div className="w-63">
           <select
             value={currentStatus || 'all'}
             onChange={(e) => {
@@ -276,7 +277,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
               }
               window.location.href = url.toString();
             }}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">All Posts</option>
             <option value="published">Published Only</option>
@@ -285,7 +286,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
         </div>
         
         {/* Featured Filter */}
-        <div className="w-64">
+        <div className="w-63">
           <select
             value={currentFeatured || 'all'}
             onChange={(e) => {
@@ -298,7 +299,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
               }
               window.location.href = url.toString();
             }}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="all">All Posts</option>
             <option value="featured">Featured Only</option>
@@ -307,7 +308,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
         </div>
         
         {/* Tag Filter */}
-        <div className="w-64">
+        <div className="w-63">
           <select
             value={currentTag || ''}
             onChange={(e) => {
@@ -320,7 +321,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
               }
               window.location.href = url.toString();
             }}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">All Tags</option>
             {allTags.map((tag) => (
@@ -332,35 +333,30 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
         </div>
         
         {/* Clear Filters - Always Visible */}
-        <Link 
-          to="/admin/posts"
-          className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-9 px-3 ${
-            currentTag === '' && currentStatus === 'all' && currentFeatured === 'all' && !currentSearch
-              ? 'pointer-events-none opacity-50 bg-muted text-muted-foreground'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90'
-          }`}
-        >
-          Clear Filters
+        <Link to="/admin/posts">
+          <button className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition">
+            Clear Filters
+          </button>
         </Link>
       </div>
       
       {/* Posts Table */}
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+      <div className="rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-muted/50">
-              <tr className="border-b">
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Title</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Tags</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Created</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Updated</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="px-4 py-3 text-left text-sm font-medium">Title</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Tags</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Created</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Updated</th>
+                <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-gray-200">
               {posts.map((post) => (
-                <tr key={post.id} className="hover:bg-muted/25">
+                <tr key={post.id}>
                   <td className="px-4 py-3">
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
@@ -481,59 +477,22 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
       </div>
       
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2">
-          {/* Previous Page */}
-          {currentPage > 1 && (
-            <Link 
-              to={`/admin/posts?page=${currentPage - 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
-            >
-              Previous
-            </Link>
-          )}
-          
-          {/* Page Numbers */}
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <Link
-                  key={pageNum}
-                  to={`/admin/posts?page=${pageNum}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}
-                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-3 ${
-                    pageNum === currentPage 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  {pageNum}
-                </Link>
-              );
-            })}
-          </div>
-          
-          {/* Next Page */}
-          {currentPage < totalPages && (
-            <Link 
-              to={`/admin/posts?page=${currentPage + 1}${currentStatus && currentStatus !== 'all' ? `&status=${currentStatus}` : ''}${currentFeatured && currentFeatured !== 'all' ? `&featured=${currentFeatured}` : ''}${currentTag ? `&tag=${currentTag}` : ''}${currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : ''}`}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3"
-            >
-              Next
-            </Link>
-          )}
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalCount={totalPosts}
+        itemsPerPage={10}
+        itemName="posts"
+        baseUrl="/admin/posts"
+        searchParams={(() => {
+          const params = new URLSearchParams();
+          if (currentStatus && currentStatus !== 'all') params.set('status', currentStatus);
+          if (currentFeatured && currentFeatured !== 'all') params.set('featured', currentFeatured);
+          if (currentTag) params.set('tag', currentTag);
+          if (currentSearch) params.set('search', currentSearch);
+          return params;
+        })()}
+      />
       </div>
     </AdminLayout>
   );

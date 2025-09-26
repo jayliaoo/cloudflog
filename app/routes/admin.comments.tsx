@@ -2,12 +2,13 @@ import { data, redirect } from "react-router";
 import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { comments, posts, users } from "~/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import { Link } from "react-router";
 import { MessageSquare, User, Calendar, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
+import Pagination from "~/components/Pagination";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -25,7 +26,24 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   
   const db = getDBClient(env.D1);
   
-  // Fetch all comments with post and author information
+  // Parse pagination parameters
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get("page") || "1", 10);
+  const commentsPerPage = 20;
+  
+  // Get total count for pagination
+  const totalCommentsResult = await db
+    .select({
+      count: count(),
+    })
+    .from(comments);
+  const totalComments = totalCommentsResult[0].count;
+  const totalPages = Math.ceil(totalComments / commentsPerPage);
+  
+  // Apply pagination (limit and offset)
+  const offset = (page - 1) * commentsPerPage;
+  
+  // Fetch comments with post and author information and pagination
   const allComments = await db
     .select({
       id: comments.id,
@@ -38,9 +56,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .from(comments)
     .innerJoin(posts, eq(comments.postId, posts.id))
     .innerJoin(users, eq(comments.authorId, users.id))
-    .orderBy(desc(comments.createdAt));
+    .orderBy(desc(comments.createdAt))
+    .limit(commentsPerPage)
+    .offset(offset);
   
-  return data({ comments: allComments });
+  return data({ 
+    comments: allComments,
+    currentPage: page,
+    totalPages,
+    totalComments
+  });
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -84,7 +109,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function AdminComments({ loaderData }: { loaderData: any }) {
-  const { comments } = loaderData as { comments: any[] };
+  const { comments, currentPage, totalPages, totalComments } = loaderData as { 
+    comments: any[]; 
+    currentPage: number; 
+    totalPages: number; 
+    totalComments: number; 
+  };
   const [searchTerm, setSearchTerm] = useState("");
   
   const filteredComments = comments.filter(comment => 
@@ -224,6 +254,16 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
             </div>
           )}
         </div>
+        
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalComments}
+          itemsPerPage={20}
+          itemName="comments"
+          baseUrl="/admin/comments"
+        />
       </div>
       </div>
     </AdminLayout>

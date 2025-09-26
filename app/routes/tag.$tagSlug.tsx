@@ -5,6 +5,7 @@ import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc, count, and } from "drizzle-orm";
 import PostCard from "~/components/blog/PostCard";
+import Pagination from "~/components/Pagination";
 
 export async function loader({ 
   context, 
@@ -171,64 +172,14 @@ export default function TagPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t pt-6 mt-8">
-          <div className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalCount)} of {totalCount} posts
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to={`/tag/${currentTag.slug}?page=${Math.max(1, currentPage - 1)}`}
-              className={`px-3 py-2 text-sm border rounded-md ${
-                currentPage === 1 
-                  ? 'pointer-events-none opacity-50' 
-                  : 'hover:bg-accent'
-              }`}
-            >
-              Previous
-            </Link>
-            
-            {/* Page numbers */}
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <Link
-                  key={pageNum}
-                  to={`/tag/${currentTag.slug}?page=${pageNum}`}
-                  className={`px-3 py-2 text-sm border rounded-md ${
-                    currentPage === pageNum
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-accent'
-                  }`}
-                >
-                  {pageNum}
-                </Link>
-              );
-            })}
-            
-            <Link
-              to={`/tag/${currentTag.slug}?page=${Math.min(totalPages, currentPage + 1)}`}
-              className={`px-3 py-2 text-sm border rounded-md ${
-                currentPage === totalPages 
-                  ? 'pointer-events-none opacity-50' 
-                  : 'hover:bg-accent'
-              }`}
-            >
-              Next
-            </Link>
-          </div>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        itemsPerPage={10}
+        itemName="posts"
+        baseUrl={`/tag/${currentTag.slug}`}
+      />
 
       {posts.length === 0 && (
         <div className="text-center py-12">

@@ -8,6 +8,7 @@ import { Edit, Trash2, Tag, Plus, Eye } from "lucide-react";
 import { useState } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
+import Pagination from "~/components/Pagination";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -25,7 +26,24 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   
   const db = getDBClient(env.D1);
   
-  // Fetch all tags with post counts
+  // Parse pagination parameters
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get("page") || "1", 10);
+  const tagsPerPage = 20;
+  
+  // Get total count for pagination
+  const totalTagsResult = await db
+    .select({
+      count: count(),
+    })
+    .from(tags);
+  const totalTags = totalTagsResult[0].count;
+  const totalPages = Math.ceil(totalTags / tagsPerPage);
+  
+  // Apply pagination (limit and offset)
+  const offset = (page - 1) * tagsPerPage;
+  
+  // Fetch tags with post counts and pagination
   const allTags = await db
     .select({
       name: tags.name,
@@ -35,9 +53,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .from(tags)
     .leftJoin(postTags, eq(tags.slug, postTags.tagSlug))
     .groupBy(tags.name, tags.slug)
-    .orderBy(desc(count(postTags.postId)));
+    .orderBy(desc(count(postTags.postId)))
+    .limit(tagsPerPage)
+    .offset(offset);
   
-  return data({ tags: allTags });
+  return data({ 
+    tags: allTags,
+    currentPage: page,
+    totalPages,
+    totalTags
+  });
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -123,7 +148,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function AdminTags({ loaderData }: { loaderData: any }) {
-  const { tags } = loaderData as { tags: any[] };
+  const { tags, currentPage, totalPages, totalTags } = loaderData as { 
+    tags: any[]; 
+    currentPage: number; 
+    totalPages: number; 
+    totalTags: number; 
+  };
   const [newTagName, setNewTagName] = useState("");
   
   const handleCreateTag = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -213,7 +243,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
         {/* Tags Table */}
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
           <div className="flex flex-col space-y-1.5 p-6">
-            <h3 className="text-2xl font-semibold leading-none tracking-tight">All Tags ({tags.length})</h3>
+            <h3 className="text-2xl font-semibold leading-none tracking-tight">All Tags ({totalTags})</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -269,6 +299,16 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
             )}
           </div>
         </div>
+        
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalTags}
+          itemsPerPage={20}
+          itemName="tags"
+          baseUrl="/admin/tags"
+        />
       </div>
     </AdminLayout>
   );
