@@ -212,7 +212,7 @@ export default function BlogPostPage() {
         </header>
 
         {/* Post Content */}
-        <div className="prose prose-lg max-w-none dark:prose-invert">
+        <div className="prose prose-lg max-w-none dark:prose-invert markdown">
           <div dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }} />
         </div>
 

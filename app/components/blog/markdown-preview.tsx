@@ -16,7 +16,7 @@ export default function MarkdownPreview({ content, className = '' }: MarkdownPre
 
   return (
     <div 
-      className={`max-w-none ${className}`}
+      className={`max-w-none ${className} markdown`}
       dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
       style={{
         lineHeight: '1.6',
