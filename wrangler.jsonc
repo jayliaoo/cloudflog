@@ -22,7 +22,6 @@
 			"binding": "D1",
 			"database_name": "blog",
 			"database_id": "1069839c-e143-46b3-a267-6795d0395b14",
-			"migrations_dir": "./drizzle"
 		}
 	],
 	// R2 bucket binding removed - using S3 API instead

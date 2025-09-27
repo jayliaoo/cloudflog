@@ -24,7 +24,6 @@ export async function getSignedUrlForUpload(
   key: string,
   contentType: string,
   metadata?: Record<string, string>,
-  expiresIn: number = 3600, // 1 hour default
   cacheControl?: string // Optional cache control header
 ) {
   // Use aws4fetch to generate signed URL

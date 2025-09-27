@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3553e35b-85cf-4a2f-9b91-1e9ccc2709af",
-  "prevId": "920b3fd2-26a9-497b-90ce-114db271b6d5",
+  "id": "6e8ae526-79ad-473b-a2ba-5a42a7021494",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "comment": {
       "name": "comment",
@@ -47,8 +47,7 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false,
-          "default": "(unixepoch('subsec') * 1000)"
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",

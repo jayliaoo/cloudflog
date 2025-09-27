@@ -15,7 +15,7 @@ export default [
   route("search", "routes/search.tsx"),
   route("api/posts", "routes/api.posts.ts"),
   route("api/tags", "routes/api.tags.ts"),
-  route("api/images/:objectKey?", "routes/api.images.ts"),
+  route("api/images", "routes/api.images.ts"),
   route("auth/signin", "routes/auth/signin.tsx"),
   route("auth/signin/:provider", "routes/auth/signin.$provider.ts"),
   route("auth/signout", "routes/auth/signout.ts"),

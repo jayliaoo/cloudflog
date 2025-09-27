@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, Link, Image as ImageIcon, X } from "lucide-react";
+import { Upload, Link, X } from "lucide-react";
 
 interface ImageDialogProps {
   open: boolean;
@@ -30,7 +30,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload', {
+      const response = await fetch('/api/images', {
         method: 'POST',
         body: formData,
       });
