@@ -2,10 +2,11 @@ import { data, useLoaderData } from "react-router";
 import { Link, useParams } from "react-router";
 import { Hash, Tag } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, tags, postTags } from "~/db/schema";
-import { eq, desc, count, and } from "drizzle-orm";
+import { tags } from "~/db/schema";
+import { eq } from "drizzle-orm";
 import PostCard from "~/components/blog/PostCard";
 import Pagination from "~/components/Pagination";
+import { createPostsService } from "~/services/posts.service";
 
 export async function loader({ 
   context, 
@@ -17,7 +18,6 @@ export async function loader({
   params: { tagSlug: string }
 }) {
   const { env } = context.cloudflare;
-  const db = getDBClient(env.D1);
   const { tagSlug } = params;
 
   try {
@@ -25,9 +25,9 @@ export async function loader({
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1');
     const postsPerPage = 10;
-    const offset = (page - 1) * postsPerPage;
 
-    // Get tag info
+    // Get tag info (still need direct DB access for tag validation)
+    const db = getDBClient(env.D1);
     const tagInfo = await db
       .select({
         name: tags.name,
@@ -43,66 +43,16 @@ export async function loader({
 
     const currentTag = tagInfo[0];
 
-    // Get total count of published posts for this tag
-    const totalCountResult = await db
-      .select({
-        count: count(posts.id)
-      })
-      .from(posts)
-      .innerJoin(postTags, eq(posts.id, postTags.postId))
-      .where(and(
-        eq(posts.published, true),
-        eq(postTags.tagSlug, tagSlug)
-      ));
-    
-    const totalCount = totalCountResult[0].count;
-    const totalPages = Math.ceil(totalCount / postsPerPage);
-
-    // Fetch paginated posts for this tag
-    const postsData = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        slug: posts.slug,
-        excerpt: posts.excerpt,
-        coverImage: posts.coverImage,
-        createdAt: posts.createdAt,
-      })
-      .from(posts)
-      .innerJoin(postTags, eq(posts.id, postTags.postId))
-      .where(and(
-        eq(posts.published, true),
-        eq(postTags.tagSlug, tagSlug)
-      ))
-      .orderBy(desc(posts.createdAt))
-      .limit(postsPerPage)
-      .offset(offset);
-
-    // Fetch tags for each post
-    const postsWithTags = await Promise.all(
-      postsData.map(async (post) => {
-        const postTagsData = await db
-          .select({
-            tagName: tags.name,
-            tagSlug: tags.slug,
-          })
-          .from(postTags)
-          .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
-          .where(eq(postTags.postId, post.id));
-
-        return {
-          ...post,
-          tags: postTagsData.map(pt => pt.tagName),
-        };
-      })
-    );
+    // Create posts service instance and fetch posts by tag
+    const postsService = createPostsService(env);
+    const result = await postsService.getPostsByTag(tagSlug, page, postsPerPage);
 
     return data({ 
-      posts: postsWithTags,
+      posts: result.posts,
       currentTag,
-      currentPage: page,
-      totalPages,
-      totalCount
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+      totalCount: result.totalCount
     });
   } catch (error) {
     console.error("Error fetching tag posts from database:", error);

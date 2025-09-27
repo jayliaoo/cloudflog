@@ -3,9 +3,7 @@ import { Link, useSearchParams } from "react-router";
 import { Search } from "lucide-react";
 import PostCard from "~/components/blog/PostCard";
 import Pagination from "~/components/Pagination";
-import { getDBClient } from "~/db";
-import { posts, tags, postTags } from "~/db/schema";
-import { desc, eq, or, like, and, count } from "drizzle-orm";
+import { createPostsService } from "~/services/posts.service";
 
 interface SearchLoaderData {
   posts: Array<{
@@ -16,7 +14,8 @@ interface SearchLoaderData {
     coverImage: string | null;
     createdAt: Date;
     published: boolean;
-    tags: string[];
+    tags: string | null;
+    commentCount?: number;
   }>;
   query: string;
   totalCount: number;
@@ -34,8 +33,6 @@ export async function loader({ request, context }: { request: Request; context: 
   const page = parseInt(url.searchParams.get("page") || "1", 10);
   const postsPerPage = 10;
   
-  const db = getDBClient(env.D1);
-  
   try {
     if (!query.trim()) {
       return data({ 
@@ -47,78 +44,16 @@ export async function loader({ request, context }: { request: Request; context: 
       });
     }
     
-    // Search in both title and content
-    const searchTerm = `%${query}%`;
+    // Create posts service instance and search posts
+    const postsService = createPostsService(env);
+    const result = await postsService.searchPosts(query, page, postsPerPage);
     
-    // Get total count for pagination
-    const totalCountResult = await db
-      .select({
-        count: count()
-      })
-      .from(posts)
-      .where(and(
-        eq(posts.published, true),
-        or(
-          like(posts.title, searchTerm),
-          like(posts.content, searchTerm)
-        )
-      ));
-    
-    const totalCount = totalCountResult[0]?.count || 0;
-    const totalPages = Math.ceil(totalCount / postsPerPage);
-    
-    // Calculate offset for pagination
-    const offset = (page - 1) * postsPerPage;
-    
-    // Fetch matching posts with pagination
-    const searchResults = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        slug: posts.slug,
-        excerpt: posts.excerpt,
-        coverImage: posts.coverImage,
-        createdAt: posts.createdAt,
-        published: posts.published
-      })
-      .from(posts)
-      .where(and(
-        eq(posts.published, true),
-        or(
-          like(posts.title, searchTerm),
-          like(posts.content, searchTerm)
-        )
-      ))
-      .orderBy(desc(posts.createdAt))
-      .limit(postsPerPage)
-      .offset(offset);
-    
-    // Fetch tags for each post
-    const postsWithTags = await Promise.all(
-      searchResults.map(async (post) => {
-        const postTagsData = await db
-          .select({
-            tagName: tags.name,
-            tagSlug: tags.slug,
-          })
-          .from(postTags)
-          .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
-          .where(eq(postTags.postId, post.id));
-        
-        return {
-          ...post,
-          excerpt: post.excerpt || "",
-          tags: postTagsData.map(pt => pt.tagName),
-        };
-      })
-    );
-    
-    return data({ 
-      posts: postsWithTags, 
-      query: query || "", 
-      totalCount,
-      currentPage: page,
-      totalPages
+    return data({
+      posts: result.posts,
+      query,
+      totalCount: result.totalCount,
+      currentPage: result.currentPage,
+      totalPages: result.totalPages
     });
   } catch (error) {
     console.error("Error searching posts:", error);
@@ -221,7 +156,7 @@ export default function SearchPage() {
         itemsPerPage={10}
         itemName="results"
         baseUrl="/search"
-        searchParams={{ q: query }}
+        searchParams={new URLSearchParams({ q: query })}
       />
     </div>
   );

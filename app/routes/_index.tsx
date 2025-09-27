@@ -2,61 +2,26 @@ import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { getDBClient } from "~/db";
-import { posts, tags, postTags, comments } from "~/db/schema";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { posts } from "~/db/schema";
+import { eq } from "drizzle-orm";
 import PostCard from "~/components/blog/PostCard";
+import { createPostsService } from "~/services/posts.service";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
-  const db = getDBClient(env.D1);
 
   try {
-    // Fetch featured posts with tags, comment count, and view count
-    const featuredPostsData = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        slug: posts.slug,
-        excerpt: posts.excerpt,
-        createdAt: posts.createdAt,
-        viewCount: posts.viewCount,
-        tags: sql<string>`GROUP_CONCAT(DISTINCT ${tags.name})`,
-        commentCount: sql<number>`COUNT(DISTINCT CASE WHEN ${comments.deletedAt} IS NULL THEN ${comments.id} END)`
-      })
-      .from(posts)
-      .leftJoin(postTags, eq(posts.id, postTags.postId))
-      .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
-      .leftJoin(comments, eq(posts.id, comments.postId))
-      .where(and(
-        eq(posts.published, true),
-        eq(posts.featured, true)
-      ))
-      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt, posts.viewCount)
-      .orderBy(desc(posts.createdAt))
-      .limit(4);
+    // Create posts service instance
+    const postsService = createPostsService(env);
 
-    // Fetch recent posts (latest published posts) with tags, comment count, and view count
-    const recentPostsData = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        slug: posts.slug,
-        excerpt: posts.excerpt,
-        createdAt: posts.createdAt,
-        viewCount: posts.viewCount,
-        tags: sql<string>`GROUP_CONCAT(DISTINCT ${tags.name})`,
-        commentCount: sql<number>`COUNT(DISTINCT CASE WHEN ${comments.deletedAt} IS NULL THEN ${comments.id} END)`
-      })
-      .from(posts)
-      .leftJoin(postTags, eq(posts.id, postTags.postId))
-      .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
-      .leftJoin(comments, eq(posts.id, comments.postId))
-      .where(eq(posts.published, true))
-      .groupBy(posts.id, posts.title, posts.slug, posts.excerpt, posts.createdAt, posts.viewCount)
-      .orderBy(desc(posts.createdAt))
-      .limit(6);
+    // Fetch featured and recent posts using the service
+    const [featuredPosts, recentPosts] = await Promise.all([
+      postsService.getFeaturedPosts(4),
+      postsService.getRecentPosts(6)
+    ]);
 
-    // Fetch about post data from database
+    // Fetch about post data from database (keep this separate as it's specific to homepage)
+    const db = getDBClient(env.D1);
     const aboutPostData = await db
       .select({
         title: posts.title,
@@ -75,9 +40,6 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
       excerpt: "Welcome to my corner of the internet where I share my thoughts on technology and development.",
       content: "Welcome to my corner of the internet where I share my thoughts on technology and development."
     };
-
-    const featuredPosts = featuredPostsData;
-    const recentPosts = recentPostsData;
 
     return data({ featuredPosts, recentPosts, aboutPost });
   } catch (error) {

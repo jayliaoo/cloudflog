@@ -2,9 +2,7 @@ import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
 import PostCard from "~/components/blog/PostCard";
 import Pagination from "~/components/Pagination";
-import { getDBClient } from "~/db";
-import { posts, tags, postTags, comments } from "~/db/schema";
-import { eq, desc, and, count, sql, isNull } from "drizzle-orm";
+import { createPostsService } from "~/services/posts.service";
 
 export async function loader({
   context,
@@ -14,67 +12,24 @@ export async function loader({
   request: Request;
 }) {
   const { env } = context.cloudflare;
-  const db = getDBClient(env.D1);
 
   try {
     // Parse pagination parameters from URL
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "1");
     const postsPerPage = 10;
-    const offset = (page - 1) * postsPerPage;
 
-    // Get total count of published posts
-    const totalCountResult = await db
-      .select({
-        count: count(),
-      })
-      .from(posts)
-      .where(eq(posts.published, true));
+    // Create posts service instance
+    const postsService = createPostsService(env);
 
-    const totalCount = totalCountResult[0].count;
-    const totalPages = Math.ceil(totalCount / postsPerPage);
-
-    // Fetch published posts with pagination (excluding featured posts if any)
-    const postsData = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        slug: posts.slug,
-        excerpt: posts.excerpt,
-        coverImage: posts.coverImage,
-        createdAt: posts.createdAt,
-        featured: posts.featured,
-        viewCount: posts.viewCount,
-        commentCount: count(comments.id),
-        tags: sql<string>`GROUP_CONCAT(DISTINCT ${tags.name})`,
-      })
-      .from(posts)
-      .leftJoin(postTags, eq(posts.id, postTags.postId))
-      .leftJoin(tags, eq(postTags.tagSlug, tags.slug))
-      .leftJoin(
-        comments,
-        and(eq(posts.id, comments.postId), isNull(comments.deletedAt))
-      )
-      .where(eq(posts.published, true))
-      .groupBy(
-        posts.id,
-        posts.title,
-        posts.slug,
-        posts.excerpt,
-        posts.coverImage,
-        posts.createdAt,
-        posts.featured,
-        posts.viewCount
-      )
-      .orderBy(desc(posts.featured), desc(posts.createdAt))
-      .limit(postsPerPage)
-      .offset(offset);
+    // Fetch paginated posts using the service
+    const result = await postsService.getPostsPage(page, postsPerPage);
 
     return data({
-      posts: postsData,
-      currentPage: page,
-      totalPages,
-      totalCount,
+      posts: result.posts,
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+      totalCount: result.totalCount,
     });
   } catch (error) {
     console.error("Error fetching blog data from database:", error);

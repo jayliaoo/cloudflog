@@ -1,13 +1,14 @@
 import { data, redirect } from "react-router";
 import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
-import { posts, tags, postTags } from "~/db/schema";
-import { desc, eq, inArray, count, like, and, or } from "drizzle-orm";
+import { posts, postTags } from "~/db/schema";
+import { eq } from "drizzle-orm";
 import { Form, Link } from "react-router";
 import { Edit, Trash2, Eye, EyeOff, Star } from "lucide-react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
 import Pagination from "~/components/Pagination";
+import { createPostsService } from "~/services/posts.service";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -34,136 +35,43 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const page = parseInt(url.searchParams.get('page') || '1', 10);
   const postsPerPage = 10; // Number of posts per page
   
-  const db = getDBClient(env.D1);
+  // Create posts service instance
+  const postsService = createPostsService(env);
   
   // Fetch all available tags for filter dropdown
-  const allTags = await db
-    .select({
-      name: tags.name,
-      slug: tags.slug,
-    })
-    .from(tags)
-    .orderBy(tags.name);
+  const allTags = await postsService.getTagsWithPostCounts();
   
-  // Build conditions array for filtering
-  const conditions = [];
+  // Map status filter to service format
+  let status: 'all' | 'published' | 'draft' = 'all';
+  if (statusFilter === 'published') status = 'published';
+  else if (statusFilter === 'draft') status = 'draft';
   
-  // Apply status filter
-  if (statusFilter === 'published') {
-    conditions.push(eq(posts.published, true));
-  } else if (statusFilter === 'draft') {
-    conditions.push(eq(posts.published, false));
-  }
+  // Map featured filter to service format
+  let featured: 'all' | 'featured' | 'unfeatured' = 'all';
+  if (featuredFilter === 'featured') featured = 'featured';
+  else if (featuredFilter === 'unfeatured') featured = 'unfeatured';
   
-  // Apply featured filter
-  if (featuredFilter === 'featured') {
-    conditions.push(eq(posts.featured, true));
-  } else if (featuredFilter === 'unfeatured') {
-    conditions.push(eq(posts.featured, false));
-  }
-  
-  // Apply search filter
-  if (searchQuery && searchQuery.trim()) {
-    const searchTerm = `%${searchQuery.trim()}%`;
-    conditions.push(
-      or(
-        like(posts.title, searchTerm),
-        like(posts.content, searchTerm)
-      )
-    );
-  }
-  
-  // Apply tag filter if specified
-  if (tagFilter) {
-    // Get post IDs that have the specified tag
-    const taggedPosts = await db
-      .select({ postId: postTags.postId })
-      .from(postTags)
-      .where(eq(postTags.tagSlug, tagFilter));
-    
-    const postIds = taggedPosts.map(tp => tp.postId);
-    
-    if (postIds.length > 0) {
-      // Add tag filter to conditions
-      conditions.push(inArray(posts.id, postIds));
-    } else {
-      // No posts have this tag, return empty result
-      return data({ 
-        posts: [], 
-        allTags, 
-        user, 
-        currentTag: tagFilter, 
-        currentStatus: statusFilter,
-        currentFeatured: featuredFilter,
-        currentSearch: searchQuery,
-        currentPage: page,
-        totalPages: 0,
-        totalPosts: 0
-      });
-    }
-  }
-  
-  // Build base query for posts
-  let postsQuery = db
-    .select({
-      id: posts.id,
-      title: posts.title,
-      slug: posts.slug,
-      excerpt: posts.excerpt,
-      published: posts.published,
-      featured: posts.featured,
-      createdAt: posts.createdAt,
-      updatedAt: posts.updatedAt,
-    })
-    .from(posts);
-  
-  // Apply all conditions
-  if (conditions.length > 0) {
-    postsQuery = postsQuery.where(and(...conditions));
-  }
-  
-  // Get total count for pagination
-  const totalCountResult = await postsQuery;
-  const totalCount = totalCountResult.length;
-  const totalPages = Math.ceil(totalCount / postsPerPage);
-  
-  // Apply pagination (limit and offset)
-  const offset = (page - 1) * postsPerPage;
-  const paginatedPosts = await postsQuery
-    .orderBy(desc(posts.createdAt))
-    .limit(postsPerPage)
-    .offset(offset);
-  
-  // Fetch tags for each post
-  const postsWithTags = await Promise.all(
-    paginatedPosts.map(async (post) => {
-      const postTagsData = await db
-        .select({
-          tagName: tags.name,
-          tagSlug: tags.slug,
-        })
-        .from(postTags)
-        .innerJoin(tags, eq(postTags.tagSlug, tags.slug))
-        .where(eq(postTags.postId, post.id));
-      
-      return {
-        ...post,
-        tags: postTagsData.map(pt => pt.tagName),
-      };
-    })
-  );
+  // Use the posts service to get admin posts
+  const result = await postsService.getAdminPosts({
+    page,
+    postsPerPage,
+    status,
+    featured,
+    tagSlug: tagFilter || undefined,
+    searchQuery: searchQuery || undefined,
+  });
   
   return data({ 
-    posts: postsWithTags, 
-    allTags, 
-    currentTag: tagFilter, 
-    currentStatus: statusFilter,
-    currentFeatured: featuredFilter,
-    currentSearch: searchQuery,
-    currentPage: page,
-    totalPages,
-    totalPosts: totalCount,
-  });
+     posts: result.posts, 
+     allTags, 
+     currentTag: tagFilter, 
+     currentStatus: statusFilter,
+     currentFeatured: featuredFilter,
+     currentSearch: searchQuery,
+     currentPage: result.currentPage,
+     totalPages: result.totalPages,
+     totalPosts: result.totalCount,
+   });
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -389,15 +297,15 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {post.tags && post.tags.length > 0 ? (
+                    {post.tags ? (
                       <div className="flex flex-wrap gap-1 max-w-xs">
-                        {post.tags.slice(0, 2).map((tag: string) => (
-                          <span key={tag} className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium bg-background text-foreground">
-                            {tag}
+                        {post.tags.split(',').slice(0, 2).map((tag: string) => (
+                          <span key={tag.trim()} className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium bg-background text-foreground">
+                            {tag.trim()}
                           </span>
                         ))}
-                        {post.tags.length > 2 && (
-                          <span className="text-xs text-muted-foreground">+{post.tags.length - 2} more</span>
+                        {post.tags.split(',').length > 2 && (
+                          <span className="text-xs text-muted-foreground">+{post.tags.split(',').length - 2} more</span>
                         )}
                       </div>
                     ) : (
