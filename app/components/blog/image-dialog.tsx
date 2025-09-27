@@ -113,6 +113,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Insert Image</h2>
           <button
+            type="button"
             onClick={() => onOpenChange(false)}
             className="p-1 hover:bg-gray-100 rounded"
           >
@@ -124,6 +125,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
         <div className="mb-4">
           <div className="flex border-b border-gray-200">
             <button
+              type="button"
               onClick={() => setActiveTab('url')}
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'url'
@@ -135,6 +137,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
               URL
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab('upload')}
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'upload'
@@ -182,6 +185,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
               
               <div className="flex gap-2 pt-4">
                 <button
+                  type="button"
                   onClick={handleUrlSubmit}
                   disabled={!imageUrl.trim()}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
@@ -189,6 +193,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                   Insert Image
                 </button>
                 <button
+                  type="button"
                   onClick={() => onOpenChange(false)}
                   className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors"
                 >
@@ -234,6 +239,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
               
               <div className="flex gap-2 pt-4">
                 <button
+                  type="button"
                   onClick={handleFileUpload}
                   disabled={!file || uploading}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
@@ -241,6 +247,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                   {uploading ? "Uploading..." : "Upload & Insert"}
                 </button>
                 <button
+                  type="button"
                   onClick={() => onOpenChange(false)}
                   className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors"
                 >
