@@ -216,7 +216,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
     <AdminLayout>
       <div className="space-y-6">
         {/* Create New Tag */}
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="rounded-lg border border-gray-200 shadow-sm">
           <div className="flex flex-col space-y-1.5 p-6">
             <h3 className="text-2xl font-semibold leading-none tracking-tight">Create New Tag</h3>
           </div>
@@ -227,12 +227,12 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
                 placeholder="Tag name..."
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 max-w-md"
+                className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-md"
                 required
               />
               <button
                 type="submit"
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                className="inline-flex bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition items-center space-x-2"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Tag
@@ -242,21 +242,21 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
         </div>
       
         {/* Tags Table */}
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-          <div className="flex flex-col space-y-1.5 p-6">
+        <div className="rounded-lg border border-gray-200 shadow-sm p-5">
+          <div className="flex flex-col space-y-1.5 p-4">
             <h3 className="text-2xl font-semibold leading-none tracking-tight">All Tags ({totalTags})</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-muted/50">
-                <tr className="border-b">
+                <tr className="border-b border-gray-200">
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Name</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Slug</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Posts</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-gray-200">
                 {tags.map((tag) => (
                   <tr key={tag.slug} className="hover:bg-muted/25">
                     <td className="px-4 py-3">

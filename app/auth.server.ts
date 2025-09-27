@@ -24,7 +24,7 @@ function generateSessionToken(): string {
 }
 
 // Create a new session
-export async function createSession(userId: number, env: Env): Promise<string> {
+async function createSession(userId: number, env: Env): Promise<string> {
   const db = getDBClient(env.D1);
   const sessionToken = generateSessionToken();
   const expires = new Date(Date.now() + SESSION_DURATION);
@@ -39,7 +39,7 @@ export async function createSession(userId: number, env: Env): Promise<string> {
 }
 
 // Get session from token
-export async function getSession(sessionToken: string, env: Env): Promise<Session | null> {
+async function getSession(sessionToken: string, env: Env): Promise<Session | null> {
   let db
   try{
     db = getDBClient(env.D1);

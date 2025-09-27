@@ -1,7 +1,6 @@
 import { getDBClient } from "~/db";
 import { posts, tags, postTags, comments } from "~/db/schema";
 import { eq, desc, asc, and, or, like, count, sql, inArray } from "drizzle-orm";
-import type { Post, Tag } from "~/db/schema";
 
 // Base post interface with all possible fields
 export interface PostWithMetadata {
@@ -25,7 +24,6 @@ export interface PostsQueryConfig {
   // Pagination
   page?: number;
   limit?: number;
-  offset?: number;
 
   // Filtering
   published?: boolean;
@@ -35,8 +33,7 @@ export interface PostsQueryConfig {
   authorId?: number;
 
   // Sorting
-  sortBy?: 'createdAt' | 'updatedAt' | 'title' | 'viewCount';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: SortConfig[]
 
   // Field selection
   includeContent?: boolean;
@@ -47,6 +44,11 @@ export interface PostsQueryConfig {
   // Special filters for admin
   status?: 'all' | 'published' | 'draft';
   featuredFilter?: 'all' | 'featured' | 'unfeatured';
+}
+
+export interface SortConfig {
+  by: 'createdAt' | 'updatedAt' | 'title' | 'viewCount' | 'featured';
+  order?: 'asc' | 'desc';
 }
 
 // Response interfaces
@@ -91,8 +93,7 @@ export class PostsService {
       includeTags: true,
       includeCommentCount: true,
       includeViewCount: true,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
+      sortBy: [{ by: 'createdAt', order: 'desc' }],
     };
 
     const result = await this.getPosts(config);
@@ -109,8 +110,7 @@ export class PostsService {
       includeTags: true,
       includeCommentCount: true,
       includeViewCount: true,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
+      sortBy: [{ by: 'createdAt', order: 'desc' }], 
     };
 
     const result = await this.getPosts(config);
@@ -128,8 +128,7 @@ export class PostsService {
       includeTags: true,
       includeCommentCount: true,
       includeViewCount: true,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
+      sortBy: [{by: 'featured', order: 'desc'},{ by: 'createdAt', order: 'desc' }],
     };
 
     return this.getPosts(config);
@@ -147,8 +146,7 @@ export class PostsService {
       includeTags: true,
       includeCommentCount: true,
       includeViewCount: true,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
+      sortBy: [{ by: 'createdAt', order: 'desc' }],
     };
 
     return this.getPosts(config);
@@ -166,8 +164,7 @@ export class PostsService {
       includeTags: true,
       includeCommentCount: true,
       includeViewCount: true,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
+      sortBy: [{ by: 'createdAt', order: 'desc' }],
     };
 
     return this.getPosts(config);
@@ -197,8 +194,7 @@ export class PostsService {
       page,
       limit: postsPerPage,
       includeTags: true,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
+      sortBy: [{ by: 'createdAt', order: 'desc' }],
     };
 
     // Apply status filter
@@ -349,8 +345,7 @@ export class PostsService {
       featured,
       tagSlug,
       searchQuery,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
+      sortBy = [{ by: 'createdAt', order: 'desc' }],
       includeTags = false,
       includeCommentCount = false,
       includeViewCount = true,
@@ -448,7 +443,9 @@ export class PostsService {
           posts.updatedAt,
           ...(includeContent ? [posts.content] : [])
         )
-        .orderBy(sortOrder === 'desc' ? desc(posts[sortBy]) : asc(posts[sortBy]))
+        .orderBy(...sortBy.map(({ by, order }) => 
+            order === 'desc' ? desc(posts[by]) : asc(posts[by])
+          ))
         .limit(limit)
         .offset(offset);
     } else if (includeTags) {
@@ -475,7 +472,9 @@ export class PostsService {
           posts.updatedAt,
           ...(includeContent ? [posts.content] : [])
         )
-        .orderBy(sortOrder === 'desc' ? desc(posts[sortBy]) : asc(posts[sortBy]))
+        .orderBy(...sortBy.map(({ by, order }) => 
+            order === 'desc' ? desc(posts[by]) : asc(posts[by])
+          ))
         .limit(limit)
         .offset(offset);
     } else if (includeCommentCount) {
@@ -501,7 +500,9 @@ export class PostsService {
           posts.updatedAt,
           ...(includeContent ? [posts.content] : [])
         )
-        .orderBy(sortOrder === 'desc' ? desc(posts[sortBy]) : asc(posts[sortBy]))
+        .orderBy(...sortBy.map(({ by, order }) => 
+            order === 'desc' ? desc(posts[by]) : asc(posts[by])
+          ))
         .limit(limit)
         .offset(offset);
     } else {
@@ -510,7 +511,11 @@ export class PostsService {
         .select(baseSelectFields)
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(sortOrder === 'desc' ? desc(posts[sortBy]) : asc(posts[sortBy]))
+        .orderBy(
+          ...sortBy.map(({ by, order }) => 
+            order === 'desc' ? desc(posts[by]) : asc(posts[by])
+          )
+        )
         .limit(limit)
         .offset(offset);
     }

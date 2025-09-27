@@ -2,20 +2,7 @@ import { data } from "react-router";
 import { getDBClient } from "~/db/index";
 import { comments } from "~/db/schema";
 import { eq, and, asc } from "drizzle-orm";
-import { getSession } from "~/auth.server";
-
-function getSessionTokenFromRequest(request: Request): string | null {
-  const cookieHeader = request.headers.get('Cookie');
-  if (!cookieHeader) return null;
-  
-  const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-    const [name, value] = cookie.trim().split('=');
-    acc[name] = value;
-    return acc;
-  }, {} as Record<string, string>);
-  
-  return cookies['session'] || null;
-}
+import { getCurrentUser } from "~/auth.server";
 
 export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
@@ -47,11 +34,9 @@ export async function action({ request, context }: { request: Request; context: 
   const db = getDBClient(env.D1);
   
   // Check authentication - support both Bearer token and cookie
-  const authHeader = request.headers.get('Authorization');
-  const sessionToken = authHeader ? authHeader.replace('Bearer ', '') : getSessionTokenFromRequest(request);
-  const session = sessionToken ? await getSession(sessionToken, env) : null;
+  const user = await getCurrentUser(request, env);
   
-  if (!session) {
+  if (!user) {
     return data({ error: "Authentication required" }, { status: 401 });
   }
   
@@ -59,11 +44,11 @@ export async function action({ request, context }: { request: Request; context: 
   const method = request.method;
 
   if (method === "POST") {
-    return createComment(formData, db, session.user);
+    return createComment(formData, db, user);
   } else if (method === "PUT") {
-    return updateComment(formData, db, session.user);
+    return updateComment(formData, db, user);
   } else if (method === "DELETE") {
-    return deleteComment(formData, db, session.user);
+    return deleteComment(formData, db, user);
   }
 
   return data({ error: "Method not allowed" }, { status: 405 });

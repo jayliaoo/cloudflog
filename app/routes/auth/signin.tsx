@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { redirect, useLoaderData } from "react-router";
+import { getCurrentUser } from "~/auth.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -11,10 +12,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   
   if (sessionToken) {
     const env = context.cloudflare.env as Env;
-    const { getSession } = await import("~/auth.server");
-    const session = await getSession(sessionToken, env);
+    const user = await getCurrentUser(request, env);
     
-    if (session) {
+    if (user) {
       // User is already logged in, redirect to home page
       return redirect("/");
     }

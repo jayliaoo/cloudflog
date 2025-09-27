@@ -167,7 +167,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
       <div className="space-y-6">
       
       {/* Search */}
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className="rounded-lg border border-gray-200 shadow-sm">
         <div className="flex flex-col space-y-1.5 p-6">
           <h3 className="text-2xl font-semibold leading-none tracking-tight">Search Comments</h3>
         </div>
@@ -177,20 +177,20 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
             placeholder="Search by content, author, or post title..."
             value={searchTerm}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 max-w-md"
+            className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-md"
           />
         </div>
       </div>
       
       {/* Comments Table */}
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-        <div className="flex flex-col space-y-1.5 p-6">
+      <div className="rounded-lg border border-gray-200 shadow-sm p-5">
+        <div className="flex flex-col space-y-1.5 p-4">
           <h3 className="text-2xl font-semibold leading-none tracking-tight">All Comments ({filteredComments.length})</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted/50">
-              <tr className="border-b">
+              <tr className="border-b border-gray-200">
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Author</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Content</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Post</th>
@@ -198,7 +198,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
                 <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-gray-200">
               {filteredComments.map((comment) => (
                 <tr key={comment.id} className="hover:bg-muted/25">
                   <td className="px-4 py-3">
@@ -256,17 +256,17 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
             </div>
           )}
         </div>
-        
-        {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalCount={totalComments}
-          itemsPerPage={commentsPerPage}
-          itemName="comments"
-          baseUrl="/admin/comments"
-        />
       </div>
+        
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalCount={totalComments}
+        itemsPerPage={commentsPerPage}
+        itemName="comments"
+        baseUrl="/admin/comments"
+      />
       </div>
     </AdminLayout>
   );
