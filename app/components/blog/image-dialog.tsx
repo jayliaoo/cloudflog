@@ -27,24 +27,54 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Step 1: Get signed URL and final URL from the API
+      const signedUrlResponse = await fetch(
+        `/api/images?action=getUploadUrl&filename=${encodeURIComponent(file.name)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': file.type,
+          },
+        }
+      );
 
-      const response = await fetch('/api/images', {
-        method: 'POST',
-        body: formData,
+      if (!signedUrlResponse.ok) {
+        const errorData = await signedUrlResponse.json().catch(() => ({})) as { error?: string };
+        throw new Error(errorData.error || `Failed to get upload URL: ${signedUrlResponse.status}`);
+      }
+
+      const { signedUrl, finalUrl, success } = await signedUrlResponse.json() as {
+        success: boolean;
+        signedUrl: string;
+        finalUrl: string;
+        objectKey: string;
+      };
+
+      if (!success || !signedUrl || !finalUrl) {
+        throw new Error('Invalid response from upload URL endpoint');
+      }
+
+      // Step 2: Upload the file to the signed URL
+      const uploadResponse = await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
       });
 
-      if (response.ok) {
-        const data = await response.json() as { url: string };
-        onImageInsert(data.url, altText.trim() || file.name);
-        resetForm();
-        onOpenChange(false);
-      } else {
-        console.error('Upload failed');
+      if (!uploadResponse.ok) {
+        throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
       }
+
+      // Step 3: Insert the final image URL into the content
+      onImageInsert(finalUrl, altText.trim() || file.name);
+      resetForm();
+      onOpenChange(false);
     } catch (error) {
       console.error('Upload error:', error);
+      // You could add user-facing error handling here, such as showing a toast notification
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setUploading(false);
     }
