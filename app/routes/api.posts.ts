@@ -1,7 +1,7 @@
 import { data } from "react-router";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
-import { eq, desc, sql, inArray } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { getCurrentUser } from "~/auth.server";
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
@@ -18,7 +18,6 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
         slug: posts.slug,
         excerpt: posts.excerpt,
         content: posts.content,
-        coverImage: posts.coverImage,
         createdAt: posts.createdAt,
         published: posts.published,
         featured: posts.featured,

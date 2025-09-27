@@ -26,7 +26,6 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
         slug: posts.slug,
         content: posts.content,
         excerpt: posts.excerpt,
-        coverImage: posts.coverImage,
         published: posts.published,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
@@ -163,16 +162,6 @@ export default function BlogPostPage() {
       {/* Post Header */}
       <article>
         <header className="mb-8">
-          {post.coverImage && (
-            <div className="aspect-video overflow-hidden rounded-lg mb-6">
-              <img
-                src={post.coverImage}
-                alt={post.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-          
           <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
           
           <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">

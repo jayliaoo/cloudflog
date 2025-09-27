@@ -9,7 +9,6 @@ export interface PostWithMetadata {
   slug: string;
   excerpt: string | null;
   content?: string;
-  coverImage: string | null;
   published: boolean;
   featured: boolean;
   viewCount: number;
@@ -235,7 +234,6 @@ export class PostsService {
         slug: posts.slug,
         content: posts.content,
         excerpt: posts.excerpt,
-        coverImage: posts.coverImage,
         published: posts.published,
         featured: posts.featured,
         viewCount: posts.viewCount,
@@ -405,7 +403,6 @@ export class PostsService {
       title: posts.title,
       slug: posts.slug,
       excerpt: posts.excerpt,
-      coverImage: posts.coverImage,
       published: posts.published,
       featured: posts.featured,
       viewCount: posts.viewCount,
@@ -435,7 +432,6 @@ export class PostsService {
           posts.title,
           posts.slug,
           posts.excerpt,
-          posts.coverImage,
           posts.published,
           posts.featured,
           posts.viewCount,
@@ -464,7 +460,6 @@ export class PostsService {
           posts.title,
           posts.slug,
           posts.excerpt,
-          posts.coverImage,
           posts.published,
           posts.featured,
           posts.viewCount,
@@ -492,7 +487,6 @@ export class PostsService {
           posts.title,
           posts.slug,
           posts.excerpt,
-          posts.coverImage,
           posts.published,
           posts.featured,
           posts.viewCount,

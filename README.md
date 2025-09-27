@@ -1,62 +1,133 @@
-# Modern Blog with React Router v7 & Cloudflare Workers
+# CloudFlog - Modern Blog Platform
 
-A modern, fast, and scalable blog built with React Router v7, Cloudflare Workers, D1 Database, and R2 Storage. Features a beautiful UI with Tailwind CSS and shadcn/ui components.
+A modern, full-featured blog platform built with React Router v7, Cloudflare Workers, D1 Database, and R2 Storage. Features a beautiful UI with Tailwind CSS, comprehensive admin dashboard, and edge-first architecture for optimal performance.
 
 ## 🚀 Features
 
-- **Modern Framework**: Built with React Router v7
-- **Edge Computing**: Powered by Cloudflare Workers
-- **Database**: D1 SQLite database at the edge
-- **Storage**: R2 object storage for images and assets
-- **Beautiful UI**: Tailwind CSS with shadcn/ui components
-- **Responsive Design**: Mobile-first, fully responsive
-- **Dark Mode**: Automatic dark mode support
-- **TypeScript**: Full TypeScript support
-- **Fast Performance**: Optimized for speed and SEO
+### Core Functionality
+- **Modern Blog Platform**: Complete blogging solution with posts, tags, comments, and user management
+- **Admin Dashboard**: Full-featured admin interface for content management
+- **Authentication**: GitHub OAuth integration with session-based authentication
+- **Content Management**: Rich post editor with markdown support, image uploads, and tag management
+- **Comment System**: Nested comments with moderation capabilities
+- **Search & Filtering**: Full-text search, tag filtering, and pagination
+- **View Tracking**: Post view counting and analytics
+
+### Technical Features
+- **Edge Computing**: Powered by Cloudflare Workers for global performance
+- **Database**: D1 SQLite database with Drizzle ORM
+- **File Storage**: R2 object storage for images and assets
+- **Modern UI**: Tailwind CSS v4 components
+- **TypeScript**: Full TypeScript support throughout
+- **SSR**: Server-side rendering with React Router v7
+- **Responsive Design**: Mobile-first, fully responsive design
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React Router v7, React 19, TypeScript
-- **Styling**: Tailwind CSS, shadcn/ui components
-- **Backend**: Cloudflare Workers, D1 Database, R2 Storage
-- **Build Tool**: Vite
-- **Icons**: Lucide React
+### Frontend
+- **React Router v7**: Modern React framework with file-based routing
+- **React 19**: Latest React with concurrent features
+- **TypeScript**: Type-safe development
+- **Tailwind CSS v4**: Utility-first CSS framework
+- **Lucide React**: Beautiful icon library
+
+### Backend
+- **Cloudflare Workers**: Edge computing platform
+- **D1 Database**: SQLite database at the edge
+- **R2 Storage**: Object storage for files and images
+- **Drizzle ORM**: Type-safe database toolkit
+- **GitHub OAuth**: Authentication provider
+
+### Build & Development
+- **Vite**: Fast build tool and dev server
+- **Wrangler**: Cloudflare Workers CLI
+- **Drizzle Kit**: Database migrations and introspection
 
 ## 📁 Project Structure
 
 ```
 app/
-├── components/          # React components
-│   ├── ui/             # shadcn/ui components
-│   ├── blog/           # Blog-specific components
-│   └── layouts/        # Layout components
-├── routes/             # React Router routes
-│   ├── _index.tsx      # Homepage
-│   ├── blog.tsx        # Blog listing
-│   ├── blog.$slug.tsx  # Blog post detail
-│   ├── about.tsx       # About page
-│   ├── contact.tsx     # Contact page
-│   ├── admin.tsx       # Admin dashboard
-│   └── api.posts.ts    # API endpoint
-├── lib/                # Utility functions
-├── app.css             # Global styles
-└── root.tsx            # Root layout
+├── components/             # React components
+│   ├── blog/              # Blog-specific components
+│   │   ├── PostCard.tsx   # Post preview card
+│   │   └── ...
+│   ├── layouts/           # Layout components
+│   │   ├── admin-layout.tsx
+│   │   └── ...
+│   └── Pagination.tsx     # Pagination component
+├── db/                    # Database configuration
+│   ├── index.ts          # Database client setup
+│   └── schema.ts         # Drizzle schema definitions
+├── routes/               # React Router routes
+│   ├── _index.tsx        # Homepage
+│   ├── posts.tsx         # Blog listing
+│   ├── posts.$slug.tsx   # Individual post
+│   ├── admin.tsx         # Admin dashboard
+│   ├── admin.*.tsx       # Admin sub-pages
+│   ├── api.*.ts          # API endpoints
+│   ├── auth/             # Authentication routes
+│   ├── search.tsx        # Search functionality
+│   ├── tags.tsx          # Tag listing
+│   └── tag.$tagSlug.tsx  # Posts by tag
+├── services/             # Business logic
+│   └── posts.service.ts  # Posts service layer
+├── utils/                # Utility functions
+│   ├── s3-client.ts      # R2/S3 client
+│   └── view-tracking.ts  # View tracking utilities
+├── auth.server.ts        # Authentication logic
+├── app.css              # Global styles
+├── root.tsx             # Root layout
+└── routes.ts            # Route configuration
 ```
+
+## 🗄️ Database Schema
+
+The application uses a comprehensive database schema with the following entities:
+
+### Users
+- User management with GitHub OAuth
+- Role-based access (owner/reader)
+- Session management
+
+### Posts
+- Full blog post management
+- Slug-based URLs
+- Published/draft status
+- Featured posts
+- View counting
+- Cover images
+
+### Comments
+- Nested comment system
+- User attribution
+- Soft deletion
+- Moderation capabilities
+
+### Tags
+- Tag management system
+- Many-to-many relationship with posts
+- Slug-based URLs
+
+### Post Views
+- User-specific view tracking
+- Anonymous view support
+- Analytics data
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
-- Cloudflare account (for deployment)
+- **Node.js 18+**
+- **npm or yarn**
+- **Cloudflare account** (for deployment)
+- **GitHub OAuth App** (for authentication)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd blog3
+   cd cloudflog
    ```
 
 2. **Install dependencies**
@@ -64,148 +135,137 @@ app/
    npm install
    ```
 
-3. **Start development server**
+3. **Set up environment variables**
+   Create a `.dev.vars` file:
+   ```bash
+   # GitHub OAuth
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
+   
+   # R2 Storage (optional for local development)
+   R2_ACCESS_KEY_ID=your_r2_access_key
+   R2_SECRET_ACCESS_KEY=your_r2_secret_key
+   ```
+
+4. **Set up database**
+   ```bash
+   # Generate database migrations
+   npm run db:generate
+   
+   # Apply migrations locally
+   npm run db:migrate
+   ```
+
+5. **Start development server**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser**
+6. **Open your browser**
    Navigate to `http://localhost:5173`
 
-## 📝 Pages & Features
+## 📝 Available Scripts
+
+```bash
+# Development
+npm run dev              # Start development server
+npm run build           # Build for production
+npm run preview         # Preview production build
+
+# Database
+npm run db:generate     # Generate database migrations
+npm run db:migrate      # Apply migrations locally
+npm run db:migrate-remote # Apply migrations to remote D1
+
+# Type checking and deployment
+npm run typecheck       # Run TypeScript type checking
+npm run cf-typegen      # Generate Cloudflare types
+npm run deploy          # Build and deploy to Cloudflare
+```
+
+## 🎨 Features Overview
 
 ### Homepage (`/`)
-- Hero section with featured posts
-- Recent blog posts grid
-- Newsletter signup
-- Social links
+- Featured posts carousel
+- Recent posts grid
+- About section integration
+- Responsive hero section
 
-### Blog Listing (`/blog`)
-- All blog posts with pagination
+### Blog Listing (`/posts`)
+- Paginated post listing
+- Post cards with metadata
 - Tag filtering
 - Search functionality
-- Post excerpts and metadata
 
-### Blog Post (`/posts/:slug`)
-- Full post content with markdown support
-- Author information
+### Individual Posts (`/posts/:slug`)
+- Full markdown content rendering
+- Comment system
 - Related posts
-- Social sharing
-- Comments (ready for integration)
-
-### About Page (`/about`)
-- Author bio and photo
-- Skills and technologies
-- Contact information
-- Social media links
-
-### Contact Page (`/contact`)
-- Contact form
-- Location and contact details
-- Social media links
-- Response time information
+- View tracking
+- Social sharing ready
 
 ### Admin Dashboard (`/admin`)
-- Post management
-- Analytics overview
-- Quick stats
-- Content editor (ready for integration)
+- **Posts Management**: Create, edit, publish, feature, and delete posts
+- **Tag Management**: Create and manage tags
+- **Comment Moderation**: Review and moderate comments
+- **Analytics**: View counts and post statistics
+- **Filtering**: Filter by status, tags, and search
+- **Bulk Operations**: Publish/unpublish multiple posts
 
-## 🎨 Styling
+### Search (`/search`)
+- Full-text search across posts
+- Real-time search results
+- Pagination support
 
-The blog uses Tailwind CSS with a custom theme configuration:
+### Tags (`/tags`, `/tag/:slug`)
+- Tag listing with post counts
+- Posts filtered by specific tags
+- Tag-based navigation
 
-- **Color System**: CSS custom properties for light/dark modes
-- **Typography**: System font stack with fallbacks
-- **Components**: shadcn/ui components with custom variants
-- **Responsive**: Mobile-first approach with breakpoints
-
-### Theme Colors
-
-```css
---background: 0 0% 100%;
---foreground: 222.2 84% 4.9%;
---card: 0 0% 100%;
---card-foreground: 222.2 84% 4.9%;
---primary: 222.2 47.4% 11.2%;
---primary-foreground: 210 40% 98%;
-/* ... and more */
-```
-
-## 🗄️ Database Schema
-
-The blog is ready for D1 database integration with the following schema:
-
-```sql
--- Posts table
-CREATE TABLE posts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  excerpt TEXT,
-  content TEXT NOT NULL,
-  cover_image TEXT,
-  author_id INTEGER,
-  published BOOLEAN DEFAULT FALSE,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tags table
-CREATE TABLE tags (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT UNIQUE NOT NULL,
-  slug TEXT UNIQUE NOT NULL
-);
-
--- Post tags junction table
-CREATE TABLE post_tags (
-  post_id INTEGER,
-  tag_id INTEGER,
-  PRIMARY KEY (post_id, tag_id)
-);
-```
-
-## 📸 Image Storage
-
-Images are stored in Cloudflare R2 with the following structure:
-
-```
-blog-images/
-├── posts/
-│   ├── featured/
-│   └── content/
-├── authors/
-└── assets/
-```
+### Authentication (`/auth/*`)
+- GitHub OAuth integration
+- Session management
+- Role-based access control
 
 ## 🔧 Configuration
 
-### Environment Variables
-
-Create a `.dev.vars` file for local development:
-
-```
-VALUE_FROM_CLOUDFLARE="Hello from Cloudflare"
-```
-
-### Wrangler Configuration
-
-The `wrangler.json` file contains Cloudflare Workers configuration:
+### Cloudflare Workers Configuration (`wrangler.jsonc`)
 
 ```json
 {
-  "name": "blog3",
-  "compatibility_date": "2024-07-29",
-  "assets": {
-    "directory": "./build/client"
-  }
+  "name": "blog",
+  "compatibility_date": "2025-09-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./workers/app.ts",
+  "vars": {
+    "IMAGE_BASE_URL": "https://pub-472ed6155ec7452a9847ea0870702ffa.r2.dev",
+    "R2_ENDPOINT": "https://534b483058263f37d29575599ffd483f.r2.cloudflarestorage.com",
+    "R2_BUCKET_NAME": "blog"
+  },
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_name": "blog",
+      "database_id": "your-database-id"
+    }
+  ]
 }
+```
+
+### React Router Configuration (`react-router.config.ts`)
+
+```typescript
+export default {
+  ssr: true,
+  future: {
+    unstable_viteEnvironmentApi: true,
+  },
+} satisfies Config;
 ```
 
 ## 🚀 Deployment
 
-### Cloudflare Workers
+### Cloudflare Workers Deployment
 
 1. **Install Wrangler CLI**
    ```bash
@@ -219,118 +279,161 @@ The `wrangler.json` file contains Cloudflare Workers configuration:
 
 3. **Create D1 Database**
    ```bash
-   wrangler d1 create blog-db
+   wrangler d1 create blog
    ```
 
 4. **Create R2 Bucket**
    ```bash
-   wrangler r2 bucket create blog-images
+   wrangler r2 bucket create blog
    ```
 
-5. **Update wrangler.json**
-   Add your database and bucket bindings:
-   ```json
-   {
-     "d1_databases": [
-       {
-         "binding": "DB",
-         "database_name": "blog-db",
-         "database_id": "your-database-id"
-       }
-     ],
-     "r2_buckets": [
-       {
-         "binding": "BLOG_IMAGES",
-         "bucket_name": "blog-images"
-       }
-     ]
-   }
+5. **Update wrangler.jsonc**
+   Update the database ID and bucket configuration with your actual values.
+
+6. **Set up environment variables**
+   ```bash
+   wrangler secret put GITHUB_CLIENT_ID
+   wrangler secret put GITHUB_CLIENT_SECRET
+   wrangler secret put R2_ACCESS_KEY_ID
+   wrangler secret put R2_SECRET_ACCESS_KEY
    ```
 
-6. **Deploy**
+7. **Deploy database migrations**
+   ```bash
+   npm run db:migrate-remote
+   ```
+
+8. **Deploy the application**
    ```bash
    npm run deploy
    ```
 
-## 🔧 Customization
+## 🔐 Authentication Setup
 
-### Adding New Posts
+### GitHub OAuth Configuration
 
-1. **Via Admin Dashboard**: Navigate to `/admin` and use the post editor
-2. **Via API**: Send POST requests to `/api/posts`
-3. **Direct Database**: Insert into D1 database directly
+1. **Create GitHub OAuth App**
+   - Go to GitHub Settings > Developer settings > OAuth Apps
+   - Create a new OAuth App
+   - Set Authorization callback URL to: `https://your-domain.com/auth/callback`
 
-### Modifying Design
+2. **Configure Environment Variables**
+   Add your GitHub OAuth credentials to `.dev.vars` for local development and as secrets for production.
 
-1. **Colors**: Update the CSS custom properties in `app.css`
-2. **Components**: Modify shadcn/ui components in `app/components/ui/`
-3. **Layout**: Update the blog layout in `app/components/layouts/blog-layout.tsx`
-4. **Pages**: Customize individual pages in `app/routes/`
+## 📸 Image Management
 
-### Adding Features
+### R2 Storage Configuration
 
-1. **Comments**: Integrate with services like Disqus or create custom solution
-2. **Search**: Implement full-text search with Cloudflare Workers
-3. **Newsletter**: Add email subscription with services like Mailchimp
-4. **Analytics**: Integrate with Google Analytics or Plausible
+Images are stored in Cloudflare R2 with the following structure:
 
-## 📝 Content Management
-
-### Writing Posts
-
-Posts support markdown formatting and include:
-
-- **Frontmatter**: Title, date, tags, excerpt, cover image
-- **Content**: Full markdown content with syntax highlighting
-- **Images**: Automatic optimization and R2 storage
-- **SEO**: Meta tags, Open Graph, and structured data
-
-### Media Management
-
-- Upload images via admin dashboard
-- Automatic optimization and responsive sizing
-- R2 storage with CDN delivery
-- Alt text and accessibility support
-
-## 🔒 Security
-
-- Content Security Policy headers
-- XSS protection
-- SQL injection prevention
-- Rate limiting on API endpoints
-- Secure headers configuration
-
-## 📊 Performance
-
-- Edge caching with Cloudflare
-- Image optimization and lazy loading
-- Code splitting and lazy loading
-- Critical CSS inlining
-- Service worker for offline support
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run linting
-npm run lint
-
-# Run type checking
-npm run typecheck
 ```
+blog/
+├── posts/
+│   ├── covers/          # Post cover images
+│   └── content/         # Inline content images
+└── uploads/             # General uploads
+```
+
+### Image Upload API
+
+The application includes an image upload API at `/api/images` that:
+- Handles file uploads to R2
+- Generates unique filenames
+- Returns public URLs for uploaded images
+- Supports various image formats
+
+## 🎯 Content Management
+
+### Creating Posts
+
+1. **Via Admin Dashboard**
+   - Navigate to `/admin`
+   - Click "Create New Post"
+   - Use the rich editor interface
+   - Add tags, cover images, and metadata
+   - Save as draft or publish immediately
+
+2. **Post Features**
+   - Markdown content support
+   - Cover image uploads
+   - Tag management
+   - SEO-friendly slugs
+   - Featured post designation
+   - Draft/published status
+
+### Managing Comments
+
+- View all comments in admin dashboard
+- Moderate comments (approve/delete)
+- Nested comment support
+- User attribution for authenticated users
+- Anonymous comment support
+
+### Tag Management
+
+- Create and manage tags
+- Automatic slug generation
+- Tag-based post filtering
+- Tag statistics and post counts
+
+## 🔒 Security Features
+
+- **Authentication**: Secure GitHub OAuth integration
+- **Authorization**: Role-based access control
+- **Session Management**: Secure session handling
+- **Input Validation**: Comprehensive input sanitization
+- **SQL Injection Prevention**: Parameterized queries with Drizzle ORM
+- **XSS Protection**: Content sanitization
+- **CSRF Protection**: Built-in CSRF protection
+
+## 📊 Performance Features
+
+- **Edge Computing**: Global distribution via Cloudflare Workers
+- **Database**: SQLite at the edge with D1
+- **Caching**: Automatic edge caching
+- **Image Optimization**: R2 storage with CDN delivery
+- **Code Splitting**: Automatic code splitting with Vite
+- **SSR**: Server-side rendering for optimal SEO
+- **Lazy Loading**: Component and route-based lazy loading
+
+## 🧪 Development
+
+### Type Safety
+
+The application is built with TypeScript throughout:
+- Database schema types with Drizzle
+- API endpoint types
+- Component prop types
+- Service layer types
+
+### Code Organization
+
+- **Services**: Business logic separated into service layers
+- **Components**: Reusable UI components
+- **Utils**: Shared utility functions
+- **Types**: Centralized type definitions
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Make your changes**
+4. **Run type checking**
+   ```bash
+   npm run typecheck
+   ```
+5. **Commit your changes**
+   ```bash
+   git commit -m 'Add amazing feature'
+   ```
+6. **Push to the branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+7. **Open a Pull Request**
 
 ## 📝 License
 
@@ -338,20 +441,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [React Router](https://reactrouter.com/) for the amazing framework
-- [Cloudflare](https://cloudflare.com/) for edge computing platform
-- [shadcn/ui](https://ui.shadcn.com/) for beautiful components
-- [Tailwind CSS](https://tailwindcss.com/) for utility-first CSS
-- [Lucide](https://lucide.dev/) for beautiful icons
+- [React Router](https://reactrouter.com/) - Modern React framework
+- [Cloudflare](https://cloudflare.com/) - Edge computing platform
+- [Drizzle ORM](https://orm.drizzle.team/) - Type-safe database toolkit
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Lucide](https://lucide.dev/) - Beautiful icon library
 
 ## 📞 Support
 
-If you have any questions or need help, please:
+For questions, issues, or contributions:
 
-1. Check the [documentation](https://github.com/yourusername/blog3/wiki)
-2. Open an [issue](https://github.com/yourusername/blog3/issues)
-3. Contact me through the [contact page](/contact)
+1. **Documentation**: Check this README and code comments
+2. **Issues**: Open an issue on GitHub
+3. **Discussions**: Use GitHub Discussions for questions
+4. **Contact**: Reach out through the contact page
 
 ---
 
-**Happy blogging!** 🎉
+**Built with ❤️ using modern web technologies** 🚀

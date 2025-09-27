@@ -11,7 +11,6 @@ interface SearchLoaderData {
     title: string;
     slug: string;
     excerpt: string | null;
-    coverImage: string | null;
     createdAt: Date;
     published: boolean;
     tags: string | null;

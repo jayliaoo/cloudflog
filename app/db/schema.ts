@@ -27,7 +27,7 @@ export const posts = sqliteTable('post', {
   slug: text().notNull().unique(),
   content: text().notNull(),
   excerpt: text(),
-  coverImage: text(),
+
   published: integer({ mode: 'boolean' }).notNull().default(false),
   featured: integer({ mode: 'boolean' }).notNull().default(false),
   viewCount: integer().notNull().default(0), // New view count column

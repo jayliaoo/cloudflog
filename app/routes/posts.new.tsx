@@ -44,7 +44,6 @@ export async function loader({ request, context }: { request: Request; context: 
         slug: posts.slug,
         content: posts.content,
         excerpt: posts.excerpt,
-        coverImage: posts.coverImage,
         published: posts.published,
       })
       .from(posts)
