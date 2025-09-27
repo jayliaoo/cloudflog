@@ -27,9 +27,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-16 left-0 z-50 w-64 bg-card border-r border-r-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0`}>
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed top-16 h-[calc(100vh-132px)] left-0 z-49 w-64 bg-card border-r border-r-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-b-gray-200">
           <h2 className="text-lg font-semibold">Admin Panel</h2>
           <button
@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Content */}
-        <main className="p-6 min-h-screen">
+        <main className="p-6">
           {children || <Outlet />}
         </main>
       </div>
