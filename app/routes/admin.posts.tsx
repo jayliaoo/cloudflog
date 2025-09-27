@@ -272,9 +272,8 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                           {post.title}
                         </Link>
                         {post.featured && (
-                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-yellow-500 text-white">
-                            <Star className="h-3 w-3 mr-1" />
-                            Featured
+                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-600 text-white">
+                            ★ Featured
                           </span>
                         )}
                       </div>

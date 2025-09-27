@@ -60,7 +60,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main content */}
       <div className="lg:ml-64">
         {/* Header */}
-        <header className="bg-card px-6 py-4 flex items-center justify-between sticky top-0 z-30 border-b border-b-gray-200">
+        <header className="h-16 px-6 py-4 flex items-center justify-between sticky top-0 z-30 border-b border-b-gray-200">
           <div className="flex items-center space-x-4">
             <button
               className="lg:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
