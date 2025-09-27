@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/*
+ * GitHub-Flavored Markdown Stylesheet using Tailwind CSS @apply
+ *
+ * This stylesheet is designed to be used within a Tailwind CSS project.
+ * It styles raw HTML elements (like those generated from Markdown) to
+ * mimic the appearance of GitHub's markdown rendering.
+ *
+ * How to use:
+ * 1. Add this file to your project's CSS.
+ * 2. Ensure your Tailwind CSS build process is configured to process this file.
+ * 3. Wrap your markdown-generated HTML content in a container with a class, e.g., <div class="markdown-body">...</div>.
+ * Then, scope these styles to that class by prefixing selectors, e.g., `.markdown-body h1 { ... }`
+ * For simplicity, these styles are applied globally to the elements.
+ */
+.markdown {
+  /* General Body & Text */
+  @apply font-sans leading-relaxed text-gray-800 bg-white dark:text-gray-300 dark:bg-gray-900;
+
+  p,
+  blockquote,
+  ul,
+  ol,
+  dl,
+  table,
+  pre,
+  details {
+    @apply my-4;
+  }
+
+  /* Headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold mt-6 mb-3;
+  }
+
+  h1 {
+    @apply text-3xl pb-2 border-b border-gray-200 dark:border-gray-700;
+  }
+
+  h2 {
+    @apply text-2xl pb-2 border-b border-gray-200 dark:border-gray-700;
+  }
+
+  h3 {
+    @apply text-xl;
+  }
+
+  h4 {
+    @apply text-lg;
+  }
+
+  h5 {
+    @apply text-base;
+  }
+
+  h6 {
+    @apply text-sm text-gray-600 dark:text-gray-400;
+  }
+
+  /* Links */
+  a {
+    @apply text-blue-600 hover:underline dark:text-blue-500;
+  }
+
+  a:not([href]) {
+    @apply text-inherit no-underline;
+  }
+
+  /* Lists */
+  ul,
+  ol {
+    @apply pl-6;
+  }
+
+  ul {
+    @apply list-disc;
+  }
+
+  ol {
+    @apply list-decimal;
+  }
+
+  li > p {
+    @apply mt-2;
+  }
+
+  li + li {
+    @apply mt-1;
+  }
+
+  /* Blockquotes */
+  blockquote {
+    @apply pl-4 border-l-4 border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-400;
+  }
+
+  blockquote > :first-child {
+    @apply mt-0;
+  }
+
+  blockquote > :last-child {
+    @apply mb-0;
+  }
+
+  /* Horizontal Rule */
+  hr {
+    @apply h-px my-8 bg-gray-200 border-0 dark:bg-gray-700;
+  }
+
+  /* Code */
+  code {
+    @apply px-1 py-0.5 font-mono text-sm bg-gray-100 rounded dark:bg-gray-800;
+  }
+
+  pre {
+    @apply p-4 overflow-auto font-mono text-sm leading-normal bg-gray-100 rounded-md dark:bg-gray-800;
+  }
+
+  pre > code {
+    @apply p-0 bg-transparent border-0;
+  }
+
+  /* Tables */
+  table {
+    @apply w-full border-collapse;
+  }
+
+  th,
+  td {
+    @apply px-4 py-2 border border-gray-300 dark:border-gray-600;
+  }
+
+  thead {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+
+  thead th {
+    @apply font-semibold;
+  }
+
+  tbody tr:nth-child(even) {
+    @apply bg-gray-50 dark:bg-gray-800/50;
+  }
+
+  /* Images */
+  img {
+    @apply max-w-full rounded;
+  }
+
+  /* Strong / Emphasis */
+  strong {
+    @apply font-bold;
+  }
+
+  em {
+    @apply italic;
+  }
+}
