@@ -11,14 +11,6 @@ CREATE TABLE `comment` (
 	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `image` (
-	`object_key` text PRIMARY KEY NOT NULL,
-	`original_name` text NOT NULL,
-	`mime_type` text NOT NULL,
-	`size` integer NOT NULL,
-	`created_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE `post_tags` (
 	`post_id` integer NOT NULL,
 	`tag_slug` text NOT NULL,

@@ -46,14 +46,6 @@ export const comments = sqliteTable('comment', {
   updatedAt: timestampField(),
 });
 
-export const images = sqliteTable('image', {
-  objectKey: text().primaryKey(), // UUID as primary key
-  originalName: text().notNull(),
-  mimeType: text().notNull(),
-  size: integer().notNull(),
-  createdAt: timestampField(),
-});
-
 export const tags = sqliteTable('tags', {
   name: text().notNull().unique(),
   slug: text().primaryKey(),
@@ -93,9 +85,6 @@ export type NewPost = typeof posts.$inferInsert;
 
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
-
-export type Image = typeof images.$inferSelect;
-export type NewImage = typeof images.$inferInsert;
 
 export type Tag = typeof tags.$inferSelect;
 export type NewTag = typeof tags.$inferInsert;
