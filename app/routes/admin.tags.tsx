@@ -276,7 +276,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end space-x-1">
                         <Link 
-                          to={`/tags/${tag.slug}`}
+                          to={`/tag/${tag.slug}`}
                           className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2"
                         >
                           <Eye className="h-3 w-3" />

@@ -2,8 +2,8 @@ import { data, redirect } from "react-router";
 import { getCurrentUser } from "~/auth.server";
 import { getDBClient } from "~/db";
 import { comments, posts, users } from "~/db/schema";
-import { eq, desc, count } from "drizzle-orm";
-import { Link } from "react-router";
+import { eq, desc, count, like, or, and } from "drizzle-orm";
+import { Link, useSearchParams } from "react-router";
 import { MessageSquare, User, Calendar, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
@@ -28,25 +28,42 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   
   const db = getDBClient(env.D1);
   
-  // Parse pagination parameters
+  // Parse pagination and search parameters
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
+  const search = url.searchParams.get("search") || "";
   
+  // Build search conditions
+  const searchConditions = search.trim() 
+    ? or(
+        like(comments.content, `%${search}%`),
+        like(users.name, `%${search}%`),
+        like(posts.title, `%${search}%`)
+      )
+    : undefined;
   
-  // Get total count for pagination
-  const totalCommentsResult = await db
+  // Get total count for pagination (with search filter)
+  const totalCommentsQuery = db
     .select({
       count: count(),
     })
-    .from(comments);
+    .from(comments)
+    .innerJoin(posts, eq(comments.postId, posts.id))
+    .innerJoin(users, eq(comments.authorId, users.id));
+    
+  if (searchConditions) {
+    totalCommentsQuery.where(searchConditions);
+  }
+  
+  const totalCommentsResult = await totalCommentsQuery;
   const totalComments = totalCommentsResult[0].count;
   const totalPages = Math.ceil(totalComments / commentsPerPage);
   
   // Apply pagination (limit and offset)
   const offset = (page - 1) * commentsPerPage;
   
-  // Fetch comments with post and author information and pagination
-  const allComments = await db
+  // Fetch comments with post and author information, pagination, and search
+  const commentsQuery = db
     .select({
       id: comments.id,
       content: comments.content,
@@ -61,12 +78,19 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .orderBy(desc(comments.createdAt))
     .limit(commentsPerPage)
     .offset(offset);
+    
+  if (searchConditions) {
+    commentsQuery.where(searchConditions);
+  }
+  
+  const allComments = await commentsQuery;
   
   return data({ 
     comments: allComments,
     currentPage: page,
     totalPages,
-    totalComments
+    totalComments,
+    search
   });
 }
 
@@ -111,19 +135,27 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function AdminComments({ loaderData }: { loaderData: any }) {
-  const { comments, currentPage, totalPages, totalComments } = loaderData as { 
+  const { comments, currentPage, totalPages, totalComments, search } = loaderData as { 
     comments: any[]; 
     currentPage: number; 
     totalPages: number; 
     totalComments: number; 
+    search: string;
   };
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(search || "");
   
-  const filteredComments = comments.filter(comment => 
-    comment.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    comment.authorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    comment.postTitle.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (searchTerm.trim()) {
+      newSearchParams.set("search", searchTerm.trim());
+    } else {
+      newSearchParams.delete("search");
+    }
+    newSearchParams.delete("page"); // Reset to first page when searching
+    setSearchParams(newSearchParams);
+  };
   
   const handleDeleteComment = async (commentId: number, authorName: string): Promise<void> => {
     if (!confirm(`Are you sure you want to delete the comment by "${authorName}"?`)) {
@@ -172,20 +204,28 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
           <h3 className="text-2xl font-semibold leading-none tracking-tight">Search Comments</h3>
         </div>
         <div className="p-6 pt-0">
-          <input
-            type="text"
-            placeholder="Search by content, author, or post title..."
-            value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-md"
-          />
+          <form onSubmit={handleSearch} className="flex gap-4">
+            <input
+              type="text"
+              placeholder="Search by content, author, or post title..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-md"
+            />
+            <button
+              type="submit"
+              className="inline-flex bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition items-center space-x-2"
+            >
+              Search
+            </button>
+          </form>
         </div>
       </div>
       
       {/* Comments Table */}
       <div className="rounded-lg border border-gray-200 shadow-sm p-5">
         <div className="flex flex-col space-y-1.5 p-4">
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">All Comments ({filteredComments.length})</h3>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">All Comments ({totalComments})</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -199,7 +239,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredComments.map((comment) => (
+              {comments.map((comment) => (
                 <tr key={comment.id} className="hover:bg-muted/25">
                   <td className="px-4 py-3">
                     <div className="flex items-center space-x-2">
@@ -250,7 +290,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
               ))}
             </tbody>
           </table>
-          {filteredComments.length === 0 && (
+          {comments.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm ? "No comments found matching your search." : "No comments yet."}
             </div>
