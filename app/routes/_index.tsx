@@ -122,7 +122,7 @@ export default function HomePage() {
             <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
               {aboutPost.excerpt}
             </p>
-            <Link to={`/posts/${aboutPost.slug}`}>
+            <Link to={`/posts/${aboutPost.slug}`} className="text-indigo-600 hover:text-indigo-700 font-medium text-sm items-center transition-colors">
               Learn More About Me
               <ArrowRight className="ml-2 h-4 w-4 inline" />
             </Link>
@@ -134,9 +134,9 @@ export default function HomePage() {
       <section className="py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Featured Posts</h2>
-          <Link to="/posts">View All Posts</Link>
+          <Link to="/posts" className="text-slate-900 mb-2 hover:text-indigo-600 transition-colors">View All Posts</Link>
         </div>
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid gap-8 md:grid-cols-3">
           {featuredPosts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
@@ -147,7 +147,7 @@ export default function HomePage() {
       <section className="py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">Recent Posts</h2>
-          <Link to="/posts">View All Posts</Link>
+          <Link to="/posts" className="text-slate-900 mb-2 hover:text-indigo-600 transition-colors">View All Posts</Link>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {recentPosts.map((post) => (
