@@ -1,5 +1,7 @@
 # CloudFlog - Modern Blog Platform
 
+[简体中文](README_CN.md)
+
 A modern, full-featured blog platform built with React Router v7, Cloudflare Workers, D1 Database, and R2 Storage. Features a beautiful UI with Tailwind CSS, comprehensive admin dashboard, and edge-first architecture for optimal performance.
 
 ## 🚀 Features
