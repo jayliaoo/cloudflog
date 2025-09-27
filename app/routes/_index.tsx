@@ -138,7 +138,7 @@ export default function HomePage() {
         </div>
         <div className="grid gap-8 md:grid-cols-2">
           {featuredPosts.map((post) => (
-            <PostCard key={post.id} post={post} variant="featured" />
+            <PostCard key={post.id} post={post} />
           ))}
         </div>
       </section>
@@ -151,7 +151,7 @@ export default function HomePage() {
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {recentPosts.map((post) => (
-            <PostCard key={post.id} post={post} variant="recent" />
+            <PostCard key={post.id} post={post} />
           ))}
         </div>
       </section>
