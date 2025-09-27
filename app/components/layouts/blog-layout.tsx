@@ -226,7 +226,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
         {children}
       </main>
       {/* Footer */}
-      <footer className="border-t border-t-gray-200 shadow-2xl z-50">
+      <footer className="border-t border-t-gray-200 shadow-2xl z-50 bg-white">
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-sm text-muted-foreground">
             <p>&copy; 2025 {ownerUser?.name}'s Blog. All Rights Reserved. Powered by Cloudflog</p>
