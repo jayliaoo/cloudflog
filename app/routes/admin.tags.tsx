@@ -6,6 +6,7 @@ import { eq, count, desc } from "drizzle-orm";
 import { Link } from "react-router";
 import { Trash2, Tag, Plus, Eye } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
 import Pagination from "~/components/Pagination";
@@ -72,12 +73,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
   // Check if user is authenticated
   const user = await getCurrentUser(request, env);
   if (!user) {
-    return data({ error: "Unauthorized" }, { status: 401 });
+    return data({ error: "errors.unauthorized" }, { status: 401 });
   }
   
   // Check if user is owner (admin access required)
   if (user.role !== 'owner') {
-    return data({ error: "Forbidden - Admin access required" }, { status: 403 });
+    return data({ error: "errors.forbidden" }, { status: 403 });
   }
   
   const formData = await request.formData();
@@ -87,14 +88,14 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const name = formData.get("name") as string;
     
     if (!name || typeof name !== "string" || name.trim().length === 0) {
-      return data({ error: "Tag name is required" }, { status: 400 });
+      return data({ error: "tags.tagRequired" }, { status: 400 });
     }
     
     const trimmedName = name.trim();
     const slug = trimmedName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
     
     if (slug.length === 0) {
-      return data({ error: "Invalid tag name" }, { status: 400 });
+      return data({ error: "tags.invalidTagName" }, { status: 400 });
     }
     
     try {
@@ -108,7 +109,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         .limit(1);
       
       if (existingTag.length > 0) {
-        return data({ error: "Tag already exists" }, { status: 400 });
+        return data({ error: "tags.tagExists" }, { status: 400 });
       }
       
       // Create new tag
@@ -120,13 +121,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return data({ success: true });
     } catch (error) {
       console.error("Error creating tag:", error);
-      return data({ error: "Failed to create tag" }, { status: 500 });
+      return data({ error: "tags.failedToCreate" }, { status: 500 });
     }
   } else if (intent === "delete") {
     const tagSlug = formData.get("slug") as string;
     
     if (!tagSlug) {
-      return data({ error: "Tag slug is required" }, { status: 400 });
+      return data({ error: "tags.tagRequired" }, { status: 400 });
     }
     
     try {
@@ -141,11 +142,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return data({ success: true });
     } catch (error) {
       console.error("Error deleting tag:", error);
-      return data({ error: "Failed to delete tag" }, { status: 500 });
+      return data({ error: "tags.failedToDelete" }, { status: 500 });
     }
   }
   
-  return data({ error: "Invalid intent" }, { status: 400 });
+  return data({ error: "errors.invalidRequest" }, { status: 400 });
 }
 
 export default function AdminTags({ loaderData }: { loaderData: any }) {
@@ -156,6 +157,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
     totalTags: number; 
   };
   const [newTagName, setNewTagName] = useState("");
+  const { t } = useTranslation();
   
   const handleCreateTag = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -177,16 +179,16 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
         window.location.reload();
       } else {
         const responseData = await response.json() as { error: string };
-        alert(responseData.error || "Failed to create tag");
+        alert(t(responseData.error) || t('tags.failedToCreate'));
       }
     } catch (error) {
       console.error("Error creating tag:", error);
-      alert("Failed to create tag");
+      alert(t('tags.failedToCreate'));
     }
   };
   
   const handleDeleteTag = async (tagSlug: string, tagName: string) => {
-    if (!confirm(`Are you sure you want to delete the tag "${tagName}"? This will remove it from all associated posts.`)) {
+    if (!confirm(t('tags.confirmDelete', { tagName }))) {
       return;
     }
     
@@ -204,11 +206,11 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
         window.location.reload();
       } else {
         const responseData = await response.json() as { error: string };
-        alert(responseData.error || "Failed to delete tag");
+        alert(t(responseData.error) || t('tags.failedToDelete'));
       }
     } catch (error) {
       console.error("Error deleting tag:", error);
-      alert("Failed to delete tag");
+      alert(t('tags.failedToDelete'));
     }
   };
   
@@ -218,13 +220,13 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
         {/* Create New Tag */}
         <div className="rounded-lg border border-gray-200 shadow-sm">
           <div className="flex flex-col space-y-1.5 p-6">
-            <h3 className="text-2xl font-semibold leading-none tracking-tight">Create New Tag</h3>
+            <h3 className="text-2xl font-semibold leading-none tracking-tight">{t('tags.createTag')}</h3>
           </div>
           <div className="p-6 pt-0">
             <form onSubmit={handleCreateTag} className="flex gap-4">
               <input
                 type="text"
-                placeholder="Tag name..."
+                placeholder={t('admin.tags.tagNamePlaceholder')}
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-md"
@@ -235,7 +237,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
                 className="inline-flex bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition items-center space-x-2"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Create Tag
+                {t('tags.createTag')}
               </button>
             </form>
           </div>
@@ -244,16 +246,16 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
         {/* Tags Table */}
         <div className="rounded-lg border border-gray-200 shadow-sm p-5">
           <div className="flex flex-col space-y-1.5 p-4">
-            <h3 className="text-2xl font-semibold leading-none tracking-tight">All Tags ({totalTags})</h3>
+            <h3 className="text-2xl font-semibold leading-none tracking-tight">{t('tags.allTags')} ({totalTags})</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-muted/50">
                 <tr className="border-b border-gray-200">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Slug</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Posts</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">{t('common.name')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">{t('common.slug')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">{t('common.posts')}</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -270,7 +272,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
-                        {tag.postCount} post{tag.postCount !== 1 ? 's' : ''}
+                        {tag.postCount} {tag.postCount === 1 ? t('common.post') : t('common.posts')}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -295,7 +297,7 @@ export default function AdminTags({ loaderData }: { loaderData: any }) {
             </table>
             {tags.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
-                No tags found.
+                {t('tags.noTagsFound')}
               </div>
             )}
           </div>

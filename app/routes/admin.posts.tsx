@@ -9,6 +9,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
 import Pagination from "~/components/Pagination";
 import { createPostsService } from "~/services/posts.service";
+import { useTranslation } from "react-i18next";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -80,12 +81,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
   // Check if user is authenticated
   const user = await getCurrentUser(request, env);
   if (!user) {
-    return data({ error: "Unauthorized" }, { status: 401 });
+    return data({ error: "admin.errors.unauthorized" }, { status: 401 });
   }
   
   // Check if user is owner (admin access required)
   if (user.role !== 'owner') {
-    return data({ error: "Forbidden - Admin access required" }, { status: 403 });
+    return data({ error: "admin.errors.forbidden" }, { status: 403 });
   }
   
   const formData = await request.formData();
@@ -93,7 +94,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   const postId = formData.get("postId");
   
   if (!postId || !intent || !["publish", "unpublish", "delete", "feature", "unfeature"].includes(intent as string)) {
-    return data({ error: "Invalid request" }, { status: 400 });
+    return data({ error: "admin.errors.invalidRequest" }, { status: 400 });
   }
   
   try {
@@ -124,11 +125,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
     return data({ success: true });
   } catch (error) {
     console.error("Error processing post action:", error);
-    return data({ error: "Failed to process action" }, { status: 500 });
+    return data({ error: "admin.errors.failedToProcessAction" }, { status: 500 });
   }
 }
 
 export default function AdminPosts({ loaderData }: { loaderData: any }) {
+  const { t } = useTranslation();
   const { posts, allTags, currentTag, currentStatus, currentFeatured, currentSearch, currentPage, totalPages, totalPosts } = loaderData as { 
     posts: any[], 
     allTags: any[], 
@@ -152,7 +154,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
         <div className="w-63">
           <input
             type="text"
-            placeholder="Search posts by title or content..."
+            placeholder={t('search.searchPlaceholder')}
             defaultValue={currentSearch || ''}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -187,9 +189,9 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
             }}
             className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="all">All Posts</option>
-            <option value="published">Published Only</option>
-            <option value="draft">Draft Only</option>
+            <option value="all">{t('admin.posts.allPosts')}</option>
+            <option value="published">{t('admin.posts.publishedOnly')}</option>
+            <option value="draft">{t('admin.posts.draftOnly')}</option>
           </select>
         </div>
         
@@ -209,9 +211,9 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
             }}
             className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="all">All Posts</option>
-            <option value="featured">Featured Only</option>
-            <option value="unfeatured">Unfeatured Only</option>
+            <option value="all">{t('admin.posts.allPosts')}</option>
+            <option value="featured">{t('admin.posts.featuredOnly')}</option>
+            <option value="unfeatured">{t('admin.posts.unfeaturedOnly')}</option>
           </select>
         </div>
         
@@ -231,7 +233,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
             }}
             className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">All Tags</option>
+            <option value="">{t('admin.posts.allTags')}</option>
             {allTags.map((tag) => (
               <option key={tag.slug} value={tag.slug}>
                 {tag.name}
@@ -243,7 +245,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
         {/* Clear Filters - Always Visible */}
         <Link to="/admin/posts">
           <button className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition">
-            Clear Filters
+            {t('admin.posts.clearFilters')}
           </button>
         </Link>
       </div>
@@ -254,12 +256,12 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="px-4 py-3 text-left text-sm font-medium">Title</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Tags</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Created</th>
-                <th className="px-4 py-3 text-left text-sm font-medium">Updated</th>
-                <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">{t('common.title')}</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">{t('common.status')}</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">{t('common.tags')}</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">{t('common.createdAt')}</th>
+                <th className="px-4 py-3 text-left text-sm font-medium">{t('common.updatedAt')}</th>
+                <th className="px-4 py-3 text-right text-sm font-medium">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -273,7 +275,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                         </Link>
                         {post.featured && (
                           <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-600 text-white">
-                            ★ Featured
+                            ★ {t('common.featured')}
                           </span>
                         )}
                       </div>
@@ -287,11 +289,11 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                   <td className="px-4 py-3">
                     {post.published ? (
                       <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800">
-                        Published
+                        {t('common.published')}
                       </span>
                     ) : (
                       <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
-                        Draft
+                        {t('common.draft')}
                       </span>
                     )}
                   </td>
@@ -304,11 +306,11 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
                           </span>
                         ))}
                         {post.tags.split(',').length > 2 && (
-                          <span className="text-xs text-muted-foreground">+{post.tags.split(',').length - 2} more</span>
+                          <span className="text-xs text-muted-foreground">+{post.tags.split(',').length - 2} {t('admin.posts.more')}</span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">No tags</span>
+                      <span className="text-sm text-muted-foreground">{t('admin.posts.noTags')}</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
@@ -377,7 +379,7 @@ export default function AdminPosts({ loaderData }: { loaderData: any }) {
           </table>
           {posts.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              No posts found.
+              {t('admin.posts.noPostsFound')}
             </div>
           )}
         </div>

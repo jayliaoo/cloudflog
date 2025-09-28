@@ -1,16 +1,22 @@
 import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getDBClient } from "~/db";
 import { posts } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import PostCard from "~/components/blog/PostCard";
 import { createPostsService } from "~/services/posts.service";
+import { detectLanguageFromRequest, createServerTranslator } from "~/utils/server-i18n";
 
-export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
+export async function loader({ request, context }: { request: Request; context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
 
   try {
+    // Detect language from request
+    const language = detectLanguageFromRequest(request);
+    const t = createServerTranslator(language);
+
     // Create posts service instance
     const postsService = createPostsService(env);
 
@@ -33,26 +39,31 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
       .where(eq(posts.slug, 'about'))
       .limit(1);
 
-    // Use database data or fallback to hardcoded data if about post doesn't exist
+    // Use database data or fallback to translated default data if about post doesn't exist
     const aboutPost = aboutPostData.length > 0 ? aboutPostData[0] : {
-      title: "About Me",
+      title: t("about.title"),
       slug: "about",
-      excerpt: "Welcome to my corner of the internet where I share my thoughts on technology and development.",
-      content: "Welcome to my corner of the internet where I share my thoughts on technology and development."
+      excerpt: t("about.description"),
+      content: t("about.content")
     };
 
     return data({ featuredPosts, recentPosts, aboutPost });
   } catch (error) {
     console.error("Error fetching posts from database:", error);
     
-    // Return error response instead of fallback data
-    return data({ error: "Failed to fetch posts" }, { status: 500 });
+    // Detect language for error message translation
+    const language = detectLanguageFromRequest(request);
+    const t = createServerTranslator(language);
+    
+    // Return error response with translated error message
+    return data({ error: t("home.failedToFetchBlogData") }, { status: 500 });
   }
 }
 
 
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const loaderData = useLoaderData<typeof loader>();
 
   // Handle error case
@@ -61,11 +72,11 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight mb-6">
-            Welcome to My{" "}
-            <span className="text-primary">Tech Blog</span>
+            {t('home.welcome')}{" "}
+            <span className="text-primary">{t('home.techBlog')}</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Unable to load content at this time. Please try refreshing the page.
+            {t(loaderData.error)}
           </p>
         </div>
       </div>
@@ -80,12 +91,14 @@ export default function HomePage() {
       <section className="py-16 bg-muted/50 rounded-lg">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6">{aboutPost.title}</h2>
+            <h2 className="text-3xl font-bold mb-6">
+              {aboutPost.title.startsWith('home.about.') ? t(aboutPost.title) : aboutPost.title}
+            </h2>
             <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-              {aboutPost.excerpt}
+              {aboutPost.excerpt && aboutPost.excerpt.startsWith('home.about.') ? t(aboutPost.excerpt) : aboutPost.excerpt}
             </p>
             <Link to={`/posts/${aboutPost.slug}`} className="text-indigo-600 hover:text-indigo-700 font-medium text-sm items-center transition-colors">
-              Learn More About Me
+              {t('home.learnMore')}
               <ArrowRight className="ml-2 h-4 w-4 inline" />
             </Link>
           </div>
@@ -95,8 +108,8 @@ export default function HomePage() {
       {/* Featured Posts */}
       <section className="py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold">Featured Posts</h2>
-          <Link to="/posts" className="text-slate-900 mb-2 hover:text-indigo-600 transition-colors">View All Posts</Link>
+          <h2 className="text-3xl font-bold">{t('home.featuredPosts')}</h2>
+          <Link to="/posts" className="text-slate-900 mb-2 hover:text-indigo-600 transition-colors">{t('home.viewAllPosts')}</Link>
         </div>
         <div className="grid gap-8 md:grid-cols-3">
           {featuredPosts.map((post) => (
@@ -108,8 +121,8 @@ export default function HomePage() {
       {/* Recent Posts */}
       <section className="py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold">Recent Posts</h2>
-          <Link to="/posts" className="text-slate-900 mb-2 hover:text-indigo-600 transition-colors">View All Posts</Link>
+          <h2 className="text-3xl font-bold">{t('home.recentPosts')}</h2>
+          <Link to="/posts" className="text-slate-900 mb-2 hover:text-indigo-600 transition-colors">{t('home.viewAllPosts')}</Link>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {recentPosts.map((post) => (

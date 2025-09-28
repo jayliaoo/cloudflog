@@ -9,6 +9,7 @@ import { useState } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
 import Pagination from "~/components/Pagination";
+import { useTranslation } from "react-i18next";
 
 const commentsPerPage = 10;
 
@@ -100,12 +101,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
   // Check if user is authenticated
   const user = await getCurrentUser(request, env);
   if (!user) {
-    return data({ error: "Unauthorized" }, { status: 401 });
+    return data({ error: "admin.errors.unauthorized" }, { status: 401 });
   }
   
   // Check if user is owner (admin access required)
   if (user.role !== 'owner') {
-    return data({ error: "Forbidden - Admin access required" }, { status: 403 });
+    return data({ error: "admin.errors.forbidden" }, { status: 403 });
   }
   
   const formData = await request.formData();
@@ -115,7 +116,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const commentId = formData.get("commentId") as string;
     
     if (!commentId) {
-      return data({ error: "Comment ID is required" }, { status: 400 });
+      return data({ error: "admin.comments.errors.commentIdRequired" }, { status: 400 });
     }
     
     try {
@@ -127,14 +128,15 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return data({ success: true });
     } catch (error) {
       console.error("Error deleting comment:", error);
-      return data({ error: "Failed to delete comment" }, { status: 500 });
+      return data({ error: "admin.comments.errors.failedToDelete" }, { status: 500 });
     }
   }
   
-  return data({ error: "Invalid intent" }, { status: 400 });
+  return data({ error: "admin.errors.invalidRequest" }, { status: 400 });
 }
 
 export default function AdminComments({ loaderData }: { loaderData: any }) {
+  const { t } = useTranslation();
   const { comments, currentPage, totalPages, totalComments, search } = loaderData as { 
     comments: any[]; 
     currentPage: number; 
@@ -158,7 +160,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
   };
   
   const handleDeleteComment = async (commentId: number, authorName: string): Promise<void> => {
-    if (!confirm(`Are you sure you want to delete the comment by "${authorName}"?`)) {
+    if (!confirm(t('admin.comments.confirmDelete', { authorName }))) {
       return;
     }
     
@@ -176,11 +178,11 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
         window.location.reload();
       } else {
         const responseData = await response.json() as { error: string };
-        alert(responseData.error || "Failed to delete comment");
+        alert(t(responseData.error) || t('admin.comments.errors.failedToDelete'));
       }
     } catch (error) {
       console.error("Error deleting comment:", error);
-      alert("Failed to delete comment");
+      alert(t('admin.comments.errors.failedToDelete'));
     }
   };
   
@@ -201,13 +203,13 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
       {/* Search */}
       <div className="rounded-lg border border-gray-200 shadow-sm">
         <div className="flex flex-col space-y-1.5 p-6">
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">Search Comments</h3>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">{t('admin.comments.searchTitle')}</h3>
         </div>
         <div className="p-6 pt-0">
           <form onSubmit={handleSearch} className="flex gap-4">
             <input
               type="text"
-              placeholder="Search by content, author, or post title..."
+              placeholder={t('admin.comments.searchPlaceholder')}
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               className="flex h-10 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-md"
@@ -216,7 +218,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
               type="submit"
               className="inline-flex bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition items-center space-x-2"
             >
-              Search
+              {t('common.search')}
             </button>
           </form>
         </div>
@@ -225,17 +227,17 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
       {/* Comments Table */}
       <div className="rounded-lg border border-gray-200 shadow-sm p-5">
         <div className="flex flex-col space-y-1.5 p-4">
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">All Comments ({totalComments})</h3>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">{t('admin.comments.allComments', { count: totalComments })}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr className="border-b border-gray-200">
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Author</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Content</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Post</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Date</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">{t('admin.comments.author')}</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">{t('admin.comments.content')}</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">{t('admin.comments.post')}</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">{t('admin.comments.date')}</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -292,7 +294,7 @@ export default function AdminComments({ loaderData }: { loaderData: any }) {
           </table>
           {comments.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              {searchTerm ? "No comments found matching your search." : "No comments yet."}
+              {searchTerm ? t('admin.comments.noCommentsFound') : t('admin.comments.noCommentsYet')}
             </div>
           )}
         </div>

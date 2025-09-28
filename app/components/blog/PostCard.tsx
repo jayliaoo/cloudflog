@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { CalendarDays, Clock, Tag, Eye, MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PostCardProps {
   post: {
@@ -45,10 +46,16 @@ function renderTags(tags: string | null | string[]) {
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  const { t, i18n } = useTranslation();
+  
   // Helper function to handle date formatting
   const formatDate = (date: string | Date) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    return dateObj.toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
   };
   
   return (
@@ -82,7 +89,7 @@ export default function PostCard({ post }: PostCardProps) {
           )}
           {post.featured && (
             <span className="ml-auto px-2 py-1 text-xs font-medium bg-indigo-500 hover:bg-indigo-600 text-white rounded-full">
-              ★ Featured
+              ★ {t('common.featured')}
             </span>
           )}
         </div>
@@ -109,7 +116,7 @@ export default function PostCard({ post }: PostCardProps) {
         {/* Action button */}
         <div className="flex items-center justify-between">
           <Link to={`/posts/${post.slug}`} className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center transition-colors">
-            Read More
+            {t('posts.readMore')}
             <Clock className="ml-2 h-4 w-4" />
           </Link>
         </div>

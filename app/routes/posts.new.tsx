@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams, useLoaderData } from "react-router";
 import { data } from "react-router";
+import { useTranslation } from "react-i18next";
 import MarkdownPreview from "~/components/blog/markdown-preview";
 import MarkdownToolbar from "~/components/blog/markdown-toolbar";
 import TagInput from "~/components/blog/tag-input";
@@ -77,6 +78,7 @@ export async function loader({ request, context }: { request: Request; context: 
 }
 
 export default function NewPost() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const loaderData = useLoaderData<typeof loader>();
@@ -235,10 +237,10 @@ export default function NewPost() {
         <div className="mx-auto max-w-4xl">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">
-              {isEditing ? 'Edit Blog Post' : 'Create New Blog Post'}
+              {isEditing ? t('posts.editPost') : t('posts.createPost')}
             </h1>
             <p className="text-muted-foreground">
-              {isEditing ? 'Update your existing blog post' : 'Share your thoughts, tutorials, and insights with the world'}
+              {isEditing ? t('posts.updateDescription') : t('posts.createDescription')}
             </p>
           </div>
 
@@ -251,7 +253,7 @@ export default function NewPost() {
           <form className="space-y-6">
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-2">
-                Title *
+                {t('common.title')} *
               </label>
               <input
                 type="text"
@@ -260,14 +262,14 @@ export default function NewPost() {
                 required
                 value={formData.title}
                 onChange={handleChange}
-                placeholder="Enter your blog title"
+                placeholder={t('posts.titlePlaceholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
               <label htmlFor="slug" className="block text-sm font-medium mb-2">
-                Slug *
+                {t('posts.slug')} *
               </label>
               <input
                 type="text"
@@ -276,11 +278,11 @@ export default function NewPost() {
                 required
                 value={formData.slug}
                 onChange={handleChange}
-                placeholder="my-awesome-blog-post"
+                placeholder={t('posts.slugPlaceholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-muted-foreground mt-1 text-xs">
-                URL-friendly version of your title (lowercase, hyphens only)
+                {t('posts.slugDescription')}
               </p>
             </div>
 
@@ -288,7 +290,7 @@ export default function NewPost() {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                Content *
+                {t('posts.content')} *
               </label>
               <div className="border border-gray-300 rounded-md overflow-hidden">
                 <div className="flex border-b border-gray-300">
@@ -301,7 +303,7 @@ export default function NewPost() {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    Edit
+                    {t('common.edit')}
                   </button>
                   <button
                     type="button"
@@ -312,7 +314,7 @@ export default function NewPost() {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    Preview
+                    {t('posts.preview')}
                   </button>
                 </div>
                 <div className="p-4">
@@ -332,7 +334,7 @@ export default function NewPost() {
                         rows={15}
                         value={formData.content}
                         onChange={handleChange}
-                        placeholder="Write your blog content here..."
+                        placeholder={t('posts.contentPlaceholder')}
                         className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
                       />
                     </>
@@ -344,20 +346,20 @@ export default function NewPost() {
                 </div>
               </div>
               <p className="text-muted-foreground mt-1 text-xs">
-                You can use Markdown for formatting (headers, links, code blocks, etc.)
+                {t('posts.markdownDescription')}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                Tags
+                {t('common.tags')}
               </label>
               <TagInput
                 selectedTags={formData.tags}
                 onTagsChange={(tags) => setFormData(prev => ({ ...prev, tags }))}
               />
               <p className="text-muted-foreground mt-1 text-xs">
-                Type to search existing tags or create new ones
+                {t('posts.tagsDescription')}
               </p>
             </div>
 
@@ -368,7 +370,7 @@ export default function NewPost() {
                 disabled={loading}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
               >
-                {loading ? (isEditing ? "Updating..." : "Publishing...") : (isEditing ? "Update Post" : "Publish Post")}
+                {loading ? (isEditing ? t('posts.updating') : t('posts.publishing')) : (isEditing ? t('posts.updatePost') : t('posts.publishPost'))}
               </button>
               <button 
                 type="button" 
@@ -376,7 +378,7 @@ export default function NewPost() {
                 disabled={loading}
                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-md font-medium transition-colors"
               >
-                {loading ? "Saving Draft..." : (isEditing ? "Save as Draft" : "Save Draft")}
+                {loading ? t('posts.savingDraft') : t('posts.saveAsDraft')}
               </button>
               <button
                 type="button"
@@ -384,7 +386,7 @@ export default function NewPost() {
                 disabled={loading}
                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-md font-medium transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </form>

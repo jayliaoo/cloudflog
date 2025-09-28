@@ -1,5 +1,6 @@
 import { data, useLoaderData } from "react-router";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import PostCard from "~/components/blog/PostCard";
 import Pagination from "~/components/Pagination";
 import { createPostsService } from "~/services/posts.service";
@@ -35,11 +36,12 @@ export async function loader({
     console.error("Error fetching blog data from database:", error);
 
     // Return error response instead of fallback data
-    return data({ error: "Failed to fetch blog data" }, { status: 500 });
+    return data({ error: "posts.failedToFetchBlogData" }, { status: 500 });
   }
 }
 
 export default function BlogPage() {
+  const { t } = useTranslation();
   const loaderData = useLoaderData<typeof loader>();
 
   // Handle error case
@@ -47,12 +49,12 @@ export default function BlogPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Posts</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('posts.title')}</h1>
           <p className="text-lg text-muted-foreground mb-4">
-            Unable to load blog posts at this time.
+            {t('posts.unableToLoadPosts')}
           </p>
           <p className="text-sm text-muted-foreground">
-            Please try refreshing the page or check back later.
+            {t('posts.tryRefreshing')}
           </p>
         </div>
       </div>
@@ -64,7 +66,7 @@ export default function BlogPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Posts</h1>
+        <h1 className="text-4xl font-bold mb-4">{t('posts.title')}</h1>
       </div>
 
       <div className="max-w-4xl mx-auto">

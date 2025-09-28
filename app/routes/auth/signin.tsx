@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { redirect, useLoaderData } from "react-router";
+import { useTranslation } from "react-i18next";
 import { getCurrentUser } from "~/auth.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -21,12 +22,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
   
   const errorMessages: Record<string, string> = {
-    access_denied: "You denied access to your GitHub account. Please try again.",
-    no_code: "Invalid authentication request. Please try again.",
-    auth_failed: "Authentication failed. Please try again or contact support.",
+    access_denied: "auth.youDeniedAccess",
+    no_code: "auth.invalidRequest",
+    auth_failed: "auth.authFailed",
   };
   
-  return { error: error, errorMessage: error ? errorMessages[error] || "An unexpected error occurred. Please try again." : null };
+  return { error: error, errorMessage: error ? errorMessages[error] || "auth.unexpectedError" : null };
 }
 
 export async function action({ request, context }: LoaderFunctionArgs) {
@@ -51,16 +52,17 @@ export async function action({ request, context }: LoaderFunctionArgs) {
 
 export default function SignIn() {
   const { error, errorMessage } = useLoaderData<typeof loader>();
+  const { t } = useTranslation();
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-slate-200">
         <div className="text-center p-6 pb-4">
           <h1 className="text-3xl font-bold text-slate-900">
-            Sign in to your blog
+            {t('auth.signInToBlog')}
           </h1>
           <p className="mt-2 text-slate-600">
-            Use your GitHub account to access the blog
+            {t('auth.useGithubAccount')}
           </p>
         </div>
         <div className="px-6 pb-6">
@@ -69,10 +71,10 @@ export default function SignIn() {
               <div className="flex">
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-red-800">
-                    Authentication Error
+                    {t('auth.authenticationError')}
                   </h3>
                   <div className="mt-2 text-sm text-red-700">
-                    <p>{errorMessage}</p>
+                    <p>{errorMessage ? t(errorMessage) : ''}</p>
                   </div>
                 </div>
               </div>
@@ -84,7 +86,7 @@ export default function SignIn() {
               type="submit"
               className="w-full bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition"
             >
-              Sign in with GitHub
+              {t('auth.signInWithGithub')}
             </button>
           </form>
         </div>

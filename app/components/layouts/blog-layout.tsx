@@ -1,12 +1,13 @@
 import { Link, Form } from "react-router";
 import { useState, useRef, useEffect } from "react";
-import { Search, User, LogOut, Plus } from "lucide-react";
+import { Search, User, LogOut, Plus, Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface User {
   id: number;
   name: string | null;
   email: string;
-  image: string;
+  image: string | null;
   role?: string;
 }
 
@@ -17,26 +18,39 @@ interface BlogLayoutProps {
 }
 
 export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProps) {
+  const { t, i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const languageMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close user menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
       }
+      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
+        setIsLanguageMenuOpen(false);
+      }
     };
 
-    if (isUserMenuOpen) {
+    if (isUserMenuOpen || isLanguageMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isUserMenuOpen]);
+  }, [isUserMenuOpen, isLanguageMenuOpen]);
+
+  // Language change handler
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('language', lng);
+    setIsLanguageMenuOpen(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -47,35 +61,41 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
               <Link to="/" className="flex items-center space-x-3 nav-link">
                 {ownerUser ? (
                   <>
-                    <img 
-                      src={ownerUser.image} 
-                      alt="Blog logo" 
-                      className="h-10 w-10 rounded-full"
-                    />
-                    <span className="text-xl font-bold text-slate-900">{ownerUser.name}'s Blog</span>
+                    {ownerUser.image ? (
+                      <img 
+                        src={ownerUser.image} 
+                        alt="Blog logo" 
+                        className="h-10 w-10 rounded-full"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
+                    <span className="text-xl font-bold text-slate-900">{ownerUser.name}{t('navigation.blogSuffix')}</span>
                   </>
                 ) : (
                   <>
-                    <div className="h-10 w-10 rounded-full bg-primary/10">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <User className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="text-xl font-bold text-slate-900">My Blog</span>
+                    <span className="text-xl font-bold text-slate-900">{t('navigation.myBlog')}</span>
                   </>
                 )}
               </Link>
               <div className="hidden lg:flex items-center space-x-2">
                   <Link to="/posts" className="text-slate-600 px-3 py-2 text-sm font-medium  nav-link hover:text-slate-900">
-                    Posts
+                    {t('navigation.posts')}
                   </Link>
                   <Link to="/tags" className="text-slate-600 px-3 py-2 text-sm font-medium hover:text-slate-900">
-                    Tags
+                    {t('navigation.tags')}
                   </Link>
                   <Link to="/posts/about" className="text-slate-600 px-3 py-2 text-sm font-medium hover:text-slate-900">
-                    About
+                    {t('navigation.about')}
                   </Link>
                 {user?.role === 'owner' && (
                     <Link to="/admin" className="text-slate-600 px-3 py-2 text-sm font-medium hover:text-slate-900">
-                      Admin
+                      {t('navigation.admin')}
                     </Link>
                 )}
               </div>
@@ -89,7 +109,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                   <input
                     type="text"
                     name="q"
-                    placeholder="Search..."
+                    placeholder={t('common.search')}
                     className="bg-slate-100 border border-slate-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                     />
                 </Form>
@@ -100,11 +120,49 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                 <Link to="/posts/new">
                   <button className="hidden lg:inline-flex bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition items-center space-x-2">
                     <Plus className="h-4 w-4" />
-                    <span>New Post</span>
+                    <span>{t('posts.newPost')}</span>
                   </button>
                 </Link>
               )}
               
+              {/* Language Selector */}
+              <div className="relative" ref={languageMenuRef}>
+                <button
+                  className="flex items-center space-x-1 text-slate-600 hover:text-slate-900 px-2 py-1 rounded-md transition"
+                  onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+                >
+                  <Globe className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    {i18n.language === 'zh' ? '中文' : 'EN'}
+                  </span>
+                </button>
+                
+                {/* Language Menu Dropdown */}
+                {isLanguageMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    <div className="absolute -top-2 right-3 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45"></div>
+                    <div className="relative bg-white rounded-lg py-1">
+                      <button
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition ${
+                          i18n.language === 'en' ? 'bg-gray-50 font-medium' : ''
+                        }`}
+                        onClick={() => changeLanguage('en')}
+                      >
+                        English
+                      </button>
+                      <button
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition ${
+                          i18n.language === 'zh' ? 'bg-gray-50 font-medium' : ''
+                        }`}
+                        onClick={() => changeLanguage('zh')}
+                      >
+                        中文
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center space-x-2">
                 {user ? (
                   <div className="relative" ref={userMenuRef}>
@@ -147,7 +205,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                             <Form action="/auth/signout" method="post">
                               <button type="submit" className="w-full block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 text-left">
                                 <LogOut className="h-4 w-4 mr-2 inline" />
-                                Sign Out
+                                {t('auth.signOut')}
                               </button>
                             </Form>
                           </div>
@@ -158,7 +216,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                 ) : (
                   <Link to="/auth/signin">
                     <button className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-indigo-700 transition">
-                      Sign In
+                      {t('navigation.signIn')}
                     </button>
                   </Link>
                 )}
@@ -186,7 +244,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
                     <input
                         type="text"
                         name="q"
-                        placeholder="Search..."
+                        placeholder={t('common.search')}
                         className="bg-slate-100 border border-slate-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition w-full"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -199,21 +257,21 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
               </div>
               <nav className="flex flex-col space-y-2">
                 <Link to="/posts" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
-                  Posts
+                  {t('navigation.posts')}
                 </Link>
                 <Link to="/tags" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
-                  Tags
+                  {t('navigation.tags')}
                 </Link>
                 <Link to="/posts/about" className="px-3 py-2 text-sm font-medium hover:text-primary" onClick={() => setIsMenuOpen(false)}>
-                  About
+                  {t('navigation.about')}
                 </Link>
                   {user?.role === 'owner' && (
                     <>
                       <Link to="/admin" className="px-3 py-2 text-sm font-medium hover:text-primary">
-                        Admin
+                        {t('navigation.admin')}
                       </Link>
                       <Link to="/posts/new" className="px-3 py-2 text-sm font-medium hover:text-primary">
-                        <span>New Post</span>
+                        <span>{t('posts.newPost')}</span>
                       </Link>
                     </>
                   )}
@@ -229,7 +287,7 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
       <footer className="border-t border-t-gray-200 shadow-2xl z-50 bg-white">
         <div className="container mx-auto px-4 py-6">
           <div className="text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 {ownerUser?.name}'s Blog. All Rights Reserved. Powered by Cloudflog</p>
+            <p>{t('footer.copyright', { year: new Date().getFullYear(), name: ownerUser?.name|| t('navigation.myBlog')})}</p>
             <div className="flex space-x-4 mt-4 sm:mt-0">
               <a href="#" className="hover:text-slate-900"><i data-lucide="twitter"></i></a>
               <a href="#" className="hover:text-slate-900"><i data-lucide="github"></i></a>

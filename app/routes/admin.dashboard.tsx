@@ -6,6 +6,7 @@ import { eq, count, desc, sql } from "drizzle-orm";
 import { BarChart3, FileText, Tag, MessageSquare, Users, TrendingUp, Eye } from "lucide-react";
 import type { LoaderFunctionArgs } from "react-router";
 import AdminLayout from "~/components/layouts/admin-layout";
+import { useTranslation } from "react-i18next";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -80,59 +81,60 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 export default function AdminDashboard({ loaderData }: { loaderData: any }) {
   const { stats } = loaderData;
+  const { t } = useTranslation();
   
   const statCards = [
     {
-      title: "Total Posts",
+      title: t('admin.totalPosts'),
       value: stats.totalPosts,
       icon: FileText,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
-      title: "Published Posts",
+      title: t('admin.publishedPosts'),
       value: stats.publishedPosts,
       icon: TrendingUp,
       color: "text-green-600",
       bgColor: "bg-green-100",
     },
     {
-      title: "Draft Posts",
+      title: t('admin.draftPosts'),
       value: stats.draftPosts,
       icon: FileText,
       color: "text-yellow-600",
       bgColor: "bg-yellow-100",
     },
     {
-      title: "Featured Posts",
+      title: t('admin.featuredPosts'),
       value: stats.featuredPosts,
       icon: BarChart3,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
     },
     {
-      title: "Total Tags",
+      title: t('admin.totalTags'),
       value: stats.totalTags,
       icon: Tag,
       color: "text-indigo-600",
       bgColor: "bg-indigo-100",
     },
     {
-      title: "Total Comments",
+      title: t('admin.totalComments'),
       value: stats.totalComments,
       icon: MessageSquare,
       color: "text-pink-600",
       bgColor: "bg-pink-100",
     },
     {
-      title: "Total Users",
+      title: t('admin.totalUsers'),
       value: stats.totalUsers,
       icon: Users,
       color: "text-orange-600",
       bgColor: "bg-orange-100",
     },
     {
-      title: "Total Views",
+      title: t('admin.totalViews'),
       value: stats.totalViews,
       icon: Eye,
       color: "text-cyan-600",

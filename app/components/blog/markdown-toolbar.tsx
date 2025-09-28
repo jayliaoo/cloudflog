@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Bold,
   Italic,
@@ -25,6 +26,7 @@ interface MarkdownToolbarProps {
 }
 
 export default function MarkdownToolbar({ textareaRef, content, setContent }: MarkdownToolbarProps) {
+  const { t } = useTranslation();
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
 
   const insertText = (before: string, after: string = "") => {
@@ -48,16 +50,16 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
 
   const insertTable = () => {
     const tableMarkdown = `
-| Header 1 | Header 2 | Header 3 |
+| ${t('editor.table.header1')} | ${t('editor.table.header2')} | ${t('editor.table.header3')} |
 |----------|----------|----------|
-| Cell 1   | Cell 2   | Cell 3   |
-| Row 2    | Data     | More     |
+| ${t('editor.table.cell1')} | ${t('editor.table.cell2')} | ${t('editor.table.cell3')} |
+| ${t('editor.table.row2')} | ${t('editor.table.data')} | ${t('editor.table.more')} |
 `;
     insertText(tableMarkdown.trim());
   };
 
   const insertCodeBlock = () => {
-    const codeMarkdown = "```javascript\n// Your code here\nconsole.log('Hello, world!');\n```";
+    const codeMarkdown = `\`\`\`javascript\n${t('editor.code.comment')}\nconsole.log('${t('editor.code.example')}');\n\`\`\``;
     insertText(codeMarkdown);
   };
 
@@ -66,7 +68,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
   };
 
   const insertLink = () => {
-    const linkMarkdown = "[Link text](url)";
+    const linkMarkdown = `[${t('editor.link.text')}](url)`;
     insertText(linkMarkdown, "");
   };
 
@@ -75,7 +77,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
         <button
           type="button"
           onClick={() => insertText("**", "**")}
-          title="Bold"
+          title={t('editor.toolbar.bold')}
           className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
         >
         <Bold className="h-4 w-4" />
@@ -84,7 +86,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("*", "*")}
-        title="Italic"
+        title={t('editor.toolbar.italic')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Italic className="h-4 w-4" />
@@ -93,7 +95,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("~~", "~~")}
-        title="Strikethrough"
+        title={t('editor.toolbar.strikethrough')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Strikethrough className="h-4 w-4" />
@@ -104,7 +106,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("# ", "")}
-        title="Heading 1"
+        title={t('editor.toolbar.heading1')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Heading1 className="h-4 w-4" />
@@ -113,7 +115,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("## ", "")}
-        title="Heading 2"
+        title={t('editor.toolbar.heading2')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Heading2 className="h-4 w-4" />
@@ -122,7 +124,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("### ", "")}
-        title="Heading 3"
+        title={t('editor.toolbar.heading3')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Heading3 className="h-4 w-4" />
@@ -133,7 +135,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={insertLink}
-        title="Link"
+        title={t('editor.toolbar.link')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Link className="h-4 w-4" />
@@ -142,7 +144,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => setImageDialogOpen(true)}
-        title="Image"
+        title={t('editor.toolbar.image')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Image className="h-4 w-4" />
@@ -159,7 +161,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("- ", "")}
-        title="Unordered List"
+        title={t('editor.toolbar.unorderedList')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <List className="h-4 w-4" />
@@ -168,7 +170,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("1. ", "")}
-        title="Ordered List"
+        title={t('editor.toolbar.orderedList')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <ListOrdered className="h-4 w-4" />
@@ -177,7 +179,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("- [ ] ", "")}
-        title="Task List"
+        title={t('editor.toolbar.taskList')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <CheckSquare className="h-4 w-4" />
@@ -188,7 +190,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={insertCodeBlock}
-        title="Code Block"
+        title={t('editor.toolbar.codeBlock')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Code className="h-4 w-4" />
@@ -197,7 +199,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("`", "`")}
-        title="Inline Code"
+        title={t('editor.toolbar.inlineCode')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <span className="text-xs font-mono">&lt;/&gt;</span>
@@ -206,7 +208,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("> ", "")}
-        title="Blockquote"
+        title={t('editor.toolbar.quote')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Quote className="h-4 w-4" />
@@ -217,7 +219,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={insertTable}
-        title="Table"
+        title={t('editor.toolbar.table')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Table className="h-4 w-4" />
@@ -226,7 +228,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
       <button
         type="button"
         onClick={() => insertText("\n---\n", "")}
-        title="Horizontal Rule"
+        title={t('editor.toolbar.horizontalRule')}
         className="h-8 w-8 p-0 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
       >
         <Minus className="h-4 w-4" />

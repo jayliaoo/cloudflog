@@ -9,7 +9,7 @@ import { CommentsSection } from "~/components/blog/comments-section";
 import { getCurrentUser } from "~/auth.server";
 import { trackPostView } from "~/utils/view-tracking";
 import type { Route } from "./+types/posts.$slug";
-
+import { useTranslation } from "react-i18next";
 export async function loader({ params, context, request }: Route.LoaderArgs) {
   const { env } = context.cloudflare;
   const db = getDBClient(env.D1);
@@ -36,7 +36,7 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
       .limit(1);
 
     if (postData.length === 0) {
-      throw new Response("Post not found", { status: 404 });
+      throw new Response('Post not found', { status: 404 });
     }
 
     const post = postData[0];
@@ -128,6 +128,7 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
 }
 
 export default function BlogPostPage() {
+  const { t } = useTranslation();
   const loaderData = useLoaderData<typeof loader>();
 
   // Handle error case
@@ -135,12 +136,12 @@ export default function BlogPostPage() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Post Not Found</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('errors.pageNotFound')}</h1>
           <p className="text-lg text-slate-600 mb-4">
-            Unable to load the requested blog post at this time.
+            {t('errors.unableToLoadPost')}
           </p>
           <Link to="/posts" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-full font-medium transition">
-            Back to Posts
+            {t('navigation.backToPosts')}
           </Link>
         </div>
       </div>
