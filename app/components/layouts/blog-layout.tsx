@@ -49,6 +49,13 @@ export default function BlogLayout({ children, user, ownerUser }: BlogLayoutProp
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
     localStorage.setItem('language', lng);
+    
+    // Set cookie for server-side language detection
+    // Cookie expires in 1 year
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    document.cookie = `i18nextLng=${lng}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+    
     setIsLanguageMenuOpen(false);
   };
 

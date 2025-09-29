@@ -45,9 +45,15 @@ if (!i18n.isInitialized) {
       },
       
       detection: {
-        order: ['localStorage', 'navigator', 'htmlTag'],
-        caches: ['localStorage'],
+        order: ['cookie', 'localStorage', 'navigator', 'htmlTag'],
+        caches: ['cookie', 'localStorage'],
+        lookupCookie: 'i18nextLng',
         lookupLocalStorage: 'i18nextLng',
+        cookieMinutes: 525600, // 1 year
+        cookieOptions: {
+          path: '/',
+          sameSite: 'lax'
+        },
         convertDetectedLanguage: (lng: string) => {
           // Normalize language codes to avoid hydration mismatch
           if (lng.startsWith('en')) return 'en';
