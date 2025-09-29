@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { CommentForm } from "./comment-form";
+import { useTranslation } from "react-i18next";
 
 interface CommentItemProps {
   comment: {
@@ -23,6 +24,7 @@ interface CommentItemProps {
 }
 
 export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelete }: CommentItemProps) {
+  const { t } = useTranslation();
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
@@ -211,7 +213,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
                       onClick={() => setIsDeleteOpen(true)}
                       className="px-2 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
                     >
-                      Delete
+                      {t("common.delete")}
                     </button>
                   </>
                 )}
@@ -220,7 +222,7 @@ export function CommentItem({ comment, user, depth = 0, onReply, onEdit, onDelet
                     onClick={handleReply}
                     className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
                   >
-                    Reply
+                    {t("comments.reply")}
                   </button>
                 )}
               </div>

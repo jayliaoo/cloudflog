@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface CommentFormProps {
   postId: number;
@@ -10,6 +11,8 @@ interface CommentFormProps {
 }
 
 export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = false, user }: CommentFormProps) {
+  const { t } = useTranslation();
+
   const [formData, setFormData] = useState({
     authorName: user?.name || "",
     authorEmail: user?.email || "",
@@ -111,20 +114,20 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
     <div className="mb-6">
       <div className="mb-4">
         <h4 className="text-lg font-semibold">
-          {isReply ? "Reply to Comment" : "Leave a Comment"}
+          {isReply ? t("comments.replyToComment") : t("comments.leaveComment")}
         </h4>
       </div>
       <div>
         {!user ? (
           <div className="text-center py-8">
             <p className="text-slate-600 mb-4">
-              Please sign in to leave a comment.
+              {t("comments.pleaseSignIn")}
             </p>
             <a
               href="/auth/signin"
               className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full font-medium transition"
             >
-              Sign In
+              {t("navigation.signIn")}
             </a>
           </div>
         ) : (
@@ -137,7 +140,7 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
             
             <div>
               <textarea
-                placeholder={isReply ? "Write your reply..." : "Write your comment..."}
+                placeholder={isReply ? t("comments.replyPlaceholder") : t("comments.commentPlaceholder")}
                 value={formData.content}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange("content", e.target.value)}
                 className={`w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent resize-vertical ${errors.content ? "border-red-500" : ""}`}
@@ -156,7 +159,7 @@ export function CommentForm({ postId, parentId, onSubmit, onCancel, isReply = fa
                 disabled={isSubmitting}
                 className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-4 py-2 rounded-full font-medium transition"
               >
-                {isSubmitting ? "Submitting..." : (isReply ? "Post Reply" : "Post Comment")}
+                {isSubmitting ? t("comments.submitting") : (isReply ? t("comments.postReply") : t("comments.postComment"))}
               </button>
               {onCancel && (
                 <button 

@@ -156,7 +156,7 @@ export default function BlogPostPage() {
       <div className="mb-6">
         <Link to="/posts" className="text-slate-600 hover:text-slate-900 px-3 py-2 rounded-full text-sm font-medium transition flex items-center w-fit">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Posts
+          {t('navigation.backToPosts')}
         </Link>
       </div>
 
@@ -177,7 +177,7 @@ export default function BlogPostPage() {
             {post.viewCount !== undefined && post.viewCount > 0 && (
               <div className="flex items-center gap-1 ml-4">
                 <Eye className="h-4 w-4" />
-                <span>{post.viewCount} views</span>
+                <span>{post.viewCount}</span>
               </div>
             )}
           </div>
@@ -207,7 +207,7 @@ export default function BlogPostPage() {
         {user?.role === 'owner' && (
           <div className="mt-8 flex justify-end">
             <Link to={`/posts/new?edit=${post.id}`} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-medium transition">
-              Edit
+              {t('common.edit')}
             </Link>
           </div>
         )}
@@ -220,14 +220,14 @@ export default function BlogPostPage() {
         {previousPost ? (
           <Link to={`/posts/${previousPost.slug}`} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-medium transition flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Previous Post
+            {t('posts.previousPost')}
           </Link>
         ) : (
           <div></div>
         )}
         {nextPost ? (
           <Link to={`/posts/${nextPost.slug}`} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-medium transition flex items-center">
-            Next Post
+            {t('posts.nextPost')}
             <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
           </Link>
         ) : (

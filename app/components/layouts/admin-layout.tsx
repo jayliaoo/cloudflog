@@ -1,29 +1,31 @@
 import { Link, Outlet, useLocation } from "react-router";
 import { BarChart3, FileText, Tag, MessageSquare, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface AdminLayoutProps {
   children?: React.ReactNode;
 }
 
 const sidebarItems = [
-  { href: "/admin", icon: BarChart3, label: "Dashboard" },
-  { href: "/admin/posts", icon: FileText, label: "Posts" },
-  { href: "/admin/tags", icon: Tag, label: "Tags" },
-  { href: "/admin/comments", icon: MessageSquare, label: "Comments" },
+  { href: "/admin", icon: BarChart3, label: "admin.dashboard" },
+  { href: "/admin/posts", icon: FileText, label: "admin.labelPosts" },
+  { href: "/admin/tags", icon: Tag, label: "admin.labelTags" },
+  { href: "/admin/comments", icon: MessageSquare, label: "admin.labelComments" },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { t } = useTranslation();
   
   // Determine page title based on current route
   const getPageTitle = () => {
     const pathname = location.pathname;
-    if (pathname === '/admin/posts') return 'Posts Management';
-    if (pathname === '/admin/tags') return 'Tags Management';
-    if (pathname === '/admin/comments') return 'Comments Management';
-    return 'Admin Dashboard';
+    if (pathname === '/admin/posts') return t("admin.postsManagement");
+    if (pathname === '/admin/tags') return t("admin.tagsManagement");
+    if (pathname === '/admin/comments') return t("admin.commentsManagement");
+    return t("admin.dashboard");
   };
 
   return (
@@ -31,7 +33,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed top-16 h-screen left-0 z-49 w-64 border-r border-r-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-b-gray-200">
-          <h2 className="text-lg font-semibold">Admin Panel</h2>
+          <h2 className="text-lg font-semibold">{t("admin.title")}</h2>
           <button
             className="lg:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             onClick={() => setSidebarOpen(false)}
@@ -49,7 +51,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   onClick={() => setSidebarOpen(false)}
                 >
                   <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
+                  <span>{t(item.label)}</span>
                 </Link>
               </li>
             ))}

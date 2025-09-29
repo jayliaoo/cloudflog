@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Upload, Link, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ImageDialogProps {
   open: boolean;
@@ -11,6 +12,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
   const [imageUrl, setImageUrl] = useState("");
   const [altText, setAltText] = useState("");
   const [uploading, setUploading] = useState(false);
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState<'url' | 'upload'>('url');
 
@@ -111,7 +113,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
       <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md mx-4 p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Insert Image</h2>
+          <h2 className="text-lg font-semibold">{t("posts.insertImage")}</h2>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
@@ -146,7 +148,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
               }`}
             >
               <Upload className="h-4 w-4 inline mr-2" />
-              Upload
+              {t("common.upload")}
             </button>
           </div>
         </div>
@@ -157,7 +159,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
             <div className="space-y-4">
               <div>
                 <label htmlFor="imageUrl" className="block text-sm font-medium mb-2">
-                  Image URL
+                  {t("common.image")} URL
                 </label>
                 <input
                   id="imageUrl"
@@ -171,14 +173,14 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
               
               <div>
                 <label htmlFor="altText" className="block text-sm font-medium mb-2">
-                  Alt Text
+                  Alt {t("common.text")} 
                 </label>
                 <input
                   id="altText"
                   type="text"
                   value={altText}
                   onChange={(e) => setAltText(e.target.value)}
-                  placeholder="Describe the image"
+                  placeholder={t("posts.altTextPlaceholder")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -190,14 +192,14 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                   disabled={!imageUrl.trim()}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
                 >
-                  Insert Image
+                  {t("posts.insertImage")}
                 </button>
                 <button
                   type="button"
                   onClick={() => onOpenChange(false)}
                   className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>
@@ -207,7 +209,7 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
             <div className="space-y-4">
               <div>
                 <label htmlFor="fileUpload" className="block text-sm font-medium mb-2">
-                  Choose File
+                  {t("posts.chooseFile")}
                 </label>
                 <input
                   id="fileUpload"
@@ -215,6 +217,8 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                   accept="image/*"
                   onChange={handleFileChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="sdflj"
+                  content="cursor-pointer"
                 />
                 {file && (
                   <p className="text-sm text-gray-600 mt-1">
@@ -225,14 +229,14 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
               
               <div>
                 <label htmlFor="uploadAltText" className="block text-sm font-medium mb-2">
-                  Alt Text
+                  Alt {t("common.text")} 
                 </label>
                 <input
                   id="uploadAltText"
                   type="text"
                   value={altText}
                   onChange={(e) => setAltText(e.target.value)}
-                  placeholder="Describe the image"
+                  placeholder={t("posts.altTextPlaceholder")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -244,14 +248,14 @@ export default function ImageDialog({ open, onOpenChange, onImageInsert }: Image
                   disabled={!file || uploading}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
                 >
-                  {uploading ? "Uploading..." : "Upload & Insert"}
+                  {uploading ? t("common.uploading") : t("posts.uploadAndInsert")}
                 </button>
                 <button
                   type="button"
                   onClick={() => onOpenChange(false)}
                   className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>

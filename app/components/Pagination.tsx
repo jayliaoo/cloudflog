@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 
 interface PaginationProps {
   currentPage: number;
@@ -19,6 +20,7 @@ export default function Pagination({
   baseUrl = "",
   searchParams,
 }: PaginationProps) {
+  const { t } = useTranslation();
   // Helper function to build URL with search parameters
   const buildUrl = (page: number) => {
     const params = new URLSearchParams(searchParams);
@@ -41,8 +43,11 @@ export default function Pagination({
   return (
     <div className="flex items-center justify-between border-t border-gray-200 pt-6">
       <div className="text-sm">
-        Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-        {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} {itemName}
+        {t("pagination.showingResults", {
+          start: (currentPage - 1) * itemsPerPage + 1,
+          end: Math.min(currentPage * itemsPerPage, totalCount),
+          total: totalCount,
+        })}
       </div>
       <div className="flex items-center -space-x-px h-10 text-base">
         {/* Previous Button */}

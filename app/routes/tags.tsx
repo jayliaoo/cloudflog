@@ -4,6 +4,8 @@ import { Tag, Hash } from "lucide-react";
 import { getDBClient } from "~/db";
 import { posts, tags, postTags } from "~/db/schema";
 import { eq, desc, count } from "drizzle-orm";
+import { useTranslation } from "react-i18next";
+
 
 export async function loader({ context }: { context: { cloudflare: { env: Env } } }) {
   const { env } = context.cloudflare;
@@ -33,6 +35,7 @@ export async function loader({ context }: { context: { cloudflare: { env: Env } 
 }
 
 export default function TagsPage() {
+  const { t } = useTranslation();
   const loaderData = useLoaderData<typeof loader>();
 
   // Handle error case
@@ -40,12 +43,12 @@ export default function TagsPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Tags</h1>
+          <h1 className="text-4xl font-bold mb-4">{t("common.tags")}</h1>
           <p className="text-lg text-muted-foreground mb-4">
-            Unable to load tags at this time.
+            {t("common.unableToLoadTags")}
           </p>
           <p className="text-sm text-muted-foreground">
-            Please try refreshing the page or check back later.
+            {t("common.tryRefreshingPage")}
           </p>
         </div>
       </div>
@@ -57,9 +60,9 @@ export default function TagsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Tags</h1>
+        <h1 className="text-4xl font-bold mb-4">{t("common.tags")}</h1>
         <p className="text-lg text-muted-foreground">
-          Browse posts by tags. Click on a tag to view all posts associated with it.
+          {t("tags.browsePostsByTags")}
         </p>
       </div>
 
@@ -80,7 +83,7 @@ export default function TagsPage() {
                   </h3>
                 </div>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                  {tag.postCount} {tag.postCount === 1 ? 'post' : 'posts'}
+                  {tag.postCount} {tag.postCount === 1 ? t("common.post") : t("common.posts")}
                 </span>
               </div>
             </div>
@@ -90,7 +93,7 @@ export default function TagsPage() {
                   to={`/tag/${tag.tagSlug}`}
                   className="text-sm text-blue-600 hover:underline flex items-center gap-1"
                 >
-                  View posts
+                  {t("posts.viewPosts")}
                   <Hash className="h-3 w-3" />
                 </Link>
               </div>

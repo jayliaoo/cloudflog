@@ -1,5 +1,23 @@
 export default {
   "common": {
+    "uploading": "上传中...",
+    "upload": "上传",
+    "text": "文本",
+    "image": "图片",
+    "comments": "评论",
+    "post": "文章",
+    "name": "姓名",
+    "featured": "精选",
+    "draft": "草稿",
+    "published": "已发布",
+    "actions": "操作",
+    "updatedAt": "更新时间",
+    "createdAt": "创建时间",
+    "status": "状态",
+    "posts": "文章",
+    "title": "标题",
+    "slug": "链接",
+    "tags": "标签",
     "search": "搜索",
     "searchPlaceholder": "搜索...",
     "loading": "加载中...",
@@ -39,6 +57,8 @@ export default {
     "backToPosts": "返回文章"
   },
   "auth": {
+    "signInToBlog": "登录博客",
+    "useGithubAccount": "使用您的 GitHub 账户访问博客",
     "signInWithGithub": "使用 GitHub 登录",
     "signOut": "退出登录",
     "authenticationRequired": "需要身份验证",
@@ -52,13 +72,32 @@ export default {
     "unknownError": "发生未知错误。请重试。"
   },
   "posts": {
+    "uploadAndInsert": "上传并插入",
+    "chooseFile": "选择文件",
+    "insertImage": "插入图片",
+    "altTextPlaceholder": "描述图片",
+    "viewPosts": "查看文章",
+    "createPost": "创建新博客文章",
+    "updatePost": "更新文章",
+    "createDescription": "与世界分享您的想法、教程和见解",
+    "updateDescription": "更新您现有的博客文章",
     "title": "文章",
+    "titlePlaceholder": "输入您的博客标题",
+    "slug": "链接",
+    "slugPlaceholder": "my-awesome-blog-post",
+    "slugDescription": "标题的 URL 友好版本（仅小写字母和连字符）",
+    "content": "内容",
+    "contentPlaceholder": "在这里写您的博客内容...",
+    "preview": "预览",
+    "markdownDescription": "您可以使用 Markdown 进行格式化（标题、链接、代码块等）",
+    "tagsDescription": "输入以搜索现有标签或创建新标签",
     "newPost": "新文章",
     "editPost": "编辑文章",
     "deletePost": "删除文章",
     "publishPost": "发布文章",
     "unpublishPost": "取消发布",
     "savePost": "保存文章",
+    "saveAsDraft": "保存为草稿",
     "saveDraft": "保存草稿",
     "publish": "发布",
     "unpublish": "取消发布",
@@ -135,16 +174,9 @@ export default {
       "insertTable": "插入表格",
       "horizontalRule": "水平线"
     },
-    "tableData": {
-      "header1": "标题 1",
-      "header2": "标题 2",
-      "header3": "标题 3",
-      "cell1": "单元格 1",
-      "cell2": "单元格 2",
-      "cell3": "单元格 3",
-      "row2": "行 2",
-      "data": "数据",
-      "more": "更多"
+    "tables": {
+      "header": "标题",
+      "cell": "单元格",
     },
     "code": {
       "comment": "// 您的代码在这里",
@@ -152,9 +184,18 @@ export default {
     }
   },
   "tags": {
+    "typeToSearchOrCreateTags": "搜索现有标签或创建新标签",
+    "addMoreTags": "添加更多标签...",
+    "browsePostsByTag": "浏览标签下的文章。点击标签查看所有关联的文章。",
+    "browseAllTags": "浏览所有标签",
+    "tagNotFound": "标签未找到",
+    "tagNotFoundMessage": "标签 \"{{tagSlug}}\" 未找到。",
+    "browsePostsByTags": "浏览标签下的文章。点击标签查看所有关联的文章。",
+    "unableToLoadTags": "无法加载标签，请稍后重试。",
+    "tryRefreshingPage": "请尝试刷新页面或稍后再试。",
     "title": "标签",
     "allTags": "所有标签",
-    "noTagsFound": "未找到标签",
+    "noTagsAvailable": "未找到标签",
     "createTag": "创建标签",
     "editTag": "编辑标签",
     "deleteTag": "删除标签",
@@ -185,6 +226,8 @@ export default {
     "noPostsFound": "未找到文章。"
   },
   "errors": {
+    "oops": "哎呀！",
+    "unexpectedError": "发生了意外错误。",
     "unauthorized": "未授权",
     "forbidden": "禁止访问 - 需要管理员权限",
     "invalidRequest": "无效请求",
@@ -193,6 +236,14 @@ export default {
     "unableToLoadPost": "目前无法加载请求的博客文章。"
   },
   "comments": {
+    "submitting": "提交中...",
+    "postReply": "发表回复",
+    "postComment": "发表评论",
+    "replyPlaceholder": "回复评论",
+    "commentPlaceholder": "发表评论",
+    "replyToComment": "回复评论",
+    "leaveComment": "发表评论",
+    "commentsCount": `评论数 ({{count}})`,
     "searchTitle": "搜索评论",
     "searchPlaceholder": "按内容、作者或文章标题搜索...",
     "allComments": "所有评论 ({{count}})",
@@ -246,15 +297,22 @@ export default {
     "moderationRequired": "您的评论正在等待审核"
   },
   "admin": {
+    "postsManagement": "文章管理",
+    "tagsManagement": "标签管理",
+    "commentsManagement": "评论管理",
     "title": "管理面板",
     "dashboard": "仪表板",
-    "posts": "文章",
-    "tags": "标签",
-    "comments": "评论",
+    "labelPosts": "文章",
+    "labelTags": "标签",
+    "labelComments": "评论",
     "users": "用户",
     "settings": "设置",
     "statistics": "统计",
     "totalPosts": "总文章数",
+    "publishedPosts": "已发布文章",
+    "draftPosts": "草稿文章",
+    "featuredPosts": "精选文章",
+    "totalUsers": "总用户数",
     "totalTags": "总标签数",
     "totalComments": "总评论数",
     "totalViews": "总浏览量",
@@ -301,7 +359,43 @@ export default {
     "lastBackup": "上次备份",
     "nextBackup": "下次备份",
     "backupSize": "备份大小",
-    "backupStatus": "备份状态"
+    "backupStatus": "备份状态",
+    "posts": {
+      "searchPlaceholder": "按标题或内容搜索文章...",
+      "allPosts": "所有文章",
+      "publishedOnly": "仅已发布",
+      "draftOnly": "仅草稿",
+      "featuredOnly": "仅精选",
+      "unfeaturedOnly": "仅非精选",
+      "allTags": "所有标签",
+      "clearFilters": "清除筛选",
+      "title": "标题",
+      "tags": "标签",
+      "created": "创建时间",
+      "updated": "更新时间",
+      "more": "更多",
+      "noTags": "没有标签",
+      "noPostsFound": "未找到文章。"
+    },
+    "tags": {
+      "tagNamePlaceholder": "标签名称...",
+    },
+    "comments": {
+      "searchTitle": "搜索评论",
+      "searchPlaceholder": "按内容、作者或文章标题搜索...",
+      "allComments": "所有评论 ({{count}})",
+      "author": "作者",
+      "content": "内容",
+      "post": "文章",
+      "date": "日期",
+      "confirmDelete": "您确定要删除 \"{{authorName}}\" 的评论吗？",
+      "noCommentsFound": "未找到匹配您搜索的评论。",
+      "noCommentsYet": "还没有评论。",
+      "errors": {
+         "commentIdRequired": "评论 ID 是必需的",
+         "failedToDelete": "删除评论失败"
+       }
+     }
   },
   "pagination": {
     "previous": "上一页",
@@ -319,7 +413,7 @@ export default {
     "showingResults": "显示第 {{start}} 到 {{end}} 项，共 {{total}} 项结果"
   },
   "footer": {
-    "copyright": "© {{year}} {{name}}。保留所有权利。",
+    "copyright": "© {{year}} {{name}}的博客。保留所有权利。由Cloudflog支持",
     "poweredBy": "技术支持",
     "builtWith": "构建于",
     "sourceCode": "源代码",
@@ -366,6 +460,10 @@ export default {
     "browseAllPosts": "浏览所有文章"
   },
   "home": {
+    "featuredPosts": "精选文章",
+    "recentPosts": "最新文章",
+    "viewAllPosts": "查看所有文章",
+    "learnMore": "了解更多",
     "welcome": "欢迎来到我的",
     "techBlog": "技术博客",
     "description": "分享网络开发、编程和技术趋势的见解。",

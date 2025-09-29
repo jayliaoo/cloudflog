@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { CommentForm } from "./comment-form";
 import { CommentItem } from "./comment-item";
+import { useTranslation } from "react-i18next";
 
 interface Comment {
   id: number;
@@ -54,6 +55,7 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [isLoading, setIsLoading] = useState(false);
   const [commentTree, setCommentTree] = useState<Comment[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setCommentTree(buildCommentTree(comments));
@@ -99,7 +101,7 @@ export function CommentsSection({ postId, comments: initialComments, user, onCom
     <div className="mt-12">
       <div className="mb-6">
         <h3 className="text-2xl font-bold">
-          Comments ({commentTree.length})
+          {t('comments.commentsCount', { count: commentTree.length })}
         </h3>
       </div>
       

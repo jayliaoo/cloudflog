@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import PostCard from "~/components/blog/PostCard";
 import Pagination from "~/components/Pagination";
 import { createPostsService } from "~/services/posts.service";
+import { useTranslation } from "react-i18next";
 
 export async function loader({ 
   context, 
@@ -62,6 +63,7 @@ export async function loader({
 }
 
 export default function TagPage() {
+  const { t } = useTranslation();
   const loaderData = useLoaderData<typeof loader>();
   const { tagSlug } = useParams();
 
@@ -71,15 +73,15 @@ export default function TagPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h1 className="text-4xl font-bold mb-4">Tag Not Found</h1>
+          <h1 className="text-4xl font-bold mb-4">{t("tags.tagNotFound")}</h1>
           <p className="text-lg text-muted-foreground mb-4">
-            The tag "{tagSlug}" could not be found.
+            {t("tags.tagNotFoundMessage", { tagSlug })}
           </p>
           <Link 
             to="/tags"
             className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
           >
-            Browse All Tags
+            {t("tags.browseAllTags")}
           </Link>
         </div>
       </div>
@@ -93,18 +95,18 @@ export default function TagPage() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Link to="/tags" className="text-sm text-muted-foreground hover:text-primary">
-            ← All Tags
+            ← {t("tags.browseAllTags")}
           </Link>
         </div>
         <div className="flex items-center gap-3">
           <Hash className="h-8 w-8 text-blue-600" />
           <h1 className="text-4xl font-bold">{currentTag.name}</h1>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-lg font-medium bg-slate-100 text-slate-800">
-            {totalCount} {totalCount === 1 ? 'post' : 'posts'}
+            {totalCount} {totalCount === 1 ? t("common.post") : t("common.posts")}
           </span>
         </div>
         <p className="text-lg text-muted-foreground mt-2">
-          Browse all posts tagged with "{currentTag.name}"
+          {t("tags.browsePostsByTag", { tagName: currentTag.name })}
         </p>
       </div>
 

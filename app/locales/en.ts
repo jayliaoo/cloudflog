@@ -1,5 +1,11 @@
+import { posts } from "~/db/schema";
+
 export default {
   "common": {
+    "uploading": "Uploading...",
+    "upload": "Upload",
+    "text": "Text",
+    "image": "Image",
     "comments": "Comments",
     "post": "Post",
     "name": "Name",
@@ -68,6 +74,11 @@ export default {
     "unknownError": "An unknown error occurred. Please try again."
   },
   "posts": {
+    "uploadAndInsert": "Upload & Insert",
+    "chooseFile": "Choose File",
+    "insertImage": "Insert Image",
+    "altTextPlaceholder": "Describe the image",
+    "viewPosts": "View Posts",
     "createPost": "Create New Blog Post",
     "updatePost": "Update Post",
     "createDescription": "Share your thoughts, tutorials, and insights with the world",
@@ -157,16 +168,9 @@ export default {
       "insertTable": "Insert Table",
       "horizontalRule": "Horizontal Rule"
     },
-    "tableData": {
-      "header1": "Header 1",
-      "header2": "Header 2",
-      "header3": "Header 3",
-      "cell1": "Cell 1",
-      "cell2": "Cell 2",
-      "cell3": "Cell 3",
-      "row2": "Row 2",
-      "data": "Data",
-      "more": "more"
+    "tables": {
+      "header": "Header",
+      "cell": "Cell",
     },
     "code": {
       "comment": "// Your code here",
@@ -174,6 +178,15 @@ export default {
     }
   },
   "tags": {
+    "typeToSearchOrCreateTags": "Type to search existing tags or create new ones",
+    "addMoreTags": "Add more tags...",
+    "browsePostsByTag": "Browse posts by tag. Click on a tag to view all posts associated with it.",
+    "browseAllTags": "Browse All Tags",
+    "tagNotFound": "Tag Not Found",
+    "tagNotFoundMessage": "The tag \"{{tagSlug}}\" could not be found.",
+    "browsePostsByTags": "Browse posts by tags. Click on a tag to view all posts associated with it.",
+    "unableToLoadTags": "Unable to load tags at this time.",
+    "tryRefreshingPage": "Please try refreshing the page or check back later.",
     "title": "Tags",
     "allTags": "All Tags",
     "noTagsAvailable": "No tags found",
@@ -217,6 +230,14 @@ export default {
     "unableToLoadPost": "Unable to load the requested blog post at this time."
   },
   "comments": {
+    "submitting": "Submitting...",
+    "postReply": "Post Reply",
+    "postComment": "Post Comment",
+    "replyPlaceholder": "Write your reply",
+    "commentPlaceholder": "Write your comment",
+    "replyToComment": "Reply to Comment",
+    "leaveComment": "Leave a Comment",
+    "commentsCount": `Comments ({{count}})`,
     "searchTitle": "Search Comments",
     "searchPlaceholder": "Search by content, author, or post title...",
     "allComments": "All Comments ({{count}})",
@@ -270,8 +291,14 @@ export default {
     "moderationRequired": "Your comment is pending moderation"
   },
   "admin": {
-    "title": "Admin Dashboard",
+    "title": "Admin Panel",
     "dashboard": "Dashboard",
+    "labelPosts": "Posts",
+    "labelTags": "Tags",
+    "labelComments": "Comments",
+    "postsManagement": "Posts Management",
+    "tagsManagement": "Tags Management",
+    "commentsManagement": "Comments Management",
     "users": "Users",
     "settings": "Settings",
     "statistics": "Statistics",

@@ -50,16 +50,16 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
 
   const insertTable = () => {
     const tableMarkdown = `
-| ${t('editor.table.header1')} | ${t('editor.table.header2')} | ${t('editor.table.header3')} |
+| ${t('editor.tables.header')} 1 | ${t('editor.tables.header')} 2 | ${t('editor.tables.header')} 3 |
 |----------|----------|----------|
-| ${t('editor.table.cell1')} | ${t('editor.table.cell2')} | ${t('editor.table.cell3')} |
-| ${t('editor.table.row2')} | ${t('editor.table.data')} | ${t('editor.table.more')} |
+| ${t('editor.tables.cell')} 1 | ${t('editor.tables.cell')} 2 | ${t('editor.tables.cell')} 3 |
+| ${t('editor.tables.cell')} 1 | ${t('editor.tables.cell')} 2 | ${t('editor.tables.cell')} 3 |
 `;
     insertText(tableMarkdown.trim());
   };
 
   const insertCodeBlock = () => {
-    const codeMarkdown = `\`\`\`javascript\n${t('editor.code.comment')}\nconsole.log('${t('editor.code.example')}');\n\`\`\``;
+    const codeMarkdown = "```\n```"
     insertText(codeMarkdown);
   };
 
@@ -68,7 +68,7 @@ export default function MarkdownToolbar({ textareaRef, content, setContent }: Ma
   };
 
   const insertLink = () => {
-    const linkMarkdown = `[${t('editor.link.text')}](url)`;
+    const linkMarkdown = `[${t('Link text')}](url)`;
     insertText(linkMarkdown, "");
   };
 
