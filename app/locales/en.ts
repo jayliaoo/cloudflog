@@ -167,6 +167,7 @@ export default {
     }
   },
   "tags": {
+    "createNewTag": "Create new tag ",
     "typeToSearchOrCreateTags": "Type to search existing tags or create new ones",
     "addMoreTags": "Add more tags...",
     "browsePostsByTag": "Browse posts by tag. Click on a tag to see all associated posts.",

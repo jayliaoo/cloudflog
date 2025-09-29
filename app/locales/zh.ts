@@ -167,6 +167,7 @@ export default {
     }
   },
   "tags": {
+    "createNewTag": "创建新标签 ",
     "typeToSearchOrCreateTags": "输入以搜索现有标签或创建新标签",
     "addMoreTags": "添加更多标签...",
     "browsePostsByTag": "按标签浏览文章。点击标签查看所有相关文章。",

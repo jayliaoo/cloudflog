@@ -173,13 +173,13 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
         placeholder={selectedTags.length === 0 ? t("tags.typeToSearchOrCreateTags") : t("tags.addMoreTags")}
-        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600"
       />
 
       {showSuggestions && (
         <div 
           ref={suggestionsRef}
-          className="absolute z-10 w-full mt-1 bg-background border border-input rounded-md shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
         >
           {loading && (
             <div className="px-3 py-2 text-sm text-muted-foreground">
@@ -195,7 +195,7 @@ function TagInput({ selectedTags, onTagsChange }: TagInputProps) {
                 onClick={handleCreateNewTag}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Create new tag "{inputValue}"
+                {t("tags.createNewTag")} {inputValue}
               </button>
             </div>
           )}
