@@ -1,8 +1,8 @@
-# CloudFlog - Modern Blog Platform
+# CloudFlog - Cloudflare + Blog = Free Dynamic Blog Platform
 
 [简体中文](README_CN.md)
 
-A modern, full-featured blog platform built with React Router v7, Cloudflare Workers, and D1 Database. Features a beautiful UI with Tailwind CSS, comprehensive admin dashboard, and edge-first architecture for optimal performance.
+A simple, dynamic blog platform built with React Router v7, Cloudflare Workers, and D1 Database. Features an easy deployment process for those who want to host their own dynamic blog for free!
 
 ## 🚀 Deployment
 
@@ -21,11 +21,13 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Install Wrangler CLI**
+
    ```bash
    npm install -g wrangler
    ```
@@ -35,16 +37,20 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
    wrangler login
    ```
 5. **Create wrangler.jsonc**
+
    ```bash
    cp wrangler.example.jsonc wrangler.jsonc
    ```
+
    - Replace `<YOUR_WORKER_NAME>` with your desired worker name.
-   - Replace `<YOUR_ACCOUNT_NAME>` with your Cloudflare account name.
+   - Replace `<YOUR_ACCOUNT_NAME>` with your processed Cloudflare account name (lowercase, no special characters).
 
 6. **Create D1 Database**
+
    ```bash
    wrangler d1 create blog
    ```
+
    - Choose No when asked "Would you like Wrangler to add it on your behalf?"
    - Copy the database_name and database_id from the output to wrangler.jsonc
 
@@ -61,9 +67,11 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
      ```
 
 8. **Deploy the application**
+
    ```bash
    npm run deploy
    ```
+
    - Choose Yes when asked "Your database may not be available to serve requests during the migration, continue?"
 
 ## 🚀 Getting Started
@@ -76,27 +84,32 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/jayliaoo/cloudflog.git
    cd cloudflog
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Install Wrangler CLI**
+
    ```bash
    npm install -g wrangler
    ```
 
 4. **Create wrangler.jsonc**
+
    ```bash
    cp wrangler.example.jsonc wrangler.jsonc
    ```
+
    - Replace `<YOUR_WORKER_NAME>` with your desired worker name.
-   - Replace `<YOUR_ACCOUNT_NAME>` with your Cloudflare account name.
+   - Replace `<YOUR_ACCOUNT_NAME>` with your processed Cloudflare account name (lowercase, no special characters). This step is optional if you don't deploy to Cloudflare Workers.
    - Replace `<YOUR_D1_DATABASE_NAME>` with whatever name you like.
    - database_id is not needed for local development, but it's required for development to Cloudflare.
 
@@ -112,12 +125,14 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
      ```
 
 6. **Set up database**
+
    ```bash
    # Apply migrations locally
    npm run db:migrate
    ```
 
 7. **Start development server**
+
    ```bash
    npm run dev
    ```
@@ -128,6 +143,7 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
 ## 🚀 Features
 
 ### Core Functionality
+
 - **Modern Blog Platform**: Complete blogging solution with posts, tags, comments, and user management
 - **Admin Dashboard**: Full-featured admin interface for content management
 - **Authentication**: GitHub OAuth integration with session-based authentication
@@ -137,6 +153,7 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
 - **View Tracking**: Post view counting and analytics
 
 ### Technical Features
+
 - **Edge Computing**: Powered by Cloudflare Workers for global performance
 - **Database**: D1 SQLite database with Drizzle ORM
 - **Modern UI**: Tailwind CSS v4 components
@@ -147,6 +164,7 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React Router v7**: Modern React framework with file-based routing
 - **React 19**: Latest React with concurrent features
 - **TypeScript**: Type-safe development
@@ -154,12 +172,14 @@ A modern, full-featured blog platform built with React Router v7, Cloudflare Wor
 - **Lucide React**: Beautiful icon library
 
 ### Backend
+
 - **Cloudflare Workers**: Edge computing platform
 - **D1 Database**: SQLite database at the edge
 - **Drizzle ORM**: Type-safe database toolkit
 - **GitHub OAuth**: Authentication provider
 
 ### Build & Development
+
 - **Vite**: Fast build tool and dev server
 - **Wrangler**: Cloudflare Workers CLI
 - **Drizzle Kit**: Database migrations and introspection
